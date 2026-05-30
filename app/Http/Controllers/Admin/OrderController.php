@@ -50,7 +50,7 @@ class OrderController extends Controller
             'approved_at' => now(),
             'approved_by' => $request->user()->id,
             'download_token' => $order->download_token ?: Str::random(64),
-            'download_expires_at' => null,
+            'download_expires_at' => now()->addDays(config('ruangcerdas.download.expire_days', 7)),
             'rejected_at' => null,
             'rejection_reason' => null,
         ]);

@@ -2,7 +2,11 @@
 
 @php
     $title = 'Produk Digital';
-    $subtitle = 'Kelola produk digital, harga, status aktif, dan file ZIP private.';
+    $subtitle = 'Kelola produk digital, harga, status aktif, publikasi, dan file ZIP private.';
+
+    $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
+
+    $hasFilter = request()->filled('q') || request()->filled('category_id');
 @endphp
 
 @section('content')
@@ -11,7 +15,10 @@
     <div class="card-header">
         <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
             <div>
-                <h5 class="card-title mb-1">Daftar Produk</h5>
+                <h5 class="card-title mb-1">
+                    Daftar Produk
+                </h5>
+
                 <p class="text-muted mb-0 fs-13">
                     Semua produk digital yang dijual di Ruang Cerdas.
                 </p>
@@ -28,17 +35,20 @@
     <div class="card-body">
 
         <form method="GET" action="{{ route('admin.products.index') }}" class="row g-2 mb-4">
-            <div class="col-md-5">
-                <input type="text"
-                       name="q"
-                       value="{{ request('q') }}"
-                       class="form-control"
-                       placeholder="Cari nama produk atau slug...">
+            <div class="col-lg-5 col-md-6">
+                <div class="position-relative">
+                    <input type="text"
+                           name="q"
+                           value="{{ request('q') }}"
+                           class="form-control"
+                           placeholder="Cari nama produk atau slug...">
+                </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-lg-4 col-md-6">
                 <select name="category_id" class="form-select">
                     <option value="">Semua Kategori</option>
+
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" @selected(request('category_id') == $category->id)>
                             {{ $category->name }}
@@ -47,17 +57,59 @@
                 </select>
             </div>
 
-            <div class="col-md-3 d-flex gap-2">
-                <button type="submit" class="btn btn-primary rounded-pill px-3">
-                    Filter
+            <div class="col-lg-3 col-md-12 d-flex gap-2 flex-wrap">
+                <button type="submit"
+                        class="btn btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                    <i data-feather="filter" style="width: 14px; height: 14px;"></i>
+                    <span>Filter</span>
                 </button>
 
-                <a href="{{ route('admin.products.index') }}"
-                   class="btn bg-secondary-subtle text-secondary rounded-pill px-3">
-                    Reset
-                </a>
+                @if ($hasFilter)
+                    <a href="{{ route('admin.products.index') }}"
+                       class="btn bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="x" style="width: 14px; height: 14px;"></i>
+                        <span>Reset</span>
+                    </a>
+                @else
+                    <a href="{{ route('admin.products.index') }}"
+                       class="btn bg-secondary-subtle text-secondary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="refresh-cw" style="width: 14px; height: 14px;"></i>
+                        <span>Refresh</span>
+                    </a>
+                @endif
             </div>
         </form>
+
+        <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap mb-3">
+            <div class="text-muted fs-13">
+                Total data:
+                <span class="fw-semibold text-dark">
+                    {{ number_format($totalProducts, 0, ',', '.') }}
+                </span>
+                produk
+            </div>
+
+            @if ($hasFilter)
+                <div class="text-muted fs-13">
+                    Filter aktif:
+                    @if (request('q'))
+                        <span class="badge bg-primary-subtle text-primary rounded-pill">
+                            Keyword: {{ request('q') }}
+                        </span>
+                    @endif
+
+                    @if (request('category_id'))
+                        @php
+                            $selectedCategory = $categories->firstWhere('id', (int) request('category_id'));
+                        @endphp
+
+                        <span class="badge bg-info-subtle text-info rounded-pill">
+                            Kategori: {{ $selectedCategory->name ?? request('category_id') }}
+                        </span>
+                    @endif
+                </div>
+            @endif
+        </div>
 
         @if ($products->count())
             <div class="table-responsive table-card">
@@ -65,10 +117,10 @@
                     <thead class="text-muted table-light">
                         <tr>
                             <th>Produk</th>
-                            <th style="width: 160px;">Kategori</th>
-                            <th style="width: 130px;">Harga Promo</th>
-                            <th style="width: 130px;">Harga Normal</th>
-                            <th style="width: 110px;">Status</th>
+                            <th style="width: 150px;">Kategori</th>
+                            <th style="width: 155px;">Harga</th>
+                            <th style="width: 170px;">Pembeli Pertama</th>
+                            <th style="width: 150px;">Status</th>
                             <th style="width: 130px;">File ZIP</th>
                             <th style="width: 110px;" class="text-end">Aksi</th>
                         </tr>
@@ -76,42 +128,126 @@
 
                     <tbody>
                         @foreach ($products as $product)
+                            @php
+                                $isPublished = $product->published_at && $product->published_at->lte(now());
+                                $hasDiscount = !empty($product->sale_price) && $product->sale_price < $product->normal_price;
+                                $hasFirstBuyerPrice = !empty($product->first_buyer_price) && $product->first_buyer_price > 0;
+                            @endphp
+
                             <tr>
                                 <td>
-                                    <div class="fw-semibold text-dark">
-                                        {{ $product->name }}
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="flex-shrink-0">
+                                            @if ($product->cover_image)
+                                                <img src="{{ asset('storage/' . $product->cover_image) }}"
+                                                     alt="{{ $product->name }}"
+                                                     class="rounded-3 border"
+                                                     style="width: 52px; height: 52px; object-fit: cover;">
+                                            @else
+                                                <div class="rounded-3 bg-primary-subtle text-primary d-flex align-items-center justify-content-center"
+                                                     style="width: 52px; height: 52px;">
+                                                    <i data-feather="package" style="width: 22px; height: 22px;"></i>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div class="min-w-0">
+                                            <div class="fw-semibold text-dark text-wrap" style="max-width: 260px;">
+                                                {{ $product->name }}
+                                            </div>
+
+                                            <div class="text-muted fs-13 text-break" style="max-width: 260px;">
+                                                {{ $product->slug }}
+                                            </div>
+
+                                            <div class="d-flex gap-1 flex-wrap mt-1">
+                                                @if ($product->is_featured)
+                                                    <span class="badge bg-warning-subtle text-warning rounded-pill">
+                                                        Featured
+                                                    </span>
+                                                @endif
+
+                                                @if ($isPublished)
+                                                    <span class="badge bg-success-subtle text-success rounded-pill">
+                                                        Published
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">
+                                                        Draft
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="text-muted fs-13">
-                                        {{ $product->slug }}
-                                    </div>
                                 </td>
 
                                 <td>
-                                    {{ $product->category->name ?? '-' }}
-                                </td>
-
-                                <td>
-                                    <span class="fw-semibold text-dark">
-                                        {{ \App\Support\Money::format($product->sale_price ?? $product->normal_price ?? 0) }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <span class="text-muted">
-                                        {{ \App\Support\Money::format($product->normal_price ?? 0) }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    @if (($product->is_active ?? true) == true)
-                                        <span class="badge bg-success-subtle text-success fw-semibold rounded-pill">
-                                            Aktif
+                                    @if ($product->category)
+                                        <span class="badge bg-info-subtle text-info fw-semibold rounded-pill">
+                                            {{ $product->category->name }}
                                         </span>
                                     @else
-                                        <span class="badge bg-secondary-subtle text-secondary fw-semibold rounded-pill">
-                                            Nonaktif
-                                        </span>
+                                        <span class="text-muted">-</span>
                                     @endif
+                                </td>
+
+                                <td>
+                                    @if ($hasDiscount)
+                                        <div class="fw-semibold text-success">
+                                            {{ \App\Support\Money::format($product->sale_price ?? 0) }}
+                                        </div>
+
+                                        <div class="text-muted fs-13 text-decoration-line-through">
+                                            {{ \App\Support\Money::format($product->normal_price ?? 0) }}
+                                        </div>
+                                    @else
+                                        <div class="fw-semibold text-dark">
+                                            {{ \App\Support\Money::format($product->normal_price ?? 0) }}
+                                        </div>
+
+                                        <div class="text-muted fs-13">
+                                            Harga normal
+                                        </div>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($hasFirstBuyerPrice)
+                                        <div class="fw-semibold text-dark">
+                                            {{ \App\Support\Money::format($product->first_buyer_price ?? 0) }}
+                                        </div>
+
+                                        <div class="text-muted fs-13">
+                                            Kuota:
+                                            {{ number_format((int) ($product->first_buyer_quota ?? 0), 0, ',', '.') }}
+                                        </div>
+                                    @else
+                                        <span class="text-muted">Tidak aktif</span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    <div class="d-flex flex-column gap-1 align-items-start">
+                                        @if (($product->is_active ?? true) == true)
+                                            <span class="badge bg-success-subtle text-success fw-semibold rounded-pill">
+                                                Aktif
+                                            </span>
+                                        @else
+                                            <span class="badge bg-secondary-subtle text-secondary fw-semibold rounded-pill">
+                                                Nonaktif
+                                            </span>
+                                        @endif
+
+                                        @if ($isPublished)
+                                            <span class="text-muted fs-13">
+                                                {{ $product->published_at->format('d M Y') }}
+                                            </span>
+                                        @else
+                                            <span class="text-muted fs-13">
+                                                Belum publish
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <td>
@@ -119,6 +255,12 @@
                                         <span class="badge bg-primary-subtle text-primary fw-semibold rounded-pill">
                                             Tersedia
                                         </span>
+
+                                        @if ($product->download_filename)
+                                            <div class="text-muted fs-13 text-break mt-1" style="max-width: 130px;">
+                                                {{ $product->download_filename }}
+                                            </div>
+                                        @endif
                                     @else
                                         <span class="badge bg-danger-subtle text-danger fw-semibold rounded-pill">
                                             Belum Ada
@@ -148,15 +290,35 @@
                     <i data-feather="package" class="text-muted" style="width: 46px; height: 46px;"></i>
                 </div>
 
-                <h5 class="text-dark mb-1">Belum ada produk</h5>
+                <h5 class="text-dark mb-1">
+                    @if ($hasFilter)
+                        Produk tidak ditemukan
+                    @else
+                        Belum ada produk
+                    @endif
+                </h5>
+
                 <p class="text-muted mb-3">
-                    Produk digital yang Anda jual akan muncul di sini.
+                    @if ($hasFilter)
+                        Tidak ada produk yang sesuai dengan filter pencarian.
+                    @else
+                        Produk digital yang Anda jual akan muncul di sini.
+                    @endif
                 </p>
 
-                <a href="{{ route('admin.products.create') }}"
-                   class="btn btn-primary rounded-pill px-4">
-                    Tambah Produk Pertama
-                </a>
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+                    @if ($hasFilter)
+                        <a href="{{ route('admin.products.index') }}"
+                           class="btn bg-secondary-subtle text-secondary rounded-pill px-4">
+                            Reset Filter
+                        </a>
+                    @endif
+
+                    <a href="{{ route('admin.products.create') }}"
+                       class="btn btn-primary rounded-pill px-4">
+                        Tambah Produk
+                    </a>
+                </div>
             </div>
         @endif
 

@@ -1,0 +1,10 @@
+<footer class="footer">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col fs-13 text-muted text-center">
+                &copy; {{ date('Y') }} - Ruang Cerdas.
+                Platform Produk Digital.
+            </div>
+        </div>
+    </div>
+</footer>

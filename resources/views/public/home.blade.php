@@ -1,6 +1,9 @@
 @extends('layouts.public')
 
-@section('title', 'Ruang Cerdas - Produk Digital dan Tools AI')
+@section('title', $landing['seo_title'] ?? 'Ruang Cerdas - Produk Digital Siap Pakai')
+@section('meta_description', $landing['seo_description'] ?? 'Marketplace produk digital seperti template, ebook, file ZIP, dan aplikasi siap pakai.')
+@section('meta_keywords', $landing['seo_keywords'] ?? '')
+@section('og_image', $landing['og_image_url'] ?? '')
 
 @section('content')
 <section class="relative overflow-hidden bg-slate-50">

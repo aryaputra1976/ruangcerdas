@@ -31,6 +31,10 @@ class LandingSettingController extends Controller
             'featured_section_title' => ['nullable', 'string', 'max:255'],
             'featured_section_subtitle' => ['nullable', 'string', 'max:1000'],
             'footer_short_text' => ['nullable', 'string', 'max:255'],
+            'seo_title' => ['nullable', 'string', 'max:255'],
+            'seo_description' => ['nullable', 'string', 'max:500'],
+            'seo_keywords' => ['nullable', 'string', 'max:255'],
+            'og_image_url' => ['nullable', 'string', 'max:255'],
         ]);
 
         $landingSetting = LandingSetting::query()->firstOrCreate([]);

@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'Produk Digital Ruang Cerdas')
+@section('title', 'Produk Digital - Ruang Cerdas')
+@section('meta_description', 'Katalog produk digital siap pakai dari Ruang Cerdas.')
 
 @section('content')
 

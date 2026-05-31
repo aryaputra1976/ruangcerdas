@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', 'Checkout - ' . $product->name)
+@section('robots', 'noindex,nofollow')
 
 @section('content')
 @php

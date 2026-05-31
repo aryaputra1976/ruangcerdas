@@ -2,6 +2,11 @@
 
 @section('title', $product->name . ' - Ruang Cerdas')
 @section('meta_description', $product->short_description ?: 'Produk digital Ruang Cerdas siap pakai.')
+@section('og_type', 'product')
+@section('canonical', url()->current())
+@if (!empty($product->cover_image))
+    @section('og_image', asset('storage/' . $product->cover_image))
+@endif
 
 @section('content')
 @php

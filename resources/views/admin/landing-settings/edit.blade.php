@@ -121,6 +121,43 @@
                               class="form-control @error('featured_section_subtitle') is-invalid @enderror">{{ old('featured_section_subtitle', $landingSetting->featured_section_subtitle) }}</textarea>
                     @error('featured_section_subtitle')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+
+                <div class="col-12 mt-3">
+                    <hr>
+                    <h5 class="mb-1">SEO Dasar</h5>
+                    <p class="text-muted fs-13 mb-0">Dipakai sebagai default SEO halaman public.</p>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="seo_title" class="form-label">SEO Title</label>
+                    <input type="text" id="seo_title" name="seo_title"
+                           class="form-control @error('seo_title') is-invalid @enderror"
+                           value="{{ old('seo_title', $landingSetting->seo_title) }}">
+                    @error('seo_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="seo_keywords" class="form-label">SEO Keywords</label>
+                    <input type="text" id="seo_keywords" name="seo_keywords"
+                           class="form-control @error('seo_keywords') is-invalid @enderror"
+                           value="{{ old('seo_keywords', $landingSetting->seo_keywords) }}">
+                    @error('seo_keywords')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="seo_description" class="form-label">SEO Description</label>
+                    <textarea id="seo_description" name="seo_description" rows="3"
+                              class="form-control @error('seo_description') is-invalid @enderror">{{ old('seo_description', $landingSetting->seo_description) }}</textarea>
+                    @error('seo_description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="og_image_url" class="form-label">OG Image URL</label>
+                    <input type="text" id="og_image_url" name="og_image_url"
+                           class="form-control @error('og_image_url') is-invalid @enderror"
+                           value="{{ old('og_image_url', $landingSetting->og_image_url) }}">
+                    @error('og_image_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
             </div>
 
             <div class="mt-4">

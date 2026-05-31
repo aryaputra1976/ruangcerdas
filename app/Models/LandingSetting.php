@@ -20,5 +20,9 @@ class LandingSetting extends Model
         'featured_section_title',
         'featured_section_subtitle',
         'footer_short_text',
+        'seo_title',
+        'seo_description',
+        'seo_keywords',
+        'og_image_url',
     ];
 }

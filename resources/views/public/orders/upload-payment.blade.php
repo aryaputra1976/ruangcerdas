@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', 'Upload Bukti Bayar - ' . $order->invoice_number)
+@section('robots', 'noindex,nofollow')
 
 @section('content')
 @php

@@ -26,6 +26,10 @@ class HomeController extends Controller
             'featured_section_title' => 'Pilihan terbaik dari Ruang Cerdas',
             'featured_section_subtitle' => 'Produk digital yang dirancang untuk membantu pekerjaan kantor, bisnis, dan produktivitas.',
             'footer_short_text' => 'Ruang Cerdas - Produk digital untuk kerja lebih cepat dan rapi.',
+            'seo_title' => 'Ruang Cerdas - Produk Digital Siap Pakai',
+            'seo_description' => 'Marketplace produk digital seperti template, ebook, file ZIP, dan aplikasi siap pakai.',
+            'seo_keywords' => null,
+            'og_image_url' => null,
         ];
 
         $landingSetting = LandingSetting::query()->first();
@@ -44,6 +48,10 @@ class HomeController extends Controller
             'featured_section_title' => $landingSetting?->featured_section_title,
             'featured_section_subtitle' => $landingSetting?->featured_section_subtitle,
             'footer_short_text' => $landingSetting?->footer_short_text,
+            'seo_title' => $landingSetting?->seo_title,
+            'seo_description' => $landingSetting?->seo_description,
+            'seo_keywords' => $landingSetting?->seo_keywords,
+            'og_image_url' => $landingSetting?->og_image_url,
         ], fn ($value) => filled($value)));
 
         $featuredProducts = Product::query()

@@ -22,3 +22,5 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Ignore file STEP24.md
+docs/STEP.md

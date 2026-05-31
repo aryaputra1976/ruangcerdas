@@ -7,6 +7,15 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Ruang Cerdas - Email Configuration (Singkat)
+
+Ruang Cerdas mengirim email link download setelah order di-approve (status `paid`).
+
+Langkah cepat:
+- Atur variabel `MAIL_*` di file `.env` (SMTP/Mailtrap).
+- Pastikan `APP_URL` sesuai domain aktif agar link download benar.
+- Lihat panduan lengkap di [docs/MAIL-SETUP.md](docs/MAIL-SETUP.md).
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

@@ -27,6 +27,10 @@
         \App\Models\Order::STATUS_REJECTED => 'bg-red-100 text-red-700',
         default => 'bg-slate-100 text-slate-700',
     };
+
+    $downloadUrl = ($order->status === \App\Models\Order::STATUS_PAID && $order->download_token)
+        ? route('orders.download', [$order->invoice_number, $order->download_token])
+        : null;
 @endphp
 
 <section class="bg-slate-50 py-16">
@@ -39,15 +43,15 @@
         @endif
 
         @if ($order->status === \App\Models\Order::STATUS_PAID)
-            <div class="mb-6 rounded-2xl bg-emerald-50 p-5 text-sm font-semibold text-emerald-700">
+            <div class="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 text-sm font-semibold text-emerald-700">
                 Pembayaran sudah disetujui. Silakan download produk Anda melalui tombol download di bawah.
             </div>
         @elseif ($order->status === \App\Models\Order::STATUS_PAYMENT_UPLOADED)
-            <div class="mb-6 rounded-2xl bg-blue-50 p-5 text-sm font-semibold text-blue-700">
+            <div class="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm font-semibold text-blue-700">
                 Bukti pembayaran sudah diterima. Admin akan melakukan verifikasi secepatnya.
             </div>
         @elseif ($order->status === \App\Models\Order::STATUS_REJECTED)
-            <div class="mb-6 rounded-2xl bg-red-50 p-5 text-sm font-semibold text-red-700">
+            <div class="mb-6 rounded-2xl border border-red-100 bg-red-50 p-5 text-sm font-semibold text-red-700">
                 Pembayaran ditolak. Silakan upload ulang bukti bayar yang benar atau hubungi admin.
             </div>
         @endif
@@ -86,7 +90,7 @@
 
             <div class="mt-10 grid gap-6 lg:grid-cols-3">
 
-                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6">
+                <div class="rounded-[2rem] border border-slate-200 bg-slate-50 p-6">
                     <h2 class="text-xl font-black text-slate-950">
                         Detail Order
                     </h2>
@@ -101,7 +105,7 @@
 
                         <div class="flex justify-between gap-4">
                             <span class="text-slate-500">Email</span>
-                            <span class="text-right font-bold text-slate-950 break-all">
+                            <span class="break-all text-right font-bold text-slate-950">
                                 {{ $order->buyer_email }}
                             </span>
                         </div>
@@ -110,6 +114,13 @@
                             <span class="text-slate-500">WhatsApp</span>
                             <span class="text-right font-bold text-slate-950">
                                 {{ $order->buyer_whatsapp }}
+                            </span>
+                        </div>
+
+                        <div class="flex justify-between gap-4">
+                            <span class="text-slate-500">Tanggal</span>
+                            <span class="text-right font-bold text-slate-950">
+                                {{ $order->created_at?->format('d M Y H:i') }}
                             </span>
                         </div>
 
@@ -122,7 +133,7 @@
                     </div>
                 </div>
 
-                <div class="rounded-3xl border border-blue-100 bg-blue-50 p-6">
+                <div class="rounded-[2rem] border border-blue-100 bg-blue-50 p-6">
                     <h2 class="text-xl font-black text-blue-950">
                         Transfer Bank
                     </h2>
@@ -134,8 +145,8 @@
                         </p>
 
                         <p class="mt-4 text-slate-500">Nomor Rekening</p>
-                        <div class="mt-1 flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
-                            <p class="text-xl font-black tracking-wide text-slate-950">
+                        <div class="mt-1 rounded-xl bg-slate-50 px-4 py-3">
+                            <p class="break-all text-xl font-black tracking-wide text-slate-950">
                                 {{ $bankAccountNumber }}
                             </p>
                         </div>
@@ -156,7 +167,7 @@
                     </p>
                 </div>
 
-                <div class="rounded-3xl border border-emerald-100 bg-emerald-50 p-6">
+                <div class="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-6">
                     <h2 class="text-xl font-black text-emerald-950">
                         QRIS
                     </h2>
@@ -169,12 +180,14 @@
                         @else
                             <div class="flex min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6">
                                 <div>
-                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-2xl">
+                                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-2xl font-black text-emerald-700">
                                         QR
                                     </div>
+
                                     <p class="mt-4 text-sm font-semibold text-slate-600">
                                         Gambar QRIS belum tersedia.
                                     </p>
+
                                     <p class="mt-1 text-xs text-slate-500">
                                         Simpan QRIS di public/images/payment/qris-ruangcerdas.png
                                     </p>
@@ -194,11 +207,52 @@
 
             </div>
 
+            <div class="mt-8 rounded-[2rem] border border-slate-200 bg-slate-50 p-6">
+                <h2 class="text-xl font-black text-slate-950">
+                    Langkah Berikutnya
+                </h2>
+
+                <div class="mt-5 grid gap-4 md:grid-cols-4">
+                    <div class="rounded-2xl bg-white p-4">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">
+                            1
+                        </div>
+                        <p class="mt-3 text-sm font-bold text-slate-950">Bayar Invoice</p>
+                    </div>
+
+                    <div class="rounded-2xl bg-white p-4">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">
+                            2
+                        </div>
+                        <p class="mt-3 text-sm font-bold text-slate-950">Upload Bukti</p>
+                    </div>
+
+                    <div class="rounded-2xl bg-white p-4">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-black text-white">
+                            3
+                        </div>
+                        <p class="mt-3 text-sm font-bold text-slate-950">Admin Verifikasi</p>
+                    </div>
+
+                    <div class="rounded-2xl bg-white p-4">
+                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 text-sm font-black text-white">
+                            4
+                        </div>
+                        <p class="mt-3 text-sm font-bold text-slate-950">Download Aktif</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                @if ($order->status === \App\Models\Order::STATUS_PAID && $order->download_token)
-                    <a href="{{ route('orders.download', [$order->invoice_number, $order->download_token]) }}"
+                @if ($downloadUrl)
+                    <a href="{{ $downloadUrl }}"
                        class="flex-1 rounded-2xl bg-emerald-600 px-6 py-4 text-center font-bold text-white hover:bg-emerald-700">
                         Download Produk
+                    </a>
+                @elseif ($order->status === \App\Models\Order::STATUS_PAYMENT_UPLOADED)
+                    <a href="{{ route('orders.payment.form', $order->invoice_number) }}"
+                       class="flex-1 rounded-2xl bg-blue-600 px-6 py-4 text-center font-bold text-white hover:bg-blue-700">
+                        Ganti / Upload Ulang Bukti Bayar
                     </a>
                 @else
                     <a href="{{ route('orders.payment.form', $order->invoice_number) }}"

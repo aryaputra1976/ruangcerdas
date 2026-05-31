@@ -17,6 +17,7 @@ class Order extends Model
 
     protected $fillable = [
         'product_id',
+        'coupon_id',
         'invoice_number',
         'buyer_name',
         'buyer_email',
@@ -24,6 +25,9 @@ class Order extends Model
         'price',
         'status',
         'payment_method',
+        'coupon_code',
+        'discount_amount',
+        'original_price',
         'payment_proof_path',
         'payment_uploaded_at',
         'payment_note',
@@ -40,6 +44,8 @@ class Order extends Model
 
     protected $casts = [
         'price' => 'integer',
+        'discount_amount' => 'decimal:2',
+        'original_price' => 'decimal:2',
         'payment_uploaded_at' => 'datetime',
         'paid_at' => 'datetime',
         'approved_at' => 'datetime',
@@ -51,6 +57,11 @@ class Order extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
     }
 
     public function approver(): BelongsTo

@@ -126,6 +126,30 @@
                             @enderror
                         </div>
 
+                        <div>
+                            <label for="coupon_code" class="block text-sm font-bold text-slate-700">
+                                Kode Kupon
+                            </label>
+
+                            <input
+                                id="coupon_code"
+                                name="coupon_code"
+                                type="text"
+                                value="{{ old('coupon_code') }}"
+                                placeholder="Contoh: HEMAT10"
+                                oninput="this.value = this.value.toUpperCase()"
+                                class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+                            >
+
+                            <p class="mt-2 text-sm text-slate-500">
+                                Opsional. Gunakan huruf/angka tanpa spasi, contoh: HEMAT10.
+                            </p>
+
+                            @error('coupon_code')
+                                <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div class="rounded-2xl border border-blue-100 bg-blue-50 p-5 text-sm leading-6 text-blue-900">
                             Setelah klik tombol checkout, sistem akan membuat invoice. Pembayaran dilakukan manual melalui transfer bank atau QRIS.
                         </div>

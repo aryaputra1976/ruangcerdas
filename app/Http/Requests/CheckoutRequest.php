@@ -17,6 +17,7 @@ class CheckoutRequest extends FormRequest
             'buyer_name' => ['required', 'string', 'max:150'],
             'buyer_email' => ['required', 'email', 'max:150'],
             'buyer_whatsapp' => ['required', 'string', 'max:30'],
+            'coupon_code' => ['nullable', 'string', 'max:50'],
         ];
     }
 

@@ -7,7 +7,7 @@
     $bankName = $paymentConfig['bank_name'] ?? 'Bank Mandiri';
     $bankAccountNumber = $paymentConfig['bank_account_number'] ?? '1234567890';
     $bankAccountHolder = $paymentConfig['bank_account_holder'] ?? 'Ruang Cerdas';
-    $qrisImage = $paymentConfig['qris_image'] ?? null;
+    $qrisImage = $paymentConfig['qris_image_path'] ?? ($paymentConfig['qris_image'] ?? null);
     $paymentNote = $paymentConfig['payment_note'] ?? 'Transfer sesuai nominal invoice agar verifikasi lebih cepat.';
 
     $qrisExists = $qrisImage && file_exists(public_path($qrisImage));
@@ -125,10 +125,37 @@
                         </div>
 
                         <div class="flex justify-between gap-4 border-t border-slate-200 pt-4">
-                            <span class="text-slate-500">Total Bayar</span>
-                            <span class="text-right text-2xl font-black text-blue-600">
-                                {{ \App\Support\Money::rupiah($order->price) }}
-                            </span>
+                            <div class="w-full">
+                                @if ((float) ($order->discount_amount ?? 0) > 0)
+                                    <div class="mb-2 flex justify-between gap-4">
+                                        <span class="text-slate-500">Harga Asli</span>
+                                        <span class="text-right font-bold text-slate-700">
+                                            {{ \App\Support\Money::rupiah((float) ($order->original_price ?? $order->price)) }}
+                                        </span>
+                                    </div>
+
+                                    <div class="mb-2 flex justify-between gap-4">
+                                        <span class="text-slate-500">Kode Kupon</span>
+                                        <span class="text-right font-bold text-emerald-700">
+                                            {{ $order->coupon_code ?: '-' }}
+                                        </span>
+                                    </div>
+
+                                    <div class="mb-2 flex justify-between gap-4">
+                                        <span class="text-slate-500">Potongan</span>
+                                        <span class="text-right font-bold text-emerald-700">
+                                            -{{ \App\Support\Money::rupiah((float) $order->discount_amount) }}
+                                        </span>
+                                    </div>
+                                @endif
+
+                                <div class="flex justify-between gap-4">
+                                    <span class="text-slate-500">Total Bayar</span>
+                                    <span class="text-right text-2xl font-black text-blue-600">
+                                        {{ \App\Support\Money::rupiah($order->price) }}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -151,7 +151,16 @@
 
                             <div class="text-end">
                                 <div class="text-muted fs-13 mb-1">Harga</div>
-                                <h4 class="mb-0 text-dark">
+                                @if ((float) ($order->discount_amount ?? 0) > 0)
+                                    <div class="text-muted fs-13">
+                                        Asli: {{ \App\Support\Money::format((float) ($order->original_price ?? 0)) }}
+                                    </div>
+                                    <div class="text-success fs-13">
+                                        Kupon {{ $order->coupon_code }} -{{ \App\Support\Money::format((float) $order->discount_amount) }}
+                                    </div>
+                                @endif
+
+                                <h4 class="mb-0 text-dark mt-1">
                                     {{ \App\Support\Money::format($order->price ?? 0) }}
                                 </h4>
                             </div>

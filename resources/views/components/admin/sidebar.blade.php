@@ -72,6 +72,14 @@
                 </li>
 
                 <li>
+                    <a href="{{ route('admin.coupons.index') }}"
+                       class="{{ request()->routeIs('admin.coupons.*') ? 'active' : '' }}">
+                        <i data-feather="tag"></i>
+                        <span> Kupon </span>
+                    </a>
+                </li>
+
+                <li>
                     <a href="{{ route('admin.reports.index') }}"
                        class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
                         <i data-feather="bar-chart-2"></i>

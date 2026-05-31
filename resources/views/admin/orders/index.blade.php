@@ -141,6 +141,14 @@
                                         {{ $order->invoice_number }}
                                     </div>
 
+                                    @if ($order->coupon_code)
+                                        <div class="fs-13 mt-1">
+                                            <span class="badge bg-success-subtle text-success rounded-pill">
+                                                Kupon: {{ $order->coupon_code }}
+                                            </span>
+                                        </div>
+                                    @endif
+
                                     @if ($order->payment_proof_path)
                                         <div class="fs-13 mt-1">
                                             <span class="badge bg-info-subtle text-info rounded-pill">

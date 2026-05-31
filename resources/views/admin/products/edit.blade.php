@@ -32,13 +32,33 @@
                         <i data-feather="arrow-left" style="width: 14px; height: 14px;"></i>
                         <span>Kembali</span>
                     </a>
+                    <a href="{{ route('admin.products.faqs.index', $product) }}"
+                       class="btn btn-sm bg-warning-subtle text-warning rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="help-circle" style="width: 14px; height: 14px;"></i>
+                        <span>FAQ Produk</span>
+                    </a>
+                    <a href="{{ route('admin.products.preview', $product) }}"
+                       class="btn btn-sm bg-info-subtle text-info rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                        <span>Preview Produk</span>
+                    </a>
                 </div>
             </div>
 
             <div class="card-body">
+                <div class="alert alert-info mb-3">
+                    Produk hanya tampil di public jika status aktif dan file digital private tersedia.
+                </div>
+
                 @if ($product->is_active && $product->isMissingPrivateFile())
                     <div class="alert alert-warning mb-3">
                         Produk ini aktif tetapi belum memiliki file digital private.
+                    </div>
+                @endif
+
+                @if (! $product->is_active)
+                    <div class="alert alert-warning mb-3">
+                        Produk nonaktif, sehingga tidak tampil di public.
                     </div>
                 @endif
 

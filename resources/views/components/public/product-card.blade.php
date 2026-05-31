@@ -37,19 +37,20 @@
     </a>
 
     <div class="p-6">
-        <div class="mb-3 flex items-center justify-between gap-3">
+        <div class="mb-3 flex flex-wrap items-center gap-2">
             @if ($product->category)
                 <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                     {{ $product->category->name }}
                 </span>
-            @else
-                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-600">
-                    Produk Digital
-                </span>
             @endif
-
+            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                Digital
+            </span>
+            <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                Siap Download
+            </span>
             @if ($remainingQuota > 0)
-                <span class="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
+                <span class="inline-flex rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
                     Sisa {{ $remainingQuota }} slot
                 </span>
             @endif
@@ -64,6 +65,10 @@
         @if ($product->short_description)
             <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
                 {{ $product->short_description }}
+            </p>
+        @else
+            <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">
+                Produk digital siap pakai untuk kebutuhan kerja profesional.
             </p>
         @endif
 
@@ -86,12 +91,12 @@
         <div class="mt-6 flex flex-col gap-3 sm:flex-row">
             <a href="{{ route('products.show', $product->slug) }}"
                class="inline-flex flex-1 items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-600 hover:text-blue-600">
-                Detail
+                Lihat Detail
             </a>
 
             <a href="{{ route('checkout.create', $product->slug) }}"
                class="inline-flex flex-1 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
-                Beli
+                Beli Sekarang
             </a>
         </div>
     </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderPaidDownloadLinkMail;
 use App\Models\Order;
+use App\Models\OrderNote;
 use App\Support\ActivityLogger;
 use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
@@ -19,7 +20,7 @@ class OrderController extends Controller
         $status = $request->query('status');
 
         $orders = Order::query()
-            ->with('product')
+            ->with(['product', 'notes'])
             ->when($status, function ($query) use ($status) {
                 $query->where('status', $status);
             })
@@ -43,6 +44,10 @@ class OrderController extends Controller
         $order->load([
             'product.category',
             'approver',
+            'notes' => fn ($query) => $query
+                ->with('user')
+                ->orderByDesc('is_pinned')
+                ->latest('created_at'),
             'auditTrails' => fn ($query) => $query->latest('created_at'),
             'auditTrails.user',
         ]);
@@ -159,5 +164,204 @@ class OrderController extends Controller
         return redirect()
             ->route('admin.orders.show', $order)
             ->with('success', 'Order berhasil ditolak.');
+    }
+
+    public function resendDownloadLink(Request $request, Order $order)
+    {
+        $order->loadMissing('product');
+
+        if ($order->status !== Order::STATUS_PAID
+            || blank($order->buyer_email)
+            || ! $order->product
+            || ! $order->product->privateFileExists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Link download belum dapat dikirim ulang karena order belum paid / email tidak tersedia / file produk belum tersedia.');
+        }
+
+        $regeneratedToken = blank($order->download_token)
+            || blank($order->download_expires_at)
+            || $order->download_expires_at->isPast();
+
+        if ($regeneratedToken) {
+            $order->forceFill([
+                'download_token' => Str::random(64),
+                'download_expires_at' => now()->addDays(config('ruangcerdas.download.expire_days', 7)),
+            ])->save();
+        }
+
+        try {
+            Mail::to($order->buyer_email)->send(new OrderPaidDownloadLinkMail($order->fresh('product')));
+        } catch (\Throwable $exception) {
+            Log::warning('Gagal mengirim ulang email link download.', [
+                'order_id' => $order->id,
+                'invoice_number' => $order->invoice_number,
+                'buyer_email' => $order->buyer_email,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Link download belum dapat dikirim ulang karena order belum paid / email tidak tersedia / file produk belum tersedia.');
+        }
+
+        ActivityLogger::log(
+            'order.download_link_resent',
+            $order,
+            'Admin mengirim ulang link download ke email pembeli.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'buyer_email' => $order->buyer_email,
+                'regenerated_token' => $regeneratedToken,
+            ]
+        );
+
+        OrderAuditLogger::log(
+            $order,
+            'download_link.resent',
+            'Admin mengirim ulang link download ke email pembeli.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'buyer_email' => $order->buyer_email,
+                'regenerated_token' => $regeneratedToken,
+            ],
+            $order->status,
+            $order->status
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'Link download berhasil dikirim ulang ke email pembeli.');
+    }
+
+    public function storeNote(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'note' => ['required', 'string', 'max:2000'],
+            'is_pinned' => ['nullable', 'boolean'],
+        ]);
+
+        $note = $order->notes()->create([
+            'user_id' => $request->user()->id,
+            'note' => trim($validated['note']),
+            'is_pinned' => (bool) ($validated['is_pinned'] ?? false),
+        ]);
+
+        ActivityLogger::log(
+            'order_note.created',
+            $order,
+            'Admin menambahkan catatan internal order.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'note_id' => $note->id,
+                'is_pinned' => $note->is_pinned,
+            ]
+        );
+
+        OrderAuditLogger::log(
+            $order,
+            'note.created',
+            'Admin menambahkan catatan internal.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'note_id' => $note->id,
+                'is_pinned' => $note->is_pinned,
+                'note_preview' => str($note->note)->limit(80, ''),
+            ],
+            $order->status,
+            $order->status
+        );
+
+        return redirect()
+            ->route('admin.orders.show', $order)
+            ->with('success', 'Catatan internal berhasil ditambahkan.');
+    }
+
+    public function updateNote(Request $request, Order $order, OrderNote $note)
+    {
+        if ($note->order_id !== $order->id) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'note' => ['required', 'string', 'max:2000'],
+            'is_pinned' => ['nullable', 'boolean'],
+        ]);
+
+        $note->update([
+            'note' => trim($validated['note']),
+            'is_pinned' => (bool) ($validated['is_pinned'] ?? false),
+        ]);
+
+        ActivityLogger::log(
+            'order_note.updated',
+            $order,
+            'Admin memperbarui catatan internal order.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'note_id' => $note->id,
+                'is_pinned' => $note->is_pinned,
+            ]
+        );
+
+        OrderAuditLogger::log(
+            $order,
+            'note.updated',
+            'Admin memperbarui catatan internal.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'note_id' => $note->id,
+                'is_pinned' => $note->is_pinned,
+                'note_preview' => str($note->note)->limit(80, ''),
+            ],
+            $order->status,
+            $order->status
+        );
+
+        return redirect()
+            ->route('admin.orders.show', $order)
+            ->with('success', 'Catatan internal berhasil diperbarui.');
+    }
+
+    public function destroyNote(Order $order, OrderNote $note)
+    {
+        if ($note->order_id !== $order->id) {
+            abort(404);
+        }
+
+        $noteId = $note->id;
+        $isPinned = $note->is_pinned;
+        $notePreview = str($note->note)->limit(80, '');
+
+        $note->delete();
+
+        ActivityLogger::log(
+            'order_note.deleted',
+            $order,
+            'Admin menghapus catatan internal order.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'note_id' => $noteId,
+                'is_pinned' => $isPinned,
+            ]
+        );
+
+        OrderAuditLogger::log(
+            $order,
+            'note.deleted',
+            'Admin menghapus catatan internal.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'note_id' => $noteId,
+                'is_pinned' => $isPinned,
+                'note_preview' => $notePreview,
+            ],
+            $order->status,
+            $order->status
+        );
+
+        return redirect()
+            ->route('admin.orders.show', $order)
+            ->with('success', 'Catatan internal berhasil dihapus.');
     }
 }

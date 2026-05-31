@@ -146,6 +146,10 @@
                                 $isPublished = $product->published_at && $product->published_at->lte(now());
                                 $hasDiscount = !empty($product->sale_price) && $product->sale_price < $product->normal_price;
                                 $hasFirstBuyerPrice = !empty($product->first_buyer_price) && $product->first_buyer_price > 0;
+                                $isPublicVisible = $product->isVisibleToPublic();
+                                $visibilityReason = $product->is_active
+                                    ? ($product->isMissingPrivateFile() ? 'File belum ada' : ($isPublished ? null : 'Belum publish'))
+                                    : 'Nonaktif';
                             @endphp
 
                             <tr>
@@ -261,6 +265,22 @@
                                                 Belum publish
                                             </span>
                                         @endif
+
+                                        @if ($isPublicVisible)
+                                            <span class="badge bg-success-subtle text-success fw-semibold rounded-pill">
+                                                Tampil Public
+                                            </span>
+                                        @else
+                                            <span class="badge bg-danger-subtle text-danger fw-semibold rounded-pill">
+                                                Tidak Tampil
+                                            </span>
+
+                                            @if ($visibilityReason)
+                                                <span class="text-muted fs-13">
+                                                    {{ $visibilityReason }}
+                                                </span>
+                                            @endif
+                                        @endif
                                     </div>
                                 </td>
 
@@ -277,11 +297,25 @@
                                 </td>
 
                                 <td class="text-end">
-                                    <a href="{{ route('admin.products.edit', $product) }}"
-                                       class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                        <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
-                                        <span>Edit</span>
-                                    </a>
+                                    <div class="d-flex justify-content-end gap-1 flex-wrap">
+                                        <a href="{{ route('admin.products.preview', $product) }}"
+                                           class="btn btn-sm bg-info-subtle text-info rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                            <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                            <span>Preview</span>
+                                        </a>
+
+                                        <a href="{{ route('admin.products.faqs.index', $product) }}"
+                                           class="btn btn-sm bg-warning-subtle text-warning rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                            <i data-feather="help-circle" style="width: 14px; height: 14px;"></i>
+                                            <span>FAQ</span>
+                                        </a>
+
+                                        <a href="{{ route('admin.products.edit', $product) }}"
+                                           class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                            <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
+                                            <span>Edit</span>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

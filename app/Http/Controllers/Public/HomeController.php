@@ -56,11 +56,16 @@ class HomeController extends Controller
 
         $featuredProducts = Product::query()
             ->with('category')
-            ->publicVisible()
+            ->visibleToPublic()
             ->where('is_featured', true)
             ->latest('published_at')
-            ->take(6)
+            ->take(18)
             ->get();
+
+        $featuredProducts = $featuredProducts
+            ->filter(fn (Product $product) => $product->isVisibleToPublic())
+            ->take(6)
+            ->values();
 
         $featuredProducts->transform(function ($product) use ($pricingService) {
             $product->pricing = $pricingService->resolve($product);

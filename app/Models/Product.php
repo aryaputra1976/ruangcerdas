@@ -58,6 +58,11 @@ class Product extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function faqs(): HasMany
+    {
+        return $this->hasMany(ProductFaq::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
@@ -72,7 +77,15 @@ class Product extends Model
 
     public function scopePublicVisible(Builder $query): Builder
     {
-        return $query->active()->published();
+        return $query->visibleToPublic();
+    }
+
+    public function scopeVisibleToPublic(Builder $query): Builder
+    {
+        return $query
+            ->active()
+            ->published()
+            ->whereNotNull('digital_file_path');
     }
 
     public function getPublicPriceAttribute(): int
@@ -104,6 +117,14 @@ class Product extends Model
     public function isMissingPrivateFile(): bool
     {
         return ! $this->privateFileExists();
+    }
+
+    public function isVisibleToPublic(): bool
+    {
+        return (bool) $this->is_active
+            && filled($this->published_at)
+            && $this->published_at->lte(now())
+            && $this->privateFileExists();
     }
 
     public function getFormattedFileSizeAttribute(): ?string

@@ -79,6 +79,11 @@ class Order extends Model
         return $this->hasMany(OrderAuditTrail::class);
     }
 
+    public function notes(): HasMany
+    {
+        return $this->hasMany(OrderNote::class);
+    }
+
     public function isPaid(): bool
     {
         return $this->status === self::STATUS_PAID;

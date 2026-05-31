@@ -156,6 +156,20 @@
                                             </span>
                                         </div>
                                     @endif
+
+                                    @if ($order->notes->count() > 0)
+                                        <div class="fs-13 mt-1 d-flex flex-wrap gap-1">
+                                            <span class="badge bg-secondary-subtle text-secondary rounded-pill">
+                                                Ada catatan
+                                            </span>
+
+                                            @if ($order->notes->contains(fn ($note) => $note->is_pinned))
+                                                <span class="badge bg-warning-subtle text-warning rounded-pill">
+                                                    Pinned
+                                                </span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
 
                                 <td>

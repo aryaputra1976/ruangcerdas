@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\LandingSetting;
 use App\Models\Product;
+use App\Models\Testimonial;
+use App\Services\PricingService;
 use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -149,6 +152,45 @@ class ProductController extends Controller
             ->get();
 
         return view('admin.products.edit', compact('product', 'categories'));
+    }
+
+    public function preview(Product $product, PricingService $pricingService)
+    {
+        $product->load([
+            'category',
+            'faqs' => fn ($query) => $query
+                ->where('is_active', true)
+                ->orderBy('sort_order')
+                ->orderBy('id'),
+        ]);
+
+        $pricing = $pricingService->resolve($product);
+
+        $testimonials = Testimonial::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->latest()
+            ->take(3)
+            ->get();
+
+        $supportWhatsapp = LandingSetting::query()->value('support_whatsapp');
+        $isPreview = true;
+        $canCheckout = $product->isVisibleToPublic();
+        $previewStatus = [
+            'is_active' => (bool) $product->is_active,
+            'has_file' => ! $product->isMissingPrivateFile(),
+            'is_public_visible' => $canCheckout,
+        ];
+
+        return view('public.products.show', compact(
+            'product',
+            'pricing',
+            'testimonials',
+            'supportWhatsapp',
+            'isPreview',
+            'canCheckout',
+            'previewStatus'
+        ));
     }
 
     public function update(Request $request, Product $product)

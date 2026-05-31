@@ -86,10 +86,26 @@
                 </li>
 
                 <li>
+                    <a href="{{ route('admin.analytics.products.index') }}"
+                       class="{{ request()->routeIs('admin.analytics.*') ? 'active' : '' }}">
+                        <i data-feather="trending-up"></i>
+                        <span> Analytics Produk </span>
+                    </a>
+                </li>
+
+                <li>
                     <a href="{{ route('admin.activity-logs.index') }}"
                        class="{{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
                         <i data-feather="activity"></i>
                         <span> Activity Log </span>
+                    </a>
+                </li>
+
+                <li>
+                    <a href="{{ route('admin.customers.index') }}"
+                       class="{{ request()->routeIs('admin.customers.*') ? 'active' : '' }}">
+                        <i data-feather="users"></i>
+                        <span> Customer </span>
                     </a>
                 </li>
 

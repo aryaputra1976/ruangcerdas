@@ -23,14 +23,32 @@ class SitemapController extends Controller
                 'changefreq' => 'daily',
                 'priority' => '0.9',
             ],
+            [
+                'loc' => route('public.faq'),
+                'lastmod' => now()->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
+            ],
+            [
+                'loc' => route('public.terms'),
+                'lastmod' => now()->toAtomString(),
+                'changefreq' => 'yearly',
+                'priority' => '0.4',
+            ],
+            [
+                'loc' => route('public.privacy'),
+                'lastmod' => now()->toAtomString(),
+                'changefreq' => 'yearly',
+                'priority' => '0.4',
+            ],
         ];
 
         $products = Product::query()
-            ->publicVisible()
+            ->visibleToPublic()
             ->latest('updated_at')
-            ->get(['slug', 'updated_at']);
+            ->get(['slug', 'updated_at', 'digital_file_path', 'is_active', 'published_at']);
 
-        foreach ($products as $product) {
+        foreach ($products->filter(fn (Product $product) => $product->isVisibleToPublic()) as $product) {
             $urls[] = [
                 'loc' => route('products.show', $product->slug),
                 'lastmod' => $product->updated_at?->toAtomString(),

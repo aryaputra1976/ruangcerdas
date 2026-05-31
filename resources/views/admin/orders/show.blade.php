@@ -15,9 +15,7 @@
         ? $order->download_expires_at->isPast()
         : false;
 
-    $downloadUrl = ($order->status === 'paid' && $order->download_token)
-        ? url('/order/' . $order->invoice_number . '/download/' . $order->download_token)
-        : null;
+    $downloadTokenStatus = filled($order->download_token) ? 'Tersedia' : 'Tidak tersedia';
 @endphp
 
 @section('content')
@@ -254,44 +252,11 @@
                         <div class="col-md-6">
                             <div class="border rounded-3 p-3 h-100">
                                 <div class="text-muted fs-13 mb-1">Token Download</div>
-
-                                @if ($order->download_token)
-                                    <div class="text-break fs-13">
-                                        {{ $order->download_token }}
-                                    </div>
-                                @else
-                                    <div class="text-muted">
-                                        -
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
-                        @if ($downloadUrl)
-                            <div class="col-12">
-                                <div class="border rounded-3 p-3 bg-light">
-                                    <div class="text-muted fs-13 mb-1">Link Download</div>
-
-                                    <div class="d-flex align-items-center gap-2 flex-wrap">
-                                        <input type="text"
-                                               class="form-control form-control-sm"
-                                               value="{{ $downloadUrl }}"
-                                               readonly>
-
-                                        <a href="{{ $downloadUrl }}"
-                                           target="_blank"
-                                           class="btn btn-sm btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
-                                            <i data-feather="download" style="width: 14px; height: 14px;"></i>
-                                            <span>Test Download</span>
-                                        </a>
-                                    </div>
-
-                                    <div class="fs-13 text-muted mt-2">
-                                        Link ini hanya aktif jika order masih paid, token valid, belum expired, dan belum melewati batas download.
-                                    </div>
+                                <div class="fw-semibold text-dark">
+                                    {{ $downloadTokenStatus }}
                                 </div>
                             </div>
-                        @endif
+                        </div>
 
                     </div>
                 @else
@@ -300,6 +265,115 @@
                     </div>
                 @endif
 
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Catatan Internal</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ route('admin.orders.notes.store', $order) }}" class="mb-4">
+                    @csrf
+
+                    <div class="mb-2">
+                        <label class="form-label">Tambah Catatan</label>
+                        <textarea name="note"
+                                  rows="3"
+                                  class="form-control @error('note') is-invalid @enderror"
+                                  placeholder="Catatan untuk verifikasi, follow-up, atau administrasi internal...">{{ old('note') }}</textarea>
+                        @error('note')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_pinned_new_note" name="is_pinned" value="1" @checked(old('is_pinned'))>
+                            <label class="form-check-label" for="is_pinned_new_note">Pin catatan</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary rounded-pill px-3">
+                            Simpan Catatan
+                        </button>
+                    </div>
+                </form>
+
+                @if (filled($order->admin_notes))
+                    <div class="alert alert-light border mb-4">
+                        <div class="fw-semibold mb-1">Catatan lama</div>
+                        <div class="text-muted">{{ $order->admin_notes }}</div>
+                    </div>
+                @endif
+
+                @if ($order->notes->count())
+                    <div class="d-flex flex-column gap-3">
+                        @foreach ($order->notes as $note)
+                            <div class="border rounded-3 p-3">
+                                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-2">
+                                    <div>
+                                        <div class="fw-semibold text-dark">
+                                            {{ $note->user?->name ?? 'Admin' }}
+                                        </div>
+                                        <div class="text-muted fs-13">
+                                            {{ $note->created_at?->format('d M Y H:i') ?? '-' }}
+                                        </div>
+                                    </div>
+
+                                    <div class="d-flex align-items-center gap-2">
+                                        @if ($note->is_pinned)
+                                            <span class="badge bg-warning-subtle text-warning rounded-pill">Pinned</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <form method="POST"
+                                      action="{{ route('admin.orders.notes.update', [$order, $note]) }}"
+                                      class="mb-2">
+                                    @csrf
+                                    @method('PATCH')
+
+                                    <div class="mb-2">
+                                        <textarea name="note"
+                                                  rows="3"
+                                                  class="form-control">{{ old('note_'.$note->id, $note->note) }}</textarea>
+                                    </div>
+
+                                    <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                                        <div class="form-check">
+                                            <input class="form-check-input"
+                                                   type="checkbox"
+                                                   id="is_pinned_note_{{ $note->id }}"
+                                                   name="is_pinned"
+                                                   value="1"
+                                                   @checked(old('is_pinned_'.$note->id, $note->is_pinned))>
+                                            <label class="form-check-label" for="is_pinned_note_{{ $note->id }}">
+                                                Pin catatan
+                                            </label>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-sm bg-info-subtle text-info rounded-pill px-3">
+                                            Update
+                                        </button>
+                                    </div>
+                                </form>
+
+                                <form method="POST"
+                                      action="{{ route('admin.orders.notes.destroy', [$order, $note]) }}"
+                                      onsubmit="return confirm('Hapus catatan internal ini?');">
+                                    @csrf
+                                    @method('DELETE')
+
+                                    <button type="submit" class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3">
+                                        Hapus
+                                    </button>
+                                </form>
+                            </div>
+                        @endforeach
+                    </div>
+                @else
+                    <div class="text-muted">Belum ada catatan internal untuk order ini.</div>
+                @endif
             </div>
         </div>
 
@@ -489,9 +563,27 @@
                         Order masih pending. Pembeli belum mengupload bukti pembayaran.
                     </div>
                 @elseif ($order->status === 'paid')
-                    <div class="alert alert-success mb-0">
-                        Order sudah paid. Link download sudah aktif selama belum expired dan belum melewati batas download.
+                    <div class="alert alert-success mb-3">
+                        Order sudah paid. Link download aktif selama belum expired dan belum melewati batas download.
                     </div>
+
+                    @if ($order->buyer_email && $order->product && $order->product->privateFileExists())
+                        <form method="POST"
+                              action="{{ route('admin.orders.resend-download-link', $order) }}"
+                              onsubmit="return confirm('Kirim ulang link download ke email pembeli?');">
+                            @csrf
+
+                            <button type="submit"
+                                    class="btn btn-success w-100 rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
+                                <i data-feather="send" style="width: 15px; height: 15px;"></i>
+                                <span>Kirim Ulang Link Download</span>
+                            </button>
+                        </form>
+                    @else
+                        <div class="alert alert-warning mb-0">
+                            Link download belum dapat dikirim ulang karena email pembeli atau file produk belum tersedia.
+                        </div>
+                    @endif
                 @elseif ($order->status === 'rejected')
                     <div class="alert alert-danger mb-0">
                         Order sudah ditolak.

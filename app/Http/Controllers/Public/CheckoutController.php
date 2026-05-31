@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CheckoutRequest;
+use App\Models\LandingSetting;
 use App\Models\Product;
 use App\Services\CheckoutService;
 use App\Services\PricingService;
@@ -13,10 +14,7 @@ class CheckoutController extends Controller
 {
     public function create(Product $product, PricingService $pricingService)
     {
-        abort_unless(
-            $product->is_active && $product->published_at && $product->published_at->lte(now()),
-            404
-        );
+        abort_unless($product->isVisibleToPublic(), 404, 'Produk belum tersedia untuk dibeli.');
 
         $product->load('category');
 
@@ -25,6 +23,7 @@ class CheckoutController extends Controller
         return view('public.checkout.create', [
             'product' => $product,
             'pricing' => $pricing,
+            'supportWhatsapp' => LandingSetting::query()->value('support_whatsapp'),
         ]);
     }
 
@@ -33,10 +32,7 @@ class CheckoutController extends Controller
         Product $product,
         CheckoutService $checkoutService
     ) {
-        abort_unless(
-            $product->is_active && $product->published_at && $product->published_at->lte(now()),
-            404
-        );
+        abort_unless($product->isVisibleToPublic(), 404, 'Produk belum tersedia untuk dibeli.');
 
         $order = $checkoutService->createOrder($product, $request->validated());
 

@@ -6,47 +6,76 @@
 @section('og_image', $landing['og_image_url'] ?? '')
 
 @section('content')
+@php
+    $secondaryCtaUrl = $landing['secondary_cta_url'] ?? '#cara-beli';
+    if (\Illuminate\Support\Str::startsWith($secondaryCtaUrl, '#')) {
+        $secondaryCtaUrl = route('home') . $secondaryCtaUrl;
+    }
+@endphp
+
 <section class="relative overflow-hidden bg-slate-50">
     <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,#dbeafe,transparent_40%),radial-gradient(circle_at_bottom_right,#dcfce7,transparent_35%)]"></div>
 
     <div class="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div class="mx-auto max-w-4xl text-center">
-            <p class="text-sm font-bold uppercase tracking-[0.35em] text-blue-600">
-                {{ $landing['hero_badge'] }}
-            </p>
-
-            <h1 class="mt-6 text-4xl font-black tracking-tight text-slate-950 md:text-7xl">
-                {{ $landing['hero_title'] }}
-            </h1>
-
-            <p class="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-                {{ $landing['hero_subtitle'] }}
-            </p>
+            <p class="text-sm font-bold uppercase tracking-[0.35em] text-blue-600">{{ $landing['hero_badge'] }}</p>
+            <h1 class="mt-6 text-4xl font-black tracking-tight text-slate-950 md:text-7xl">{{ $landing['hero_title'] }}</h1>
+            <p class="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-600">{{ $landing['hero_subtitle'] }}</p>
 
             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <a href="{{ $landing['primary_cta_url'] }}" class="rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
                     {{ $landing['primary_cta_text'] }}
                 </a>
-
-                <a href="{{ $landing['secondary_cta_url'] }}" class="rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">
+                <a href="{{ $secondaryCtaUrl }}" class="rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">
                     {{ $landing['secondary_cta_text'] }}
                 </a>
             </div>
+
+            <p class="mx-auto mt-6 max-w-3xl text-sm font-medium text-slate-500">
+                Pembayaran manual * Verifikasi admin * Link download via email * Token aman
+            </p>
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-10">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="rounded-2xl border border-slate-200 bg-white px-5 py-4 text-center text-sm font-semibold text-slate-700">
+            Pembayaran manual • Verifikasi admin • Link download via email • Token aman
         </div>
     </div>
 </section>
 
 <section class="bg-white py-20">
     <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Manfaat</p>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kenapa Ruang Cerdas?</h2>
+        </div>
+
+        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            @foreach ([
+                ['title' => 'Siap Pakai', 'desc' => 'Template, tools, dan file digital langsung bisa digunakan.'],
+                ['title' => 'Hemat Waktu', 'desc' => 'Kurangi kerja berulang dengan format yang sudah rapi.'],
+                ['title' => 'Aman', 'desc' => 'Akses file via link download aman setelah pembayaran disetujui.'],
+                ['title' => 'Praktis', 'desc' => 'Proses beli sederhana, pembayaran manual, dan panduan jelas.'],
+            ] as $benefit)
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900">{{ $benefit['title'] }}</h3>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">{{ $benefit['desc'] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-20">
+    <div class="mx-auto max-w-7xl px-6">
         <div class="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Produk Unggulan</p>
-                <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">
-                    {{ $landing['featured_section_title'] }}
-                </h2>
-                <p class="mt-3 max-w-2xl text-slate-600">
-                    {{ $landing['featured_section_subtitle'] }}
-                </p>
+                <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">{{ $landing['featured_section_title'] }}</h2>
+                <p class="mt-3 max-w-2xl text-slate-600">{{ $landing['featured_section_subtitle'] }}</p>
             </div>
 
             <a href="{{ route('products.index') }}" class="font-semibold text-blue-600 hover:text-blue-700">
@@ -64,7 +93,7 @@
                 @endforeach
             </div>
         @else
-            <div class="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+            <div class="rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
                 <h3 class="text-xl font-bold">Produk belum tersedia</h3>
                 <p class="mt-2 text-slate-600">Produk Ruang Cerdas akan segera ditampilkan.</p>
             </div>
@@ -72,28 +101,104 @@
     </div>
 </section>
 
-<section id="cara-beli" class="bg-slate-50 py-20">
+<section id="cara-beli" class="bg-white py-20">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Cara Beli</p>
-            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">
-                Pembelian mudah dengan pembayaran manual
-            </h2>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Pembelian mudah dengan pembayaran manual</h2>
         </div>
 
         <div class="mt-12 grid gap-6 md:grid-cols-4">
             @foreach ([
-                ['1', 'Pilih Produk', 'Buka katalog dan pilih produk digital yang dibutuhkan.'],
-                ['2', 'Isi Data', 'Masukkan nama, email aktif, dan nomor WhatsApp.'],
-                ['3', 'Bayar Manual', 'Transfer atau bayar melalui QRIS sesuai instruksi invoice.'],
-                ['4', 'Download', 'Setelah admin approve, link download produk akan tersedia.'],
+                ['1', 'Pilih produk', 'Buka katalog dan pilih produk digital yang dibutuhkan.'],
+                ['2', 'Isi checkout', 'Masukkan nama, email aktif, dan nomor WhatsApp.'],
+                ['3', 'Bayar dan upload bukti', 'Lakukan pembayaran manual lalu upload bukti bayar.'],
+                ['4', 'Admin approve, link download dikirim email', 'Setelah diverifikasi, link download aman dikirim ke email.'],
             ] as $step)
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white">
-                        {{ $step[0] }}
-                    </div>
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white">{{ $step[0] }}</div>
                     <h3 class="mt-5 text-lg font-bold">{{ $step[1] }}</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600">{{ $step[2] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-20">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Trust</p>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kenapa aman membeli di Ruang Cerdas?</h2>
+        </div>
+        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            @foreach ([
+                ['title' => 'Verifikasi Admin', 'desc' => 'Pembayaran diverifikasi manual oleh admin sebelum akses diberikan.'],
+                ['title' => 'Token Aman', 'desc' => 'Download memakai token aman sesuai masa berlaku sistem.'],
+                ['title' => 'Kirim ke Email', 'desc' => 'Link download dikirim ke email pembeli setelah pembayaran disetujui.'],
+                ['title' => 'Bantuan Admin', 'desc' => 'Jika link bermasalah, tim support siap membantu pengecekan order.'],
+            ] as $trust)
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h3 class="text-lg font-bold text-slate-900">{{ $trust['title'] }}</h3>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">{{ $trust['desc'] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+@if (($testimonials ?? collect())->isNotEmpty())
+<section class="bg-slate-50 py-20">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Testimonial</p>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Dipercaya oleh pengguna Ruang Cerdas</h2>
+        </div>
+
+        <div class="mt-10 grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @foreach ($testimonials as $testimonial)
+                <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:p-6">
+                    <div class="flex items-center gap-1 text-amber-500" aria-label="Rating {{ (int) $testimonial->rating }} dari 5">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 {{ $i <= (int) $testimonial->rating ? 'opacity-100' : 'opacity-20' }}" aria-hidden="true">
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81H7.03a1 1 0 00.951-.69l1.069-3.292z" />
+                            </svg>
+                        @endfor
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-slate-600">{{ $testimonial->content }}</p>
+                    <div class="mt-3">
+                        <p class="font-bold text-slate-900">{{ $testimonial->name }}</p>
+                        @if ($testimonial->role)
+                            <p class="text-xs text-slate-500">{{ $testimonial->role }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+<section id="faq" class="bg-white py-20">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">FAQ</p>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Pertanyaan yang sering ditanyakan</h2>
+            <a href="{{ route('public.faq') }}" class="mt-3 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700">
+                Lihat FAQ lengkap ->
+            </a>
+        </div>
+
+        <div class="mx-auto mt-10 grid max-w-5xl gap-4">
+            @foreach ([
+                ['q' => 'Bagaimana cara mendapatkan file?', 'a' => 'Setelah pembayaran disetujui admin, link download dikirim ke email pembeli.'],
+                ['q' => 'Apakah pembayaran otomatis?', 'a' => 'Belum. Saat ini pembayaran dilakukan manual lalu upload bukti bayar.'],
+                ['q' => 'Kapan link download dikirim?', 'a' => 'Link dikirim setelah proses verifikasi pembayaran selesai dan order berstatus paid.'],
+                ['q' => 'Bagaimana jika link download bermasalah?', 'a' => 'Hubungi tim support Ruang Cerdas agar kami bantu pengecekan order dan akses download.'],
+            ] as $faq)
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <h3 class="font-bold text-slate-900">{{ $faq['q'] }}</h3>
+                    <p class="mt-2 text-sm leading-7 text-slate-600">{{ $faq['a'] }}</p>
                 </div>
             @endforeach
         </div>
@@ -106,36 +211,57 @@
             <h3 class="text-2xl font-black text-slate-900">{{ $landing['support_title'] }}</h3>
             <p class="mx-auto mt-2 max-w-2xl text-slate-600">{{ $landing['support_text'] }}</p>
             @if (!empty($landing['support_whatsapp']))
-                <p class="mt-3 text-sm font-semibold text-slate-700">WhatsApp: {{ $landing['support_whatsapp'] }}</p>
+                @php
+                    $supportNumber = preg_replace('/\D+/', '', (string) $landing['support_whatsapp']);
+                @endphp
+                <div class="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                    <a href="https://wa.me/{{ $supportNumber }}" target="_blank" rel="noopener noreferrer" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
+                        Hubungi WhatsApp Admin
+                    </a>
+                    <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 hover:border-blue-600 hover:text-blue-600">
+                        Cek Order
+                    </a>
+                    <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                        Lihat Produk
+                    </a>
+                </div>
+            @else
+                <p class="mt-3 text-sm font-semibold text-slate-700">Hubungi admin melalui kontak yang tersedia.</p>
             @endif
             <p class="mt-5 text-sm text-slate-500">{{ $landing['footer_short_text'] }}</p>
         </div>
     </div>
 </section>
 
-@if (($testimonials ?? collect())->isNotEmpty())
-<section class="bg-slate-50 py-20">
+<section class="bg-slate-50 py-14">
     <div class="mx-auto max-w-7xl px-6">
-        <div class="mx-auto max-w-3xl text-center">
-            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Testimonial</p>
-            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Apa kata pembeli Ruang Cerdas</h2>
-        </div>
-
-        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            @foreach ($testimonials as $testimonial)
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <div class="text-amber-500">{{ str_repeat('★', (int) $testimonial->rating) }}</div>
-                    <p class="mt-4 text-sm leading-7 text-slate-600">{{ $testimonial->content }}</p>
-                    <div class="mt-4">
-                        <p class="font-bold text-slate-900">{{ $testimonial->name }}</p>
-                        @if ($testimonial->role)
-                            <p class="text-xs text-slate-500">{{ $testimonial->role }}</p>
-                        @endif
-                    </div>
-                </div>
-            @endforeach
+        <div class="rounded-3xl border border-slate-200 bg-white p-8">
+            <h3 class="text-2xl font-black text-slate-900">Jaminan Proses</h3>
+            <ul class="mt-4 space-y-2 text-sm leading-7 text-slate-600">
+                <li>File hanya diberikan setelah pembayaran valid.</li>
+                <li>Data email digunakan untuk pengiriman link download.</li>
+                <li>Jika ada kendala, pembeli bisa cek order atau hubungi admin.</li>
+                <li>Link download punya masa berlaku sesuai sistem.</li>
+            </ul>
         </div>
     </div>
 </section>
-@endif
+
+<section class="bg-slate-950 py-20 text-white">
+    <div class="mx-auto max-w-5xl px-6 text-center">
+        <h2 class="text-3xl font-black md:text-4xl">Siap mulai lebih cepat?</h2>
+        <p class="mx-auto mt-3 max-w-2xl text-slate-300">
+            Pilih produk digital Ruang Cerdas yang kamu butuhkan, lakukan checkout, dan lanjutkan proses pembelian dengan mudah.
+        </p>
+
+        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white hover:bg-blue-700">
+                Lihat Produk
+            </a>
+            <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl border border-slate-600 px-7 py-4 text-base font-bold text-white hover:border-blue-500 hover:text-blue-300">
+                Cek Order
+            </a>
+        </div>
+    </div>
+</section>
 @endsection

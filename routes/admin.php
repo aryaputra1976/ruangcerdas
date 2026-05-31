@@ -22,6 +22,7 @@ Route::prefix('admin')
         Route::get('/payment-settings', [PaymentSettingController::class, 'edit'])->name('payment-settings.edit');
         Route::put('/payment-settings', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
 
         Route::resource('/products', ProductController::class);
         Route::resource('/categories', CategoryController::class);

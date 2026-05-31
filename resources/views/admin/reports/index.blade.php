@@ -54,6 +54,12 @@
                     <span>Terapkan Filter</span>
                 </button>
 
+                <a href="{{ route('admin.reports.export', request()->query()) }}"
+                   class="btn btn-success rounded-pill px-4 d-inline-flex align-items-center gap-1">
+                    <i data-feather="download" style="width: 14px; height: 14px;"></i>
+                    <span>Export CSV</span>
+                </a>
+
                 <a href="{{ route('admin.reports.index') }}"
                    class="btn btn-light rounded-pill px-4 d-inline-flex align-items-center gap-1">
                     <i data-feather="rotate-ccw" style="width: 14px; height: 14px;"></i>
@@ -61,6 +67,102 @@
                 </a>
             </div>
         </form>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Total Order</p>
+                <h4 class="mb-0 text-dark">{{ number_format($summary['total_order'] ?? 0, 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Total Paid</p>
+                <h4 class="mb-0 text-success">{{ number_format($summary['total_paid'] ?? 0, 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Total Pending</p>
+                <h4 class="mb-0 text-warning">{{ number_format($summary['total_pending'] ?? 0, 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Menunggu Verifikasi</p>
+                <h4 class="mb-0 text-primary">{{ number_format($summary['total_waiting_verification'] ?? 0, 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Total Rejected</p>
+                <h4 class="mb-0 text-danger">{{ number_format($summary['total_rejected'] ?? 0, 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Omzet Paid</p>
+                <h4 class="mb-0 text-dark">{{ \App\Support\Money::format($summary['total_revenue_paid'] ?? 0) }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Total Download</p>
+                <h4 class="mb-0 text-info">{{ number_format($summary['total_download'] ?? 0, 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-1">Produk Terlaris (Order Paid)</h5>
+        <p class="text-muted mb-0 fs-13">Urutan berdasarkan jumlah order paid dan omzet terbesar.</p>
+    </div>
+    <div class="card-body">
+        @if ($topProducts->count())
+            <div class="table-responsive table-card">
+                <table class="table table-hover table-centered align-middle table-nowrap mb-0">
+                    <thead class="table-light text-muted">
+                        <tr>
+                            <th style="width: 70px;">No</th>
+                            <th>Produk</th>
+                            <th style="width: 180px;">Jumlah Order Paid</th>
+                            <th style="width: 180px;">Omzet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($topProducts as $index => $topProduct)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td class="fw-medium text-dark">{{ $topProduct->product?->name ?? 'Produk tidak ditemukan' }}</td>
+                                <td>{{ number_format((int) $topProduct->paid_orders_count, 0, ',', '.') }}</td>
+                                <td class="fw-semibold">{{ \App\Support\Money::format((int) $topProduct->total_revenue) }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-4">
+                <p class="text-muted mb-0">Belum ada data produk terlaris pada filter saat ini.</p>
+            </div>
+        @endif
     </div>
 </div>
 

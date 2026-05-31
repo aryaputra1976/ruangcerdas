@@ -71,6 +71,14 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('admin.reports.index') }}"
+                       class="{{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
+                        <i data-feather="bar-chart-2"></i>
+                        <span> Laporan </span>
+                    </a>
+                </li>
+
                 <li class="menu-title mt-2">Produk Digital</li>
 
                 <li>

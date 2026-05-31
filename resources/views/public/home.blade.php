@@ -18,7 +18,7 @@
     <div class="mx-auto grid max-w-7xl gap-8 px-6 pt-12 pb-16 md:gap-10 md:pt-14 md:pb-20 lg:grid-cols-2 lg:items-center">
         <div class="max-w-2xl">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">{{ $landing['hero_badge'] }}</p>
-            <h1 class="mt-3 text-4xl sm:text-5xl lg:text-[3.4rem] xl:text-[3.8rem] leading-[1.08] font-black tracking-tight text-slate-950">
+            <h1 class="mt-3 max-w-xl text-4xl font-extrabold leading-[1.12] tracking-tight text-slate-950 sm:text-4xl md:text-5xl xl:text-[3.25rem]">
                 {{ $landing['hero_title'] }}
             </h1>
             <p class="mt-3 max-w-2xl text-lg leading-8 text-slate-600">

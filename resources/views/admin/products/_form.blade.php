@@ -8,7 +8,10 @@
 
     $isActive = old('is_active', $product->is_active ?? true);
     $isFeatured = old('is_featured', $product->is_featured ?? false);
-    $isPublished = old('is_published', !empty($product->published_at ?? null));
+    $isPublished = old(
+        'is_published',
+        !empty($product->published_at ?? null) && $product->published_at->lte(now())
+    );
 @endphp
 
 <div class="row">

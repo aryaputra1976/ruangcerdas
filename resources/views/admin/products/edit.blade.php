@@ -47,7 +47,7 @@
 
             <div class="card-body">
                 <div class="alert alert-info mb-3">
-                    Produk hanya tampil di public jika status aktif dan file digital private tersedia.
+                    Produk hanya tampil di public jika aktif, dipublish, dan file digital private tersedia.
                 </div>
 
                 @if ($product->is_active && $product->isMissingPrivateFile())
@@ -59,6 +59,12 @@
                 @if (! $product->is_active)
                     <div class="alert alert-warning mb-3">
                         Produk nonaktif, sehingga tidak tampil di public.
+                    </div>
+                @endif
+
+                @if (! $isPublished)
+                    <div class="alert alert-warning mb-3">
+                        Produk masih draft, sehingga belum tampil di public.
                     </div>
                 @endif
 

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Validator;
 
 class ProductController extends Controller
 {
@@ -326,7 +327,7 @@ class ProductController extends Controller
 
     private function validateProduct(Request $request, ?Product $product = null): array
     {
-        return $request->validate([
+        $validator = validator($request->all(), [
             'category_id' => ['nullable', 'exists:categories,id'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
@@ -343,6 +344,28 @@ class ProductController extends Controller
             'cover_image' => ['nullable', 'image', 'max:2048'],
             'digital_file' => ['nullable', 'file', 'mimes:zip,rar,7z,pdf,doc,docx,xls,xlsx,ppt,pptx,txt', 'max:102400'],
         ]);
+
+        $validator->after(function (Validator $validator) use ($request, $product) {
+            if (! $request->boolean('is_published')) {
+                return;
+            }
+
+            if (! $request->boolean('is_active')) {
+                $validator->errors()->add('is_published', 'Produk harus aktif sebelum bisa dipublish.');
+            }
+
+            $hasExistingFile = $product?->privateFileExists() ?? false;
+            $hasUploadedFile = $request->hasFile('digital_file');
+
+            if (! $hasExistingFile && ! $hasUploadedFile) {
+                $validator->errors()->add(
+                    'digital_file',
+                    'Upload file digital terlebih dahulu sebelum produk dipublish.'
+                );
+            }
+        });
+
+        return $validator->validate();
     }
 
     private function storeDigitalFile($file, ?int $productId): string

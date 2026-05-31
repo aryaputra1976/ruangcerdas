@@ -63,6 +63,14 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('admin.payment-settings.edit') }}"
+                       class="{{ request()->routeIs('admin.payment-settings.*') ? 'active' : '' }}">
+                        <i data-feather="credit-card"></i>
+                        <span> Pembayaran </span>
+                    </a>
+                </li>
+
                 <li class="menu-title mt-2">Produk Digital</li>
 
                 <li>

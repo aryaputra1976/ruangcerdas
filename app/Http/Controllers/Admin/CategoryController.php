@@ -14,6 +14,7 @@ class CategoryController extends Controller
     {
         $query = Category::query()
             ->withCount('products')
+            ->orderBy('sort_order')
             ->latest();
 
         if ($request->filled('q')) {
@@ -21,13 +22,30 @@ class CategoryController extends Controller
 
             $query->where(function ($sub) use ($q) {
                 $sub->where('name', 'like', "%{$q}%")
-                    ->orWhere('slug', 'like', "%{$q}%");
+                    ->orWhere('slug', 'like', "%{$q}%")
+                    ->orWhere('description', 'like', "%{$q}%");
             });
+        }
+
+        if ($request->filled('status')) {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            }
+
+            if ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
         }
 
         $categories = $query->paginate(10)->withQueryString();
 
-        return view('admin.categories.index', compact('categories'));
+        $counts = [
+            'all' => Category::count(),
+            'active' => Category::where('is_active', true)->count(),
+            'inactive' => Category::where('is_active', false)->count(),
+        ];
+
+        return view('admin.categories.index', compact('categories', 'counts'));
     }
 
     public function create()
@@ -43,6 +61,8 @@ class CategoryController extends Controller
             $validated['slug'] ?: $validated['name']
         );
 
+        $validated['is_active'] = $request->boolean('is_active');
+
         Category::create($validated);
 
         return redirect()
@@ -57,6 +77,8 @@ class CategoryController extends Controller
 
     public function edit(Category $category)
     {
+        $category->loadCount('products');
+
         return view('admin.categories.edit', compact('category'));
     }
 
@@ -68,6 +90,8 @@ class CategoryController extends Controller
             $validated['slug'] ?: $validated['name'],
             $category->id
         );
+
+        $validated['is_active'] = $request->boolean('is_active');
 
         $category->update($validated);
 
@@ -101,6 +125,8 @@ class CategoryController extends Controller
                 'max:255',
                 Rule::unique('categories', 'slug')->ignore($category?->id),
             ],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
         ]);
     }
 

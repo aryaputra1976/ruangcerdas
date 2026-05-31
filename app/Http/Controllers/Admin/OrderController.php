@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\OrderPaidDownloadLinkMail;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
@@ -55,9 +58,24 @@ class OrderController extends Controller
             'rejection_reason' => null,
         ]);
 
+        $successMessage = 'Pembayaran berhasil di-approve. Link download sudah aktif.';
+
+        try {
+            Mail::to($order->buyer_email)->send(new OrderPaidDownloadLinkMail($order->fresh('product')));
+        } catch (\Throwable $exception) {
+            Log::warning('Gagal mengirim email download link setelah approve order.', [
+                'order_id' => $order->id,
+                'invoice_number' => $order->invoice_number,
+                'buyer_email' => $order->buyer_email,
+                'error' => $exception->getMessage(),
+            ]);
+
+            $successMessage = 'Pembayaran berhasil di-approve, tetapi email download gagal dikirim. Silakan cek konfigurasi mail.';
+        }
+
         return redirect()
             ->route('admin.orders.show', $order)
-            ->with('success', 'Pembayaran berhasil di-approve. Link download sudah aktif.');
+            ->with('success', $successMessage);
     }
 
     public function reject(Request $request, Order $order)

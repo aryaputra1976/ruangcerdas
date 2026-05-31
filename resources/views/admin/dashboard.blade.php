@@ -60,6 +60,15 @@
         />
 
         <x-admin.stat-card
+            title="Produk Aktif Tanpa File"
+            :value="$stat('missing_private_files_products')"
+            description="Perlu upload file private"
+            icon="alert-triangle"
+            color="danger"
+            :url="route('admin.products.index', ['file_status' => 'missing'])"
+        />
+
+        <x-admin.stat-card
             title="Order Pending"
             :value="$stat('new_orders')"
             description="Belum upload bukti"

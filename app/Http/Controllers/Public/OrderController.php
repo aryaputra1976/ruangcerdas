@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadPaymentProofRequest;
 use App\Models\Order;
 use App\Services\PaymentSettingService;
+use App\Support\OrderAuditLogger;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -68,12 +69,27 @@ class OrderController extends Controller
             'public'
         );
 
+        $fromStatus = $order->status;
+
         $order->update([
             'payment_proof_path' => $path,
             'payment_uploaded_at' => now(),
             'payment_note' => $request->input('payment_note'),
             'status' => Order::STATUS_PAYMENT_UPLOADED,
         ]);
+
+        OrderAuditLogger::log(
+            $order,
+            'payment_proof.uploaded',
+            'Pembeli mengunggah bukti pembayaran.',
+            [
+                'uploaded_at' => optional($order->payment_uploaded_at)->toDateTimeString(),
+                'original_filename' => $file->getClientOriginalName(),
+                'note' => $order->payment_note,
+            ],
+            $fromStatus,
+            $order->status
+        );
 
         return redirect()
             ->route('orders.thank-you', $order->invoice_number)

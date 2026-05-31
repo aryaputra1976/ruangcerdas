@@ -23,6 +23,9 @@
                 <p class="mt-3 text-sm text-slate-600">
                     Butuh bantuan pembelian? Hubungi admin Ruang Cerdas melalui WhatsApp.
                 </p>
+                <a href="{{ route('public.order-tracking.index') }}" class="mt-3 inline-block text-sm font-semibold text-blue-600 hover:text-blue-700">
+                    Cek Order
+                </a>
             </div>
         </div>
 

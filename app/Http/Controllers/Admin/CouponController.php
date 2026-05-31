@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Coupon;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -30,7 +31,14 @@ class CouponController extends Controller
         $validated['code'] = strtoupper(trim($validated['code']));
         $validated['is_active'] = $request->boolean('is_active', true);
 
-        Coupon::create($validated);
+        $coupon = Coupon::create($validated);
+
+        ActivityLogger::log(
+            'coupon.created',
+            $coupon,
+            'Admin menambahkan kupon baru.',
+            ['coupon_code' => $coupon->code]
+        );
 
         return redirect()
             ->route('admin.coupons.index')
@@ -50,6 +58,13 @@ class CouponController extends Controller
 
         $coupon->update($validated);
 
+        ActivityLogger::log(
+            'coupon.updated',
+            $coupon,
+            'Admin memperbarui kupon.',
+            ['coupon_code' => $coupon->code]
+        );
+
         return redirect()
             ->route('admin.coupons.edit', $coupon)
             ->with('success', 'Kupon berhasil diperbarui.');
@@ -57,7 +72,15 @@ class CouponController extends Controller
 
     public function destroy(Coupon $coupon)
     {
+        $code = $coupon->code;
         $coupon->delete();
+
+        ActivityLogger::log(
+            'coupon.deleted',
+            $coupon,
+            'Admin menghapus kupon.',
+            ['coupon_code' => $code]
+        );
 
         return redirect()
             ->route('admin.coupons.index')

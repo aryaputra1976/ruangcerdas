@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DownloadLog;
 use App\Models\Order;
 use App\Services\SecureDownloadService;
+use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,6 +34,19 @@ class DownloadController extends Controller
             'user_agent' => (string) $request->userAgent(),
             'downloaded_at' => now(),
         ]);
+
+        $order->refresh();
+
+        OrderAuditLogger::log(
+            $order,
+            'order.downloaded',
+            'Download file berhasil dilakukan.',
+            [
+                'download_count' => (int) $order->download_count,
+                'downloaded_at' => now()->toDateTimeString(),
+                'ip_address' => $request->ip(),
+            ]
+        );
 
         return Storage::disk('private')->download(
             $secureDownloadService->filePath($order),

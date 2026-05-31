@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Testimonial;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 
 class TestimonialController extends Controller
@@ -31,7 +32,14 @@ class TestimonialController extends Controller
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['sort_order'] = (int) ($validated['sort_order'] ?? 0);
 
-        Testimonial::create($validated);
+        $testimonial = Testimonial::create($validated);
+
+        ActivityLogger::log(
+            'testimonial.created',
+            $testimonial,
+            'Admin menambahkan testimonial baru.',
+            ['testimonial_name' => $testimonial->name]
+        );
 
         return redirect()
             ->route('admin.testimonials.index')
@@ -52,6 +60,13 @@ class TestimonialController extends Controller
 
         $testimonial->update($validated);
 
+        ActivityLogger::log(
+            'testimonial.updated',
+            $testimonial,
+            'Admin memperbarui testimonial.',
+            ['testimonial_name' => $testimonial->name]
+        );
+
         return redirect()
             ->route('admin.testimonials.edit', $testimonial)
             ->with('success', 'Testimonial berhasil diperbarui.');
@@ -59,7 +74,15 @@ class TestimonialController extends Controller
 
     public function destroy(Testimonial $testimonial)
     {
+        $name = $testimonial->name;
         $testimonial->delete();
+
+        ActivityLogger::log(
+            'testimonial.deleted',
+            $testimonial,
+            'Admin menghapus testimonial.',
+            ['testimonial_name' => $name]
+        );
 
         return redirect()
             ->route('admin.testimonials.index')

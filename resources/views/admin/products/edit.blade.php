@@ -23,7 +23,7 @@
                         </h5>
 
                         <p class="text-muted mb-0 fs-13">
-                            Perbarui informasi produk, harga, status publikasi, cover, dan file ZIP private.
+                            Perbarui informasi produk, harga, status publikasi, cover, dan file digital private.
                         </p>
                     </div>
 
@@ -36,6 +36,12 @@
             </div>
 
             <div class="card-body">
+                @if ($product->is_active && $product->isMissingPrivateFile())
+                    <div class="alert alert-warning mb-3">
+                        Produk ini aktif tetapi belum memiliki file digital private.
+                    </div>
+                @endif
+
                 <form method="POST"
                       action="{{ route('admin.products.update', $product) }}"
                       enctype="multipart/form-data">
@@ -111,11 +117,11 @@
 
                     @if ($product->digital_file_path)
                         <span class="badge bg-info-subtle text-info fw-semibold rounded-pill">
-                            File ZIP Ada
+                            File Ada
                         </span>
                     @else
                         <span class="badge bg-danger-subtle text-danger fw-semibold rounded-pill">
-                            File ZIP Belum Ada
+                            File Belum Ada
                         </span>
                     @endif
                 </div>
@@ -182,13 +188,12 @@
                         <div class="fw-semibold text-dark text-break">
                             {{ $product->download_filename ?: basename($product->digital_file_path) }}
                         </div>
-
-                        <div class="text-muted fs-13 text-break mt-1">
-                            {{ $product->digital_file_path }}
+                        <div class="text-muted fs-13 mt-1">
+                            {{ $product->formatted_file_size ?? '-' }}
                         </div>
                     @else
                         <div class="text-danger">
-                            File ZIP belum tersedia.
+                            File digital belum tersedia.
                         </div>
                     @endif
                 </div>

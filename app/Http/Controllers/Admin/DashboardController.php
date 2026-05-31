@@ -18,6 +18,11 @@ class DashboardController extends Controller
         $stats = [
             'total_products' => Product::count(),
             'active_products' => Product::where('is_active', true)->count(),
+            'missing_private_files_products' => Product::query()
+                ->where('is_active', true)
+                ->get(['id', 'digital_file_path'])
+                ->filter(fn (Product $product) => $product->isMissingPrivateFile())
+                ->count(),
             'published_products' => Product::where('is_active', true)
                 ->whereNotNull('published_at')
                 ->where('published_at', '<=', now())

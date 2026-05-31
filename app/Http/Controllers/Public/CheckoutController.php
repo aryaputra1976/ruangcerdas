@@ -7,6 +7,7 @@ use App\Http\Requests\CheckoutRequest;
 use App\Models\Product;
 use App\Services\CheckoutService;
 use App\Services\PricingService;
+use App\Support\OrderAuditLogger;
 
 class CheckoutController extends Controller
 {
@@ -38,6 +39,22 @@ class CheckoutController extends Controller
         );
 
         $order = $checkoutService->createOrder($product, $request->validated());
+
+        OrderAuditLogger::log(
+            $order,
+            'order.created',
+            'Order baru berhasil dibuat dari checkout.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'product_id' => $order->product_id,
+                'product_name' => $product->name,
+                'price' => (int) $order->price,
+                'coupon_code' => $order->coupon_code,
+                'discount_amount' => (float) ($order->discount_amount ?? 0),
+            ],
+            null,
+            $order->status
+        );
 
         return redirect()->route('orders.thank-you', $order->invoice_number);
     }

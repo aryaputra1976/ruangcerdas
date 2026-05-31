@@ -17,6 +17,9 @@
             <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Produk
             </a>
+            <a href="{{ route('public.order-tracking.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Cek Order
+            </a>
             <a href="#cara-beli" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Cara Beli
             </a>

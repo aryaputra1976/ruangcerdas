@@ -48,18 +48,16 @@
                 <li class="menu-title mt-2">Transaksi</li>
 
                 <li>
-                    <a href="{{ route('admin.orders.index') }}"
+                    <a href="{{ route('admin.orders.index', ['status' => \App\Models\Order::STATUS_PAYMENT_UPLOADED]) }}"
                        class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                         <i data-feather="shopping-cart"></i>
                         <span> Order Masuk </span>
 
-                        @isset($waitingVerificationCount)
-                            @if ($waitingVerificationCount > 0)
-                                <span class="badge bg-danger rounded-pill float-end">
-                                    {{ $waitingVerificationCount }}
-                                </span>
-                            @endif
-                        @endisset
+                        @if (($adminNotificationSummary['total_attention_count'] ?? 0) > 0)
+                            <span class="badge bg-danger rounded-pill float-end">
+                                {{ $adminNotificationSummary['total_attention_count'] }}
+                            </span>
+                        @endif
                     </a>
                 </li>
 
@@ -88,6 +86,14 @@
                 </li>
 
                 <li>
+                    <a href="{{ route('admin.activity-logs.index') }}"
+                       class="{{ request()->routeIs('admin.activity-logs.*') ? 'active' : '' }}">
+                        <i data-feather="activity"></i>
+                        <span> Activity Log </span>
+                    </a>
+                </li>
+
+                <li>
                     <a href="{{ route('admin.landing-settings.edit') }}"
                        class="{{ request()->routeIs('admin.landing-settings.*') ? 'active' : '' }}">
                         <i data-feather="layout"></i>
@@ -109,6 +115,11 @@
                     <a href="#sidebarProducts" data-bs-toggle="collapse">
                         <i data-feather="package"></i>
                         <span> Produk </span>
+                        @if (($adminNotificationSummary['missing_product_files_count'] ?? 0) > 0)
+                            <span class="badge bg-warning rounded-pill ms-1">
+                                {{ $adminNotificationSummary['missing_product_files_count'] }}
+                            </span>
+                        @endif
                         <span class="menu-arrow"></span>
                     </a>
 

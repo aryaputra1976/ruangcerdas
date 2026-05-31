@@ -10,10 +10,11 @@ use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\LandingSettingController;
 use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\CouponController;
+use App\Http\Controllers\Admin\ActivityLogController;
 
 Route::prefix('admin')
     ->name('admin.')
-    ->middleware(['auth'])
+    ->middleware(['auth', 'admin', 'security.headers'])
     ->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -28,9 +29,14 @@ Route::prefix('admin')
         Route::put('/landing-settings', [LandingSettingController::class, 'update'])->name('landing-settings.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         Route::resource('/testimonials', TestimonialController::class)->except(['show']);
         Route::resource('/coupons', CouponController::class)->except(['show']);
 
         Route::resource('/products', ProductController::class);
+        Route::get('/products/{product}/file/download', [ProductController::class, 'downloadFile'])
+            ->name('products.file.download');
+        Route::delete('/products/{product}/file', [ProductController::class, 'destroyFile'])
+            ->name('products.file.destroy');
         Route::resource('/categories', CategoryController::class);
     });

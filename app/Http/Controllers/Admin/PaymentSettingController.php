@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\PaymentSettingService;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -54,6 +55,12 @@ class PaymentSettingController extends Controller
         $paymentSetting->payment_note = $validated['payment_note'] ?? null;
         $paymentSetting->is_active = $request->boolean('is_active');
         $paymentSetting->save();
+
+        ActivityLogger::log(
+            'payment_settings.updated',
+            $paymentSetting,
+            'Admin memperbarui pengaturan pembayaran.'
+        );
 
         return redirect()
             ->route('admin.payment-settings.edit')

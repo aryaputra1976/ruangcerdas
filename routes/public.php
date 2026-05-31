@@ -6,6 +6,8 @@ use App\Http\Controllers\Public\ProductController;
 use App\Http\Controllers\Public\CheckoutController;
 use App\Http\Controllers\Public\OrderController;
 use App\Http\Controllers\Public\DownloadController;
+use App\Http\Controllers\Public\SitemapController;
+use App\Http\Controllers\Public\OrderTrackingController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -20,3 +22,6 @@ Route::get('/order/{invoice}/upload-payment', [OrderController::class, 'paymentF
 Route::post('/order/{invoice}/upload-payment', [OrderController::class, 'uploadPayment'])->name('orders.payment.upload');
 
 Route::get('/order/{invoice}/download/{token}', [DownloadController::class, 'download'])->name('orders.download');
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('public.sitemap');
+Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('public.order-tracking.index');
+Route::post('/order-tracking', [OrderTrackingController::class, 'show'])->name('public.order-tracking.show');

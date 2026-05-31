@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -63,7 +64,14 @@ class CategoryController extends Controller
 
         $validated['is_active'] = $request->boolean('is_active');
 
-        Category::create($validated);
+        $category = Category::create($validated);
+
+        ActivityLogger::log(
+            'category.created',
+            $category,
+            'Admin menambahkan kategori baru.',
+            ['category_name' => $category->name]
+        );
 
         return redirect()
             ->route('admin.categories.index')
@@ -95,6 +103,13 @@ class CategoryController extends Controller
 
         $category->update($validated);
 
+        ActivityLogger::log(
+            'category.updated',
+            $category,
+            'Admin memperbarui kategori.',
+            ['category_name' => $category->name]
+        );
+
         return redirect()
             ->route('admin.categories.edit', $category)
             ->with('success', 'Kategori berhasil diperbarui.');
@@ -109,6 +124,13 @@ class CategoryController extends Controller
         }
 
         $category->delete();
+
+        ActivityLogger::log(
+            'category.deleted',
+            $category,
+            'Admin menghapus kategori.',
+            ['category_name' => $category->name]
+        );
 
         return redirect()
             ->route('admin.categories.index')

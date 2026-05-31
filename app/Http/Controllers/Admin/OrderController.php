@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\OrderPaidDownloadLinkMail;
 use App\Models\Order;
+use App\Support\ActivityLogger;
+use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -38,7 +40,12 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load('product.category', 'approver');
+        $order->load([
+            'product.category',
+            'approver',
+            'auditTrails' => fn ($query) => $query->latest('created_at'),
+            'auditTrails.user',
+        ]);
 
         return view('admin.orders.show', compact('order'));
     }
@@ -46,6 +53,9 @@ class OrderController extends Controller
     public function approve(Request $request, Order $order)
     {
         abort_if($order->isPaid(), 422, 'Order sudah paid.');
+
+        $fromStatus = $order->status;
+        $hadDownloadToken = filled($order->download_token);
 
         $order->update([
             'status' => Order::STATUS_PAID,
@@ -57,6 +67,31 @@ class OrderController extends Controller
             'rejected_at' => null,
             'rejection_reason' => null,
         ]);
+
+        OrderAuditLogger::log(
+            $order,
+            'order.approved',
+            'Admin menyetujui pembayaran order.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'admin_id' => $request->user()->id,
+            ],
+            $fromStatus,
+            $order->status
+        );
+
+        if (! $hadDownloadToken && filled($order->download_token)) {
+            OrderAuditLogger::log(
+                $order,
+                'download_link.generated',
+                'Sistem membuat token download setelah order paid.',
+                [
+                    'invoice_number' => $order->invoice_number,
+                ],
+                null,
+                null
+            );
+        }
 
         $successMessage = 'Pembayaran berhasil di-approve. Link download sudah aktif.';
 
@@ -73,6 +108,13 @@ class OrderController extends Controller
             $successMessage = 'Pembayaran berhasil di-approve, tetapi email download gagal dikirim. Silakan cek konfigurasi mail.';
         }
 
+        ActivityLogger::log(
+            'order.approved',
+            $order,
+            'Admin menyetujui pembayaran order.',
+            ['invoice_number' => $order->invoice_number]
+        );
+
         return redirect()
             ->route('admin.orders.show', $order)
             ->with('success', $successMessage);
@@ -86,11 +128,33 @@ class OrderController extends Controller
 
         abort_if($order->isPaid(), 422, 'Order yang sudah paid tidak bisa ditolak.');
 
+        $fromStatus = $order->status;
+
         $order->update([
             'status' => Order::STATUS_REJECTED,
             'rejected_at' => now(),
             'rejection_reason' => $request->input('rejection_reason'),
         ]);
+
+        OrderAuditLogger::log(
+            $order,
+            'order.rejected',
+            'Admin menolak pembayaran order.',
+            [
+                'invoice_number' => $order->invoice_number,
+                'admin_id' => $request->user()->id,
+                'rejection_reason' => $order->rejection_reason,
+            ],
+            $fromStatus,
+            $order->status
+        );
+
+        ActivityLogger::log(
+            'order.rejected',
+            $order,
+            'Admin menolak pembayaran order.',
+            ['invoice_number' => $order->invoice_number]
+        );
 
         return redirect()
             ->route('admin.orders.show', $order)

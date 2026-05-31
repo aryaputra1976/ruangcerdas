@@ -32,6 +32,47 @@
                 </li>
 
                 <li class="dropdown notification-list topbar-dropdown">
+                    <a class="nav-link dropdown-toggle position-relative"
+                       data-bs-toggle="dropdown"
+                       href="#"
+                       role="button"
+                       aria-haspopup="false"
+                       aria-expanded="false">
+                        <i data-feather="bell" class="noti-icon"></i>
+
+                        @if (($adminNotificationSummary['total_attention_count'] ?? 0) > 0)
+                            <span class="badge bg-danger rounded-pill position-absolute top-0 start-100 translate-middle">
+                                {{ $adminNotificationSummary['total_attention_count'] }}
+                            </span>
+                        @endif
+                    </a>
+
+                    <div class="dropdown-menu dropdown-menu-end dropdown-lg p-0">
+                        <div class="p-3 border-bottom">
+                            <h6 class="m-0">Ringkasan Notifikasi</h6>
+                        </div>
+
+                        <div class="p-3">
+                            <a href="{{ route('admin.orders.index', ['status' => \App\Models\Order::STATUS_PAYMENT_UPLOADED]) }}"
+                               class="dropdown-item notify-item px-0">
+                                Menunggu verifikasi:
+                                <span class="fw-semibold">{{ $adminNotificationSummary['waiting_verification_count'] ?? 0 }}</span>
+                            </a>
+                            <a href="{{ route('admin.orders.index', ['status' => \App\Models\Order::STATUS_PENDING]) }}"
+                               class="dropdown-item notify-item px-0">
+                                Pending order:
+                                <span class="fw-semibold">{{ $adminNotificationSummary['pending_orders_count'] ?? 0 }}</span>
+                            </a>
+                            <a href="{{ route('admin.orders.index') }}"
+                               class="dropdown-item notify-item px-0">
+                                Order baru hari ini:
+                                <span class="fw-semibold">{{ $adminNotificationSummary['new_orders_today_count'] ?? 0 }}</span>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+
+                <li class="dropdown notification-list topbar-dropdown">
                     <a class="nav-link dropdown-toggle nav-user me-0"
                        data-bs-toggle="dropdown"
                        href="#"

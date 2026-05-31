@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
 {
@@ -27,6 +28,9 @@ class Product extends Model
         'cover_image',
         'digital_file_path',
         'download_filename',
+        'file_size',
+        'file_mime_type',
+        'file_uploaded_at',
         'is_featured',
         'is_active',
         'published_at',
@@ -39,6 +43,8 @@ class Product extends Model
         'first_buyer_quota' => 'integer',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
+        'file_size' => 'integer',
+        'file_uploaded_at' => 'datetime',
         'published_at' => 'datetime',
     ];
 
@@ -77,5 +83,39 @@ class Product extends Model
     public function getHasDiscountAttribute(): bool
     {
         return !empty($this->sale_price) && $this->sale_price < $this->normal_price;
+    }
+
+    public function getHasFileAttribute(): bool
+    {
+        return filled($this->digital_file_path);
+    }
+
+    public function hasPrivateFile(): bool
+    {
+        return filled($this->digital_file_path);
+    }
+
+    public function privateFileExists(): bool
+    {
+        return $this->hasPrivateFile()
+            && Storage::disk('private')->exists($this->digital_file_path);
+    }
+
+    public function isMissingPrivateFile(): bool
+    {
+        return ! $this->privateFileExists();
+    }
+
+    public function getFormattedFileSizeAttribute(): ?string
+    {
+        if (empty($this->file_size) || $this->file_size < 1) {
+            return null;
+        }
+
+        $bytes = (float) $this->file_size;
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $power = min((int) floor(log($bytes, 1024)), count($units) - 1);
+
+        return number_format($bytes / (1024 ** $power), 2, ',', '.') . ' ' . $units[$power];
     }
 }

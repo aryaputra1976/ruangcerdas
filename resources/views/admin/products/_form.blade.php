@@ -440,7 +440,7 @@ Bonus prompt AI">{{ old('contents', $product->contents ?? '') }}</textarea>
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">
-                    File ZIP Private
+                    File Digital Private
                 </h5>
             </div>
 
@@ -456,25 +456,50 @@ Bonus prompt AI">{{ old('contents', $product->contents ?? '') }}</textarea>
                             {{ $product->download_filename ?? basename($product->digital_file_path) }}
                         </div>
 
-                        <div class="fs-13 text-muted text-break mt-1">
-                            {{ $product->digital_file_path }}
+                        <div class="fs-13 text-muted mt-1">
+                            Ukuran: {{ $product->formatted_file_size ?? '-' }}
                         </div>
+
+                        <div class="fs-13 text-muted mt-1">
+                            Upload: {{ $product->file_uploaded_at?->format('d M Y H:i') ?? '-' }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap mb-3">
+                        <a href="{{ route('admin.products.file.download', $product) }}"
+                           class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                            <i data-feather="download" style="width: 14px; height: 14px;"></i>
+                            <span>Download File</span>
+                        </a>
+
+                        <form method="POST"
+                              action="{{ route('admin.products.file.destroy', $product) }}"
+                              onsubmit="return confirm('Hapus file digital produk ini?');">
+                            @csrf
+                            @method('DELETE')
+
+                            <button type="submit"
+                                    class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                                <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+                                <span>Hapus File</span>
+                            </button>
+                        </form>
                     </div>
                 @else
                     <div class="alert alert-warning">
                         <div class="fw-semibold mb-1">
-                            File ZIP belum diupload
+                            File digital belum diupload
                         </div>
 
                         <div class="fs-13">
-                            Produk belum bisa didownload setelah dibeli sampai file ZIP tersedia.
+                            Produk belum bisa didownload setelah pembayaran disetujui sampai file tersedia.
                         </div>
                     </div>
                 @endif
 
                 <input type="file"
                        name="digital_file"
-                       accept=".zip,application/zip,application/x-zip-compressed"
+                       accept=".zip,.rar,.7z,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
                        class="form-control @error('digital_file') is-invalid @enderror">
 
                 @error('digital_file')
@@ -482,7 +507,7 @@ Bonus prompt AI">{{ old('contents', $product->contents ?? '') }}</textarea>
                 @enderror
 
                 <div class="form-text">
-                    File akan disimpan di storage private. Maksimal mengikuti validasi controller saat ini.
+                    Disimpan di storage private. Tipe file: zip, rar, 7z, pdf, doc/docx, xls/xlsx, ppt/pptx, txt. Maksimal 100MB.
                 </div>
 
             </div>

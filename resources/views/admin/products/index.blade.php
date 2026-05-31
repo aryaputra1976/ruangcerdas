@@ -6,7 +6,7 @@
 
     $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
 
-    $hasFilter = request()->filled('q') || request()->filled('category_id');
+    $hasFilter = request()->filled('q') || request()->filled('category_id') || request()->filled('file_status');
 @endphp
 
 @section('content')
@@ -57,7 +57,15 @@
                 </select>
             </div>
 
-            <div class="col-lg-3 col-md-12 d-flex gap-2 flex-wrap">
+            <div class="col-lg-2 col-md-6">
+                <select name="file_status" class="form-select">
+                    <option value="">Semua File</option>
+                    <option value="missing" @selected(request('file_status') === 'missing')>File belum ada</option>
+                    <option value="ready" @selected(request('file_status') === 'ready')>File siap</option>
+                </select>
+            </div>
+
+            <div class="col-lg-1 col-md-6 d-flex gap-2 flex-wrap">
                 <button type="submit"
                         class="btn btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
                     <i data-feather="filter" style="width: 14px; height: 14px;"></i>
@@ -105,6 +113,12 @@
 
                         <span class="badge bg-info-subtle text-info rounded-pill">
                             Kategori: {{ $selectedCategory->name ?? request('category_id') }}
+                        </span>
+                    @endif
+
+                    @if (request('file_status'))
+                        <span class="badge bg-warning-subtle text-warning rounded-pill">
+                            File: {{ request('file_status') === 'missing' ? 'Belum ada' : 'Siap' }}
                         </span>
                     @endif
                 </div>
@@ -251,19 +265,13 @@
                                 </td>
 
                                 <td>
-                                    @if ($product->digital_file_path)
-                                        <span class="badge bg-primary-subtle text-primary fw-semibold rounded-pill">
-                                            Tersedia
-                                        </span>
-
-                                        @if ($product->download_filename)
-                                            <div class="text-muted fs-13 text-break mt-1" style="max-width: 130px;">
-                                                {{ $product->download_filename }}
-                                            </div>
-                                        @endif
-                                    @else
+                                    @if ($product->isMissingPrivateFile())
                                         <span class="badge bg-danger-subtle text-danger fw-semibold rounded-pill">
-                                            Belum Ada
+                                            File belum ada
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success-subtle text-success fw-semibold rounded-pill">
+                                            File siap
                                         </span>
                                     @endif
                                 </td>

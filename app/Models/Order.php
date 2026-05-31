@@ -74,6 +74,11 @@ class Order extends Model
         return $this->hasMany(DownloadLog::class);
     }
 
+    public function auditTrails(): HasMany
+    {
+        return $this->hasMany(OrderAuditTrail::class);
+    }
+
     public function isPaid(): bool
     {
         return $this->status === self::STATUS_PAID;

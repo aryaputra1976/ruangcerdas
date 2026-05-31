@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\LandingSetting;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 
 class LandingSettingController extends Controller
@@ -39,6 +40,12 @@ class LandingSettingController extends Controller
 
         $landingSetting = LandingSetting::query()->firstOrCreate([]);
         $landingSetting->update($validated);
+
+        ActivityLogger::log(
+            'landing_settings.updated',
+            $landingSetting,
+            'Admin memperbarui konten landing page.'
+        );
 
         return redirect()
             ->route('admin.landing-settings.edit')

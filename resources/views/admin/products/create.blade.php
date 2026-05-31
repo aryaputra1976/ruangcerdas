@@ -16,7 +16,7 @@
                 </h5>
 
                 <p class="text-muted mb-0 fs-13">
-                    Lengkapi informasi produk, harga, status publikasi, cover, dan file ZIP private.
+                    Lengkapi informasi produk, harga, status publikasi, cover, dan file digital private.
                 </p>
             </div>
 

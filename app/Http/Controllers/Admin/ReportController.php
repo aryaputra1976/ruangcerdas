@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -110,6 +111,13 @@ class ReportController extends Controller
             ->get();
 
         $filename = 'ruang-cerdas-orders-report-' . now()->format('Ymd-His') . '.csv';
+
+        ActivityLogger::log(
+            'reports.exported',
+            null,
+            'Admin export CSV laporan order.',
+            ['filters' => array_filter($filters, fn ($value) => filled($value))]
+        );
 
         return response()->streamDownload(function () use ($orders) {
             $handle = fopen('php://output', 'w');

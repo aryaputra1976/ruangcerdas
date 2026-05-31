@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -30,7 +32,34 @@ class ProductController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $products = $query->paginate(10)->withQueryString();
+        $fileStatus = $request->query('file_status');
+        $perPage = 10;
+
+        if (in_array($fileStatus, ['missing', 'ready'], true)) {
+            $allProducts = $query->get();
+
+            $filtered = $allProducts->filter(function (Product $product) use ($fileStatus) {
+                $isMissing = $product->isMissingPrivateFile();
+
+                return $fileStatus === 'missing' ? $isMissing : ! $isMissing;
+            })->values();
+
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+            $products = new LengthAwarePaginator(
+                $currentItems,
+                $filtered->count(),
+                $perPage,
+                $currentPage,
+                [
+                    'path' => LengthAwarePaginator::resolveCurrentPath(),
+                    'query' => $request->query(),
+                ]
+            );
+        } else {
+            $products = $query->paginate($perPage)->withQueryString();
+        }
 
         $categories = Category::query()
             ->orderBy('name')
@@ -70,20 +99,38 @@ class ProductController extends Controller
 
         if ($request->hasFile('digital_file')) {
             $file = $request->file('digital_file');
-
-            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
-                . '-'
-                . now()->format('YmdHis')
-                . '.'
-                . $file->getClientOriginalExtension();
-
-            $path = $file->storeAs('products', $filename, 'private');
+            $path = $this->storeDigitalFile($file, null);
 
             $validated['digital_file_path'] = $path;
             $validated['download_filename'] = $file->getClientOriginalName();
+            $validated['file_size'] = (int) $file->getSize();
+            $validated['file_mime_type'] = $file->getClientMimeType();
+            $validated['file_uploaded_at'] = now();
         }
 
-        Product::create($validated);
+        $product = Product::create($validated);
+
+        if ($request->hasFile('digital_file')) {
+            $newPath = $this->storeDigitalFile($request->file('digital_file'), $product->id);
+            if ($newPath !== $product->digital_file_path) {
+                Storage::disk('private')->delete($product->digital_file_path);
+                $product->update(['digital_file_path' => $newPath]);
+            }
+
+            ActivityLogger::log(
+                'product_file.uploaded',
+                $product,
+                'Admin mengunggah file digital produk.',
+                ['product_name' => $product->name]
+            );
+        }
+
+        ActivityLogger::log(
+            'product.created',
+            $product,
+            'Admin menambahkan produk baru.',
+            ['product_name' => $product->name]
+        );
 
         return redirect()
             ->route('admin.products.index')
@@ -137,20 +184,32 @@ class ProductController extends Controller
             }
 
             $file = $request->file('digital_file');
-
-            $filename = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME))
-                . '-'
-                . now()->format('YmdHis')
-                . '.'
-                . $file->getClientOriginalExtension();
-
-            $path = $file->storeAs('products', $filename, 'private');
+            $path = $this->storeDigitalFile($file, $product->id);
 
             $validated['digital_file_path'] = $path;
             $validated['download_filename'] = $file->getClientOriginalName();
+            $validated['file_size'] = (int) $file->getSize();
+            $validated['file_mime_type'] = $file->getClientMimeType();
+            $validated['file_uploaded_at'] = now();
         }
 
         $product->update($validated);
+
+        if ($request->hasFile('digital_file')) {
+            ActivityLogger::log(
+                'product_file.uploaded',
+                $product,
+                'Admin mengganti file digital produk.',
+                ['product_name' => $product->name]
+            );
+        }
+
+        ActivityLogger::log(
+            'product.updated',
+            $product,
+            'Admin memperbarui produk.',
+            ['product_name' => $product->name]
+        );
 
         return redirect()
             ->route('admin.products.edit', $product)
@@ -164,9 +223,63 @@ class ProductController extends Controller
             'published_at' => null,
         ]);
 
+        ActivityLogger::log(
+            'product.deleted',
+            $product,
+            'Admin menonaktifkan produk.',
+            ['product_name' => $product->name]
+        );
+
         return redirect()
             ->route('admin.products.index')
             ->with('success', 'Produk berhasil dinonaktifkan.');
+    }
+
+    public function downloadFile(Product $product)
+    {
+        abort_unless(
+            $product->digital_file_path && Storage::disk('private')->exists($product->digital_file_path),
+            404,
+            'File produk tidak ditemukan.'
+        );
+
+        ActivityLogger::log(
+            'product_file.downloaded_by_admin',
+            $product,
+            'Admin mengunduh file digital produk.',
+            ['product_name' => $product->name]
+        );
+
+        return Storage::disk('private')->download(
+            $product->digital_file_path,
+            $product->download_filename ?: basename($product->digital_file_path)
+        );
+    }
+
+    public function destroyFile(Product $product)
+    {
+        if ($product->digital_file_path) {
+            Storage::disk('private')->delete($product->digital_file_path);
+        }
+
+        $product->update([
+            'digital_file_path' => null,
+            'download_filename' => null,
+            'file_size' => null,
+            'file_mime_type' => null,
+            'file_uploaded_at' => null,
+        ]);
+
+        ActivityLogger::log(
+            'product_file.deleted',
+            $product,
+            'Admin menghapus file digital produk.',
+            ['product_name' => $product->name]
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', 'File produk berhasil dihapus.');
     }
 
     private function validateProduct(Request $request, ?Product $product = null): array
@@ -186,8 +299,17 @@ class ProductController extends Controller
             'first_buyer_quota' => ['nullable', 'integer', 'min:0'],
 
             'cover_image' => ['nullable', 'image', 'max:2048'],
-            'digital_file' => ['nullable', 'file', 'mimes:zip', 'max:102400'],
+            'digital_file' => ['nullable', 'file', 'mimes:zip,rar,7z,pdf,doc,docx,xls,xlsx,ppt,pptx,txt', 'max:102400'],
         ]);
+    }
+
+    private function storeDigitalFile($file, ?int $productId): string
+    {
+        $safeName = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+        $filename = ($safeName ?: 'file-produk') . '-' . Str::random(10) . '.' . $file->getClientOriginalExtension();
+        $directory = $productId ? 'products/' . $productId : 'products/tmp';
+
+        return $file->storeAs($directory, $filename, 'private');
     }
 
     private function makeUniqueSlug(string $value, ?int $ignoreId = null): string

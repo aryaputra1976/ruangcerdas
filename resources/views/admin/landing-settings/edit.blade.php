@@ -1,0 +1,136 @@
+@extends('layouts.admin')
+
+@php
+    $title = 'Landing Page Settings';
+    $subtitle = 'Kelola konten utama halaman beranda public.';
+@endphp
+
+@section('content')
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-1">Pengaturan Konten Landing</h5>
+        <p class="text-muted mb-0 fs-13">
+            Atur teks hero, CTA, bagian support, dan bagian produk unggulan.
+        </p>
+    </div>
+
+    <div class="card-body">
+        <form method="POST" action="{{ route('admin.landing-settings.update') }}">
+            @csrf
+            @method('PUT')
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="hero_badge" class="form-label">Hero Badge</label>
+                    <input type="text" id="hero_badge" name="hero_badge"
+                           class="form-control @error('hero_badge') is-invalid @enderror"
+                           value="{{ old('hero_badge', $landingSetting->hero_badge) }}">
+                    @error('hero_badge')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="hero_title" class="form-label">Hero Title</label>
+                    <input type="text" id="hero_title" name="hero_title"
+                           class="form-control @error('hero_title') is-invalid @enderror"
+                           value="{{ old('hero_title', $landingSetting->hero_title) }}">
+                    @error('hero_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="hero_subtitle" class="form-label">Hero Subtitle</label>
+                    <textarea id="hero_subtitle" name="hero_subtitle" rows="3"
+                              class="form-control @error('hero_subtitle') is-invalid @enderror">{{ old('hero_subtitle', $landingSetting->hero_subtitle) }}</textarea>
+                    @error('hero_subtitle')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="primary_cta_text" class="form-label">Primary CTA Text</label>
+                    <input type="text" id="primary_cta_text" name="primary_cta_text"
+                           class="form-control @error('primary_cta_text') is-invalid @enderror"
+                           value="{{ old('primary_cta_text', $landingSetting->primary_cta_text) }}">
+                    @error('primary_cta_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="primary_cta_url" class="form-label">Primary CTA URL</label>
+                    <input type="text" id="primary_cta_url" name="primary_cta_url"
+                           class="form-control @error('primary_cta_url') is-invalid @enderror"
+                           value="{{ old('primary_cta_url', $landingSetting->primary_cta_url) }}">
+                    @error('primary_cta_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="secondary_cta_text" class="form-label">Secondary CTA Text</label>
+                    <input type="text" id="secondary_cta_text" name="secondary_cta_text"
+                           class="form-control @error('secondary_cta_text') is-invalid @enderror"
+                           value="{{ old('secondary_cta_text', $landingSetting->secondary_cta_text) }}">
+                    @error('secondary_cta_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="secondary_cta_url" class="form-label">Secondary CTA URL</label>
+                    <input type="text" id="secondary_cta_url" name="secondary_cta_url"
+                           class="form-control @error('secondary_cta_url') is-invalid @enderror"
+                           value="{{ old('secondary_cta_url', $landingSetting->secondary_cta_url) }}">
+                    @error('secondary_cta_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="support_title" class="form-label">Support Title</label>
+                    <input type="text" id="support_title" name="support_title"
+                           class="form-control @error('support_title') is-invalid @enderror"
+                           value="{{ old('support_title', $landingSetting->support_title) }}">
+                    @error('support_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="support_whatsapp" class="form-label">Support WhatsApp</label>
+                    <input type="text" id="support_whatsapp" name="support_whatsapp"
+                           class="form-control @error('support_whatsapp') is-invalid @enderror"
+                           value="{{ old('support_whatsapp', $landingSetting->support_whatsapp) }}">
+                    @error('support_whatsapp')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="support_text" class="form-label">Support Text</label>
+                    <textarea id="support_text" name="support_text" rows="3"
+                              class="form-control @error('support_text') is-invalid @enderror">{{ old('support_text', $landingSetting->support_text) }}</textarea>
+                    @error('support_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="featured_section_title" class="form-label">Featured Section Title</label>
+                    <input type="text" id="featured_section_title" name="featured_section_title"
+                           class="form-control @error('featured_section_title') is-invalid @enderror"
+                           value="{{ old('featured_section_title', $landingSetting->featured_section_title) }}">
+                    @error('featured_section_title')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="footer_short_text" class="form-label">Footer Short Text</label>
+                    <input type="text" id="footer_short_text" name="footer_short_text"
+                           class="form-control @error('footer_short_text') is-invalid @enderror"
+                           value="{{ old('footer_short_text', $landingSetting->footer_short_text) }}">
+                    @error('footer_short_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="featured_section_subtitle" class="form-label">Featured Section Subtitle</label>
+                    <textarea id="featured_section_subtitle" name="featured_section_subtitle" rows="3"
+                              class="form-control @error('featured_section_subtitle') is-invalid @enderror">{{ old('featured_section_subtitle', $landingSetting->featured_section_subtitle) }}</textarea>
+                    @error('featured_section_subtitle')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 d-inline-flex align-items-center gap-1">
+                    <i data-feather="save" style="width: 14px; height: 14px;"></i>
+                    <span>Simpan Pengaturan</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@endsection

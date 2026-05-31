@@ -79,6 +79,14 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('admin.landing-settings.edit') }}"
+                       class="{{ request()->routeIs('admin.landing-settings.*') ? 'active' : '' }}">
+                        <i data-feather="layout"></i>
+                        <span> Landing Page </span>
+                    </a>
+                </li>
+
                 <li class="menu-title mt-2">Produk Digital</li>
 
                 <li>

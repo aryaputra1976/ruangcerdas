@@ -9,25 +9,24 @@
     <div class="mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div class="mx-auto max-w-4xl text-center">
             <p class="text-sm font-bold uppercase tracking-[0.35em] text-blue-600">
-                Ruang Cerdas
+                {{ $landing['hero_badge'] }}
             </p>
 
             <h1 class="mt-6 text-4xl font-black tracking-tight text-slate-950 md:text-7xl">
-                Produk digital, template, aplikasi, dan tools AI untuk kerja lebih cepat.
+                {{ $landing['hero_title'] }}
             </h1>
 
             <p class="mx-auto mt-6 max-w-3xl text-lg leading-8 text-slate-600">
-                Mulai dari Kantor Cerdas AI Kit, template administrasi, prompt AI,
-                hingga aplikasi siap pakai untuk kebutuhan kerja profesional.
+                {{ $landing['hero_subtitle'] }}
             </p>
 
             <div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
-                    Lihat Produk
+                <a href="{{ $landing['primary_cta_url'] }}" class="rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
+                    {{ $landing['primary_cta_text'] }}
                 </a>
 
-                <a href="#cara-beli" class="rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">
-                    Cara Beli
+                <a href="{{ $landing['secondary_cta_url'] }}" class="rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">
+                    {{ $landing['secondary_cta_text'] }}
                 </a>
             </div>
         </div>
@@ -40,15 +39,15 @@
             <div>
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Produk Unggulan</p>
                 <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">
-                    Pilihan terbaik dari Ruang Cerdas
+                    {{ $landing['featured_section_title'] }}
                 </h2>
                 <p class="mt-3 max-w-2xl text-slate-600">
-                    Produk digital yang dirancang untuk membantu pekerjaan kantor, bisnis, dan produktivitas.
+                    {{ $landing['featured_section_subtitle'] }}
                 </p>
             </div>
 
             <a href="{{ route('products.index') }}" class="font-semibold text-blue-600 hover:text-blue-700">
-                Lihat semua produk →
+                Lihat semua produk ->
             </a>
         </div>
 
@@ -94,6 +93,19 @@
                     <p class="mt-2 text-sm leading-6 text-slate-600">{{ $step[2] }}</p>
                 </div>
             @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="bg-white py-14">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center">
+            <h3 class="text-2xl font-black text-slate-900">{{ $landing['support_title'] }}</h3>
+            <p class="mx-auto mt-2 max-w-2xl text-slate-600">{{ $landing['support_text'] }}</p>
+            @if (!empty($landing['support_whatsapp']))
+                <p class="mt-3 text-sm font-semibold text-slate-700">WhatsApp: {{ $landing['support_whatsapp'] }}</p>
+            @endif
+            <p class="mt-5 text-sm text-slate-500">{{ $landing['footer_short_text'] }}</p>
         </div>
     </div>
 </section>

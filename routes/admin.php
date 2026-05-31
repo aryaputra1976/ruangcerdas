@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PaymentSettingController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\LandingSettingController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -21,6 +22,8 @@ Route::prefix('admin')
 
         Route::get('/payment-settings', [PaymentSettingController::class, 'edit'])->name('payment-settings.edit');
         Route::put('/payment-settings', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
+        Route::get('/landing-settings', [LandingSettingController::class, 'edit'])->name('landing-settings.edit');
+        Route::put('/landing-settings', [LandingSettingController::class, 'update'])->name('landing-settings.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
 

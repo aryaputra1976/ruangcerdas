@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PaymentSettingController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\LandingSettingController;
+use App\Http\Controllers\Admin\TestimonialController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -26,6 +27,7 @@ Route::prefix('admin')
         Route::put('/landing-settings', [LandingSettingController::class, 'update'])->name('landing-settings.update');
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
+        Route::resource('/testimonials', TestimonialController::class)->except(['show']);
 
         Route::resource('/products', ProductController::class);
         Route::resource('/categories', CategoryController::class);

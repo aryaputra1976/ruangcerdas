@@ -109,4 +109,30 @@
         </div>
     </div>
 </section>
+
+@if (($testimonials ?? collect())->isNotEmpty())
+<section class="bg-slate-50 py-20">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Testimonial</p>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Apa kata pembeli Ruang Cerdas</h2>
+        </div>
+
+        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            @foreach ($testimonials as $testimonial)
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div class="text-amber-500">{{ str_repeat('★', (int) $testimonial->rating) }}</div>
+                    <p class="mt-4 text-sm leading-7 text-slate-600">{{ $testimonial->content }}</p>
+                    <div class="mt-4">
+                        <p class="font-bold text-slate-900">{{ $testimonial->name }}</p>
+                        @if ($testimonial->role)
+                            <p class="text-xs text-slate-500">{{ $testimonial->role }}</p>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
 @endsection

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\LandingSetting;
 use App\Models\Product;
+use App\Models\Testimonial;
 use App\Services\PricingService;
 
 class HomeController extends Controller
@@ -59,6 +60,13 @@ class HomeController extends Controller
             return $product;
         });
 
-        return view('public.home', compact('featuredProducts', 'landing'));
+        $testimonials = Testimonial::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->latest()
+            ->take(6)
+            ->get();
+
+        return view('public.home', compact('featuredProducts', 'landing', 'testimonials'));
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Testimonial;
 use App\Services\PricingService;
 use Illuminate\Http\Request;
 
@@ -62,6 +63,13 @@ class ProductController extends Controller
 
         $pricing = $pricingService->resolve($product);
 
-        return view('public.products.show', compact('product', 'pricing'));
+        $testimonials = Testimonial::query()
+            ->where('is_active', true)
+            ->orderBy('sort_order')
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return view('public.products.show', compact('product', 'pricing', 'testimonials'));
     }
 }

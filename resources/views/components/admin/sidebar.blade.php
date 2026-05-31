@@ -87,6 +87,14 @@
                     </a>
                 </li>
 
+                <li>
+                    <a href="{{ route('admin.testimonials.index') }}"
+                       class="{{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
+                        <i data-feather="message-circle"></i>
+                        <span> Testimonial </span>
+                    </a>
+                </li>
+
                 <li class="menu-title mt-2">Produk Digital</li>
 
                 <li>

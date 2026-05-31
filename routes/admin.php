@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\PaymentSettingController;
+use App\Http\Controllers\Admin\ReportController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -20,6 +21,7 @@ Route::prefix('admin')
 
         Route::get('/payment-settings', [PaymentSettingController::class, 'edit'])->name('payment-settings.edit');
         Route::put('/payment-settings', [PaymentSettingController::class, 'update'])->name('payment-settings.update');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
         Route::resource('/products', ProductController::class);
         Route::resource('/categories', CategoryController::class);

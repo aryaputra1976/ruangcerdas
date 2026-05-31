@@ -1,5 +1,5 @@
 <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
         <a href="{{ route('home') }}" class="flex items-center gap-2">
             <img
                 src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
@@ -8,11 +8,11 @@
             >
             <div>
                 <p class="text-base font-bold leading-none">Ruang Cerdas</p>
-                <p class="text-xs text-slate-500">Digital products & AI tools</p>
+                <p class="text-xs text-slate-500">Template, eBook &amp; Tools AI</p>
             </div>
         </a>
 
-        <nav class="hidden items-center gap-8 md:flex">
+        <nav class="hidden items-center gap-5 md:flex lg:gap-6">
             <a href="{{ route('home') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Beranda
             </a>

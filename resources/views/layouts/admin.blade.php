@@ -12,7 +12,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- Favicon --}}
-    <link rel="shortcut icon" href="{{ asset('hando/assets/images/favicon.ico') }}">
+    <link rel="shortcut icon" href="{{ asset('hando/assets/images/rc/rc_ico.png') }}">
 
     {{-- Hando App CSS --}}
     <link href="{{ asset('hando/assets/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-style" />
@@ -37,23 +37,27 @@
             gap: 10px;
         }
 
-        .rc-logo-mark {
-            width: 34px;
-            height: 34px;
+        .rc-logo-image {
+            object-fit: contain;
+            display: inline-block;
+        }
+
+        .rc-logo-image-sm {
+            width: 42px;
+            height: 42px;
             border-radius: 12px;
-            background: linear-gradient(135deg, #2563eb, #0ea5e9);
-            color: #fff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 13px;
+        }
+
+        .rc-logo-image-lg {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
         }
 
         .rc-logo-text {
             font-weight: 800;
             color: #0f172a;
-            font-size: 16px;
+            font-size: 17px;
         }
 
         .rc-page-subtitle {

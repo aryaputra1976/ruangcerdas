@@ -7,12 +7,16 @@
 
                 <a href="{{ route('admin.dashboard') }}" class="logo logo-light">
                     <span class="logo-sm">
-                        <span class="rc-logo-mark">RC</span>
+                        <img src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
+                             alt="Ruang Cerdas"
+                             class="rc-logo-image rc-logo-image-sm">
                     </span>
 
                     <span class="logo-lg">
                         <span class="rc-logo-box">
-                            <span class="rc-logo-mark">RC</span>
+                            <img src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
+                                 alt="Ruang Cerdas"
+                                 class="rc-logo-image rc-logo-image-lg">
                             <span class="rc-logo-text text-white">Ruang Cerdas</span>
                         </span>
                     </span>
@@ -20,12 +24,16 @@
 
                 <a href="{{ route('admin.dashboard') }}" class="logo logo-dark">
                     <span class="logo-sm">
-                        <span class="rc-logo-mark">RC</span>
+                        <img src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
+                             alt="Ruang Cerdas"
+                             class="rc-logo-image rc-logo-image-sm">
                     </span>
 
                     <span class="logo-lg">
                         <span class="rc-logo-box">
-                            <span class="rc-logo-mark">RC</span>
+                            <img src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
+                                 alt="Ruang Cerdas"
+                                 class="rc-logo-image rc-logo-image-lg">
                             <span class="rc-logo-text">Ruang Cerdas</span>
                         </span>
                     </span>

@@ -65,22 +65,22 @@
                 </select>
             </div>
 
-            <div class="col-lg-1 col-md-6 d-flex gap-2 flex-wrap">
+            <div class="col-lg-auto col-md-6 d-flex gap-2 flex-wrap align-items-start">
                 <button type="submit"
-                        class="btn btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        class="btn btn-primary rounded-pill px-3 d-flex d-sm-inline-flex align-items-center justify-content-center justify-content-sm-start gap-1 flex-shrink-0">
                     <i data-feather="filter" style="width: 14px; height: 14px;"></i>
                     <span>Filter</span>
                 </button>
 
                 @if ($hasFilter)
                     <a href="{{ route('admin.products.index') }}"
-                       class="btn bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                       class="btn bg-danger-subtle text-danger rounded-pill px-3 d-flex d-sm-inline-flex align-items-center justify-content-center justify-content-sm-start gap-1 flex-shrink-0">
                         <i data-feather="x" style="width: 14px; height: 14px;"></i>
                         <span>Reset</span>
                     </a>
                 @else
                     <a href="{{ route('admin.products.index') }}"
-                       class="btn bg-secondary-subtle text-secondary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                       class="btn bg-secondary-subtle text-secondary rounded-pill px-3 d-flex d-sm-inline-flex align-items-center justify-content-center justify-content-sm-start gap-1 flex-shrink-0">
                         <i data-feather="refresh-cw" style="width: 14px; height: 14px;"></i>
                         <span>Refresh</span>
                     </a>

@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadPaymentProofRequest;
 use App\Models\Order;
+use App\Services\PaymentSettingService;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    public function thankYou(string $invoice)
+    public function thankYou(PaymentSettingService $paymentSettingService, string $invoice)
     {
         $order = Order::query()
             ->with('product.category')
@@ -19,11 +20,11 @@ class OrderController extends Controller
 
         return view('public.orders.thank-you', [
             'order' => $order,
-            'paymentConfig' => config('ruangcerdas.payment'),
+            'paymentConfig' => $paymentSettingService->current(),
         ]);
     }
 
-    public function paymentForm(string $invoice)
+    public function paymentForm(PaymentSettingService $paymentSettingService, string $invoice)
     {
         $order = Order::query()
             ->with('product.category')
@@ -34,7 +35,7 @@ class OrderController extends Controller
 
         return view('public.orders.upload-payment', [
             'order' => $order,
-            'paymentConfig' => config('ruangcerdas.payment'),
+            'paymentConfig' => $paymentSettingService->current(),
         ]);
     }
 

@@ -7,6 +7,22 @@
 @php
     $hasFilter = request()->filled('q') || request()->filled('category');
     $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
+    $presetCategories = [
+        'produk-digital' => 'Produk Digital',
+        'paket-belajar' => 'Paket Belajar',
+        'tryout-online' => 'Tryout Online Coming Soon',
+        'template-kerja' => 'Template Kerja',
+        'tools-ai' => 'Tools AI',
+        'aplikasi-siap-pakai' => 'Aplikasi Siap Pakai',
+    ];
+    $categoryLabelMap = [];
+    foreach ($categories as $cat) {
+        $categoryLabelMap[$cat->slug] = $cat->name;
+    }
+    $categoryOptions = $presetCategories + $categoryLabelMap;
+    $activeCategoryLabel = request('category')
+        ? ($categoryLabelMap[request('category')] ?? $presetCategories[request('category')] ?? request('category'))
+        : null;
 @endphp
 
 <section class="relative overflow-hidden bg-slate-950 py-16 text-white">
@@ -72,6 +88,15 @@
         </div>
 
         <div class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="mb-4 flex flex-wrap gap-2">
+                @foreach ($presetCategories as $slug => $label)
+                    <a href="{{ route('products.index', array_filter(['category' => $slug, 'q' => request('q')])) }}"
+                       class="rounded-full border px-3 py-1 text-xs font-bold transition {{ request('category') === $slug ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:text-blue-700' }}">
+                        {{ $label }}
+                    </a>
+                @endforeach
+            </div>
+
             <form method="GET" action="{{ route('products.index') }}" class="grid gap-4 lg:grid-cols-12">
                 <div class="lg:col-span-6">
                     <label for="q" class="mb-2 block text-sm font-bold text-slate-700">Cari Produk</label>
@@ -81,8 +106,8 @@
                     <label for="category" class="mb-2 block text-sm font-bold text-slate-700">Kategori</label>
                     <select id="category" name="category" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
                         <option value="">Semua Kategori</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->slug }}" @selected(request('category') === $category->slug)>{{ $category->name }}</option>
+                        @foreach ($categoryOptions as $slug => $label)
+                            <option value="{{ $slug }}" @selected(request('category') === $slug)>{{ $label }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -101,12 +126,21 @@
                             <span class="ml-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">Keyword: {{ request('q') }}</span>
                         @endif
                         @if (request('category'))
-                            <span class="ml-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Kategori: {{ request('category') }}</span>
+                            <span class="ml-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Kategori: {{ $activeCategoryLabel }}</span>
                         @endif
                     </div>
                     <a href="{{ route('products.index') }}" class="text-sm font-bold text-red-600 hover:text-red-700">Reset filter</a>
                 </div>
             @endif
+        </div>
+
+        <div class="mb-8 rounded-3xl border border-amber-100 bg-amber-50 p-5">
+            <p class="text-xs font-bold uppercase tracking-wider text-amber-700">Tryout Online</p>
+            <h3 class="mt-1 text-lg font-black text-amber-900">Tryout Online akan tersedia bertahap</h3>
+            <p class="mt-2 text-sm leading-6 text-amber-800">
+                Kategori tryout disiapkan sebagai bagian pengembangan platform belajar. Beberapa produk tryout dapat tampil sebagai
+                <span class="font-bold">Coming Soon</span> sebelum modul penuh dirilis.
+            </p>
         </div>
 
         @if ($products->isNotEmpty())

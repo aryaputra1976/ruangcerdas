@@ -1,36 +1,29 @@
 @extends('layouts.public')
 
-@section('title', $landing['seo_title'] ?? 'Ruang Cerdas - Produk Digital Siap Pakai')
-@section('meta_description', $landing['seo_description'] ?? 'Marketplace produk digital seperti template, ebook, file ZIP, dan aplikasi siap pakai.')
+@section('title', 'Ruang Cerdas - Produk Digital & Belajar Online')
+@section('meta_description', 'Ruang Cerdas menyediakan eBook, template, tools AI, aplikasi siap pakai, paket belajar digital, dan persiapan tryout online untuk kerja dan belajar lebih cerdas.')
 @section('meta_keywords', $landing['seo_keywords'] ?? '')
 @section('og_image', $landing['og_image_url'] ?? '')
 
 @section('content')
-@php
-    $secondaryCtaUrl = $landing['secondary_cta_url'] ?? '#cara-beli';
-    if (\Illuminate\Support\Str::startsWith($secondaryCtaUrl, '#')) {
-        $secondaryCtaUrl = route('home') . $secondaryCtaUrl;
-    }
-@endphp
-
 <section class="relative overflow-hidden bg-slate-50">
     <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,#dbeafe,transparent_45%),radial-gradient(circle_at_bottom_right,#dcfce7,transparent_35%)]"></div>
     <div class="mx-auto grid max-w-7xl gap-8 px-6 pt-12 pb-16 md:gap-10 md:pt-14 md:pb-16 lg:grid-cols-2 lg:items-center">
         <div class="max-w-2xl">
-            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">{{ $landing['hero_badge'] }}</p>
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">RUANG CERDAS</p>
             <h1 class="mt-3 max-w-xl text-4xl font-extrabold leading-[1.12] tracking-tight text-slate-950 sm:text-4xl md:text-5xl xl:text-[3.25rem]">
-                {{ $landing['hero_title'] }}
+                Produk Digital dan Belajar Online untuk Kerja Lebih Cerdas
             </h1>
             <p class="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
-                {{ $landing['hero_subtitle'] }}
+                Temukan eBook, template, tools AI, aplikasi siap pakai, serta paket belajar dan tryout online untuk membantu pekerjaan, bisnis, dan persiapan karier secara lebih terarah.
             </p>
 
             <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-                <a href="{{ $landing['primary_cta_url'] }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
-                    {{ $landing['primary_cta_text'] }}
+                <a href="{{ route('products.index') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
+                    Lihat Produk
                 </a>
-                <a href="{{ $secondaryCtaUrl }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-800 hover:border-blue-600 hover:text-blue-600">
-                    {{ $landing['secondary_cta_text'] }}
+                <a href="{{ route('home') }}#tryout" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-800 hover:border-blue-600 hover:text-blue-600">
+                    Lihat Tryout
                 </a>
             </div>
 
@@ -55,13 +48,13 @@
 
         <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-200/60 md:p-6">
             <div class="rounded-2xl bg-slate-900 p-5 text-white md:p-6">
-                <p class="text-xs uppercase tracking-widest text-blue-200">Preview Paket Digital</p>
-                <h3 class="mt-2 text-2xl font-black">Template, Prompt AI, dan Aplikasi Siap Pakai</h3>
+                <p class="text-xs uppercase tracking-widest text-blue-200">PREVIEW PLATFORM</p>
+                <h3 class="mt-2 text-2xl font-black">Produk Digital, Tryout Online, dan Paket Belajar Siap Pakai</h3>
                 <p class="mt-2 text-sm leading-6 text-slate-300">
-                    Semua produk dirancang agar langsung bisa dipakai untuk kerja harian tanpa setup rumit.
+                    Semua produk dirancang agar mudah digunakan, mulai dari kebutuhan kerja harian, produktivitas, hingga persiapan belajar secara mandiri.
                 </p>
                 <div class="mt-4 flex flex-wrap gap-2">
-                    @foreach (['eBook PDF', 'Template', 'Prompt AI', 'File ZIP', 'Aplikasi'] as $assetLabel)
+                    @foreach (['eBook PDF', 'Template', 'Prompt AI', 'Tryout Online', 'Kelas Digital'] as $assetLabel)
                         <span class="rounded-full border border-white/15 bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-slate-100">
                             {{ $assetLabel }}
                         </span>
@@ -70,10 +63,10 @@
             </div>
             <div class="mt-4 grid gap-3 sm:grid-cols-2">
                 @foreach ([
-                    ['title' => 'Administrasi', 'desc' => 'Format dokumen siap edit'],
-                    ['title' => 'Bisnis UMKM', 'desc' => 'Template operasional harian'],
-                    ['title' => 'Prompt AI', 'desc' => 'Prompt siap pakai untuk kerja'],
-                    ['title' => 'Tool Praktis', 'desc' => 'Aplikasi ringan siap jalan'],
+                    ['title' => 'Paket Belajar', 'desc' => 'Materi belajar terarah'],
+                    ['title' => 'Tryout Online', 'desc' => 'Latihan soal dan skor otomatis'],
+                    ['title' => 'Template Kerja', 'desc' => 'Format dokumen siap edit'],
+                    ['title' => 'Tools Praktis', 'desc' => 'Aplikasi ringan siap jalan'],
                 ] as $mockup)
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <div class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-500">
@@ -84,6 +77,51 @@
                     </div>
                 @endforeach
             </div>
+        </div>
+    </div>
+</section>
+
+<section id="paket-belajar" class="scroll-mt-24 bg-white py-14 md:py-16">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Paket Belajar</p>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Paket Belajar Digital</h2>
+            <p class="mt-3 text-slate-600">Materi belajar praktis dalam bentuk eBook, template, dan file digital yang bisa dipelajari secara mandiri.</p>
+        </div>
+        <div class="mt-8 grid gap-5 md:grid-cols-3">
+            @foreach ([
+                ['title' => 'CPNS Starter Kit', 'desc' => 'Panduan awal untuk memulai persiapan CPNS dengan lebih rapi.'],
+                ['title' => 'Jadwal Belajar 30 Hari', 'desc' => 'Template jadwal belajar agar persiapan lebih terarah.'],
+                ['title' => 'Ringkasan Materi SKD', 'desc' => 'Ringkasan TWK, TIU, dan TKP untuk belajar cepat dan terstruktur.'],
+            ] as $studyPack)
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
+                    <h3 class="text-lg font-black text-slate-900">{{ $studyPack['title'] }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ $studyPack['desc'] }}</p>
+                </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+
+<section id="tryout" class="scroll-mt-24 bg-slate-50 py-14 md:py-16">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="mx-auto max-w-3xl text-center">
+            <span class="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-700">Coming Soon</span>
+            <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Tryout Online Segera Hadir</h2>
+            <p class="mt-3 text-slate-600">Ruang Cerdas sedang menyiapkan fitur latihan soal dan tryout online berbayar dengan timer, skor otomatis, dan pembahasan.</p>
+        </div>
+        <div class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            @foreach ([
+                ['title' => 'Timer Ujian', 'desc' => 'Simulasi waktu pengerjaan yang lebih realistis.'],
+                ['title' => 'Skor Otomatis', 'desc' => 'Nilai langsung muncul setelah tryout selesai.'],
+                ['title' => 'Pembahasan Soal', 'desc' => 'Peserta dapat belajar dari hasil pengerjaan.'],
+                ['title' => 'Riwayat Nilai', 'desc' => 'Pantau perkembangan hasil latihan dari waktu ke waktu.'],
+            ] as $tryoutFeature)
+                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <h3 class="text-base font-black text-slate-900">{{ $tryoutFeature['title'] }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-slate-600">{{ $tryoutFeature['desc'] }}</p>
+                </div>
+            @endforeach
         </div>
     </div>
 </section>
@@ -108,6 +146,17 @@
                     {{ $segment }}
                 </div>
             @endforeach
+        </div>
+    </div>
+</section>
+
+<section class="bg-white py-10">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+            <h3 class="text-base font-black text-slate-900">Disclaimer</h3>
+            <p class="mt-2 text-sm leading-7 text-slate-600">
+                Ruang Cerdas adalah platform belajar mandiri dan produk digital. Materi, soal, pembahasan, dan tryout yang tersedia bersifat edukatif, tidak menjamin kelulusan CPNS/PPPK, dan tidak berafiliasi dengan BKN, SSCASN, atau instansi pemerintah mana pun.
+            </p>
         </div>
     </div>
 </section>

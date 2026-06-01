@@ -14,6 +14,8 @@
     $coverUrl = $product->cover_image
         ? asset('storage/' . $product->cover_image)
         : null;
+    $categoryName = strtolower((string) ($product->category->name ?? ''));
+    $isTryoutCategory = str_contains($categoryName, 'tryout');
 @endphp
 
 <div class="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -41,6 +43,11 @@
             @if ($product->category)
                 <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                     {{ $product->category->name }}
+                </span>
+            @endif
+            @if ($isTryoutCategory)
+                <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                    Coming Soon
                 </span>
             @endif
             <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">

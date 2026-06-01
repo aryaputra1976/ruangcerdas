@@ -8,7 +8,7 @@
             >
             <div>
                 <p class="text-base font-bold leading-none">Ruang Cerdas</p>
-                <p class="text-xs text-slate-500">Template, eBook &amp; Tools AI</p>
+                <p class="text-xs text-slate-500">Produk Digital &amp; Belajar Online</p>
             </div>
         </a>
 
@@ -19,11 +19,17 @@
             <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Produk
             </a>
-            <a href="{{ route('public.order-tracking.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Cek Order
+            <a href="{{ route('home') }}#paket-belajar" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Paket Belajar
+            </a>
+            <a href="{{ route('home') }}#tryout" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Tryout
             </a>
             <a href="{{ route('home') }}#cara-beli" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Cara Beli
+            </a>
+            <a href="{{ route('public.order-tracking.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Cek Order
             </a>
             <a href="{{ route('public.faq') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 FAQ
@@ -62,11 +68,17 @@
             <a href="{{ route('products.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Produk
             </a>
-            <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Cek Order
+            <a href="{{ route('home') }}#paket-belajar" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Paket Belajar
+            </a>
+            <a href="{{ route('home') }}#tryout" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Tryout
             </a>
             <a href="{{ route('home') }}#cara-beli" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Cara Beli
+            </a>
+            <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Cek Order
             </a>
             <a href="{{ route('public.faq') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 FAQ

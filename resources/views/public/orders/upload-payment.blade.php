@@ -66,7 +66,12 @@
                         <div class="mt-4 grid gap-4 md:grid-cols-2">
                             <div class="rounded-2xl bg-white p-4">
                                 @if ($hasBankInstruction)
-                                    <p class="text-sm text-slate-500">Rekening Tujuan</p>
+                                    <div class="flex items-center justify-between gap-2">
+                                        <p class="text-sm text-slate-500">Rekening Tujuan</p>
+                                        @if ($bankAccounts->count() > 1)
+                                            <p class="text-xs font-semibold text-slate-500">Pilih salah satu rekening di bawah untuk transfer manual.</p>
+                                        @endif
+                                    </div>
                                     <div class="mt-2 space-y-2">
                                         @foreach ($bankAccounts as $account)
                                             <div class="rounded-xl border {{ $account['is_primary'] ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50' }} p-3">
@@ -76,7 +81,7 @@
                                                         <span class="rounded-full bg-blue-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-blue-700">Utama</span>
                                                     @endif
                                                 </div>
-                                                <p class="mt-1 text-base font-black text-blue-600 break-all">{{ $account['account_number'] }}</p>
+                                                <p class="mt-1 text-lg font-black text-blue-600 break-all">{{ $account['account_number'] }}</p>
                                                 <p class="mt-1 text-sm text-slate-600">a.n. {{ $account['account_holder'] }}</p>
                                             </div>
                                         @endforeach
@@ -168,7 +173,7 @@
                     <h3 class="text-lg font-black text-emerald-950">QRIS</h3>
                     <div class="mt-4 rounded-2xl bg-white p-4 text-center">
                         @if ($qrisExists)
-                            <img src="{{ asset($qrisImage) }}" alt="QRIS Ruang Cerdas" class="mx-auto w-full max-w-[220px] rounded-2xl border border-slate-200">
+                            <img src="{{ asset($qrisImage) }}" alt="QRIS Ruang Cerdas" class="mx-auto w-full max-w-[240px] rounded-2xl border border-slate-200">
                         @else
                             <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">QRIS belum tersedia.</div>
                         @endif

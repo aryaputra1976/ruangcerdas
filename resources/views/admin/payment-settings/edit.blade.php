@@ -47,16 +47,19 @@
 
                     <div class="row g-3">
                         <div class="col-12">
-                            <div class="border rounded-3 p-3">
+                            <div class="border rounded-3 p-3 bg-primary-subtle border-primary-subtle">
                                 <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
                                     <h6 class="mb-0">Daftar Rekening Bank</h6>
-                                    <span class="text-muted fs-13">Isi minimal satu rekening lengkap.</span>
+                                    <span class="text-muted fs-13">Isi satu atau lebih rekening untuk instruksi pembayaran manual.</span>
+                                </div>
+                                <div class="text-muted fs-13 mb-2">
+                                    Tandai satu rekening sebagai <strong>Rekening Utama</strong>. Jika lebih dari satu ditandai, sistem akan memilih satu rekening utama secara otomatis.
                                 </div>
 
                                 @foreach ($bankAccounts as $index => $account)
-                                    <div class="row g-2 {{ $index > 0 ? 'mt-1' : '' }}">
+                                    <div class="row g-2 {{ $index > 0 ? 'mt-2 pt-2 border-top border-primary-subtle' : '' }}">
                                         <div class="col-md-3">
-                                            <label class="form-label fs-13">Nama Bank</label>
+                                            <label class="form-label fs-13 fw-semibold">Nama Bank</label>
                                             <input type="text"
                                                    name="bank_accounts[{{ $index }}][bank_name]"
                                                    class="form-control @error('bank_accounts.'.$index.'.bank_name') is-invalid @enderror"
@@ -67,7 +70,7 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-3">
-                                            <label class="form-label fs-13">Nomor Rekening</label>
+                                            <label class="form-label fs-13 fw-semibold">Nomor Rekening</label>
                                             <input type="text"
                                                    name="bank_accounts[{{ $index }}][account_number]"
                                                    class="form-control @error('bank_accounts.'.$index.'.account_number') is-invalid @enderror"
@@ -78,7 +81,7 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-4">
-                                            <label class="form-label fs-13">Nama Pemilik</label>
+                                            <label class="form-label fs-13 fw-semibold">Nama Pemilik Rekening</label>
                                             <input type="text"
                                                    name="bank_accounts[{{ $index }}][account_holder]"
                                                    class="form-control @error('bank_accounts.'.$index.'.account_holder') is-invalid @enderror"
@@ -89,7 +92,7 @@
                                             @enderror
                                         </div>
                                         <div class="col-md-2">
-                                            <label class="form-label fs-13 d-block">Primary</label>
+                                            <label class="form-label fs-13 fw-semibold d-block">Rekening Utama</label>
                                             <div class="form-check mt-2">
                                                 <input class="form-check-input"
                                                        type="checkbox"
@@ -105,8 +108,11 @@
                         </div>
 
                         <div class="col-12">
-                            <div class="border rounded-3 p-3 bg-light">
-                                <div class="fw-semibold fs-13 mb-2">Field Legacy/Fallback (Kompatibilitas)</div>
+                            <div class="border rounded-3 p-3 bg-light-subtle">
+                                <div class="fw-semibold fs-13 mb-1">Fallback / Kompatibilitas Lama</div>
+                                <div class="text-muted fs-13 mb-2">
+                                    Dipakai jika daftar rekening bank di atas kosong.
+                                </div>
                                 <div class="row g-2">
                                     <div class="col-md-4">
                                         <label for="bank_name" class="form-label fs-13">Nama Bank (Legacy)</label>
@@ -155,6 +161,7 @@
                                       rows="4"
                                       class="form-control @error('payment_note') is-invalid @enderror"
                                       placeholder="Catatan akan ditampilkan ke pembeli.">{{ old('payment_note', $paymentSetting->payment_note) }}</textarea>
+                            <div class="form-text">Catatan ini tampil di halaman instruksi pembayaran pembeli.</div>
                             @error('payment_note')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -199,6 +206,9 @@
                                     Pengaturan pembayaran aktif
                                 </label>
                             </div>
+                            <div class="form-text">
+                                Jika nonaktif atau data kosong, pembeli akan melihat pesan instruksi pembayaran belum tersedia.
+                            </div>
                         </div>
                     </div>
 
@@ -223,9 +233,9 @@
                     <img src="{{ Storage::disk('public')->url($paymentSetting->qris_image_path) }}"
                          alt="QRIS"
                          class="img-fluid rounded border mb-3">
-                    <p class="text-muted fs-13 mb-0">
-                        Path: <code>{{ $paymentSetting->qris_image_path }}</code>
-                    </p>
+                    <div class="alert alert-success mb-0 fs-13">
+                        QRIS saat ini aktif.
+                    </div>
                 @else
                     <div class="alert alert-light border mb-0">
                         QRIS belum diupload.

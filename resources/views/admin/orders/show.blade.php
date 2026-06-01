@@ -498,7 +498,7 @@
                     <div class="mb-3">
                         <div class="text-muted fs-13 mb-2">Bukti Pembayaran</div>
 
-                        <a href="{{ asset('storage/' . $order->payment_proof_path) }}"
+                        <a href="{{ route('admin.orders.payment-proof', $order) }}"
                            target="_blank"
                            class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
                             <i data-feather="image" style="width: 14px; height: 14px;"></i>

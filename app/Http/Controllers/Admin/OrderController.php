@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class OrderController extends Controller
 {
@@ -70,6 +71,35 @@ class OrderController extends Controller
         ]);
 
         return view('admin.orders.show', compact('order'));
+    }
+
+    public function paymentProof(Order $order): BinaryFileResponse
+    {
+        abort_if(blank($order->payment_proof_path), 404);
+
+        $relativePath = ltrim(str_replace('\\', '/', (string) $order->payment_proof_path), '/');
+        $basePath = storage_path('app/public');
+
+        abort_if(
+            str_contains($relativePath, '../') || str_contains($relativePath, '..\\'),
+            404
+        );
+
+        $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+
+        abort_unless(is_file($absolutePath), 404);
+
+        $realBasePath = realpath($basePath);
+        $realAbsolutePath = realpath($absolutePath);
+
+        abort_unless(
+            $realBasePath !== false
+            && $realAbsolutePath !== false
+            && str_starts_with($realAbsolutePath, $realBasePath . DIRECTORY_SEPARATOR),
+            404
+        );
+
+        return response()->file($realAbsolutePath);
     }
 
     public function approve(Request $request, Order $order)

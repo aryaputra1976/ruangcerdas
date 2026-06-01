@@ -22,6 +22,7 @@ Route::prefix('admin')
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{order}/payment-proof', [OrderController::class, 'paymentProof'])->name('orders.payment-proof');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
         Route::patch('/orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');

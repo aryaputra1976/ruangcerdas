@@ -11,6 +11,7 @@ use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -78,28 +79,34 @@ class OrderController extends Controller
         abort_if(blank($order->payment_proof_path), 404);
 
         $relativePath = ltrim(str_replace('\\', '/', (string) $order->payment_proof_path), '/');
-        $basePath = storage_path('app/public');
-
         abort_if(
             str_contains($relativePath, '../') || str_contains($relativePath, '..\\'),
             404
         );
 
-        $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        foreach (['private', 'public'] as $diskName) {
+            if (! Storage::disk($diskName)->exists($relativePath)) {
+                continue;
+            }
 
-        abort_unless(is_file($absolutePath), 404);
+            $basePath = storage_path($diskName === 'private' ? 'app/private' : 'app/public');
+            $absolutePath = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+            $realBasePath = realpath($basePath);
+            $realAbsolutePath = realpath($absolutePath);
 
-        $realBasePath = realpath($basePath);
-        $realAbsolutePath = realpath($absolutePath);
+            if (
+                $realBasePath === false
+                || $realAbsolutePath === false
+                || ! str_starts_with($realAbsolutePath, $realBasePath . DIRECTORY_SEPARATOR)
+                || ! is_file($realAbsolutePath)
+            ) {
+                continue;
+            }
 
-        abort_unless(
-            $realBasePath !== false
-            && $realAbsolutePath !== false
-            && str_starts_with($realAbsolutePath, $realBasePath . DIRECTORY_SEPARATOR),
-            404
-        );
+            return response()->file($realAbsolutePath);
+        }
 
-        return response()->file($realAbsolutePath);
+        abort(404);
     }
 
     public function approve(Request $request, Order $order)

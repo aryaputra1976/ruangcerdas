@@ -62,13 +62,14 @@ class OrderController extends Controller
             . $extension;
 
         if ($order->payment_proof_path) {
+            Storage::disk('private')->delete($order->payment_proof_path);
             Storage::disk('public')->delete($order->payment_proof_path);
         }
 
         $path = $file->storeAs(
             'payment-proofs/' . now()->format('Y/m'),
             $filename,
-            'public'
+            'private'
         );
 
         $fromStatus = $order->status;

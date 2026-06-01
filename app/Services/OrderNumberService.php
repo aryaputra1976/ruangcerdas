@@ -12,7 +12,8 @@ class OrderNumberService
 
         $lastOrderToday = Order::query()
             ->where('invoice_number', 'like', $prefix . '-%')
-            ->latest('id')
+            ->orderByDesc('invoice_number')
+            ->lockForUpdate()
             ->first();
 
         if (! $lastOrderToday) {

@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 class CheckoutService
 {
@@ -18,40 +19,62 @@ class CheckoutService
 
     public function createOrder(Product $product, array $data): Order
     {
-        return DB::transaction(function () use ($product, $data) {
-            $originalPrice = (int) $this->pricingService->currentPrice($product);
-            $discountAmount = 0;
-            $finalPrice = $originalPrice;
-            $coupon = null;
+        for ($attempt = 1; $attempt <= 5; $attempt++) {
+            try {
+                return DB::transaction(function () use ($product, $data) {
+                $originalPrice = (int) $this->pricingService->currentPrice($product);
+                $discountAmount = 0;
+                $finalPrice = $originalPrice;
+                $coupon = null;
 
-            if (!empty($data['coupon_code'])) {
-                $coupon = $this->resolveCoupon($data['coupon_code'], $originalPrice);
-                $discountAmount = $this->calculateDiscount($coupon, $originalPrice);
-                $finalPrice = max(0, $originalPrice - $discountAmount);
+                if (!empty($data['coupon_code'])) {
+                    $coupon = $this->resolveCoupon($data['coupon_code'], $originalPrice);
+                    $discountAmount = $this->calculateDiscount($coupon, $originalPrice);
+                    $finalPrice = max(0, $originalPrice - $discountAmount);
+                }
+
+                $order = Order::create([
+                    'product_id' => $product->id,
+                    'coupon_id' => $coupon?->id,
+                    'invoice_number' => $this->orderNumberService->generate(),
+                    'buyer_name' => $data['buyer_name'],
+                    'buyer_email' => $data['buyer_email'],
+                    'buyer_whatsapp' => $data['buyer_whatsapp'],
+                    'price' => $finalPrice,
+                    'status' => Order::STATUS_PENDING,
+                    'payment_method' => 'manual',
+                    'coupon_code' => $coupon?->code,
+                    'discount_amount' => $discountAmount,
+                    'original_price' => $originalPrice,
+                    'download_count' => 0,
+                ]);
+
+                if ($coupon) {
+                    $coupon->increment('used_count');
+                }
+
+                return $order;
+                });
+            } catch (QueryException $exception) {
+                if ($attempt < 5 && $this->isDuplicateInvoiceException($exception)) {
+                    continue;
+                }
+
+                throw $exception;
             }
+        }
 
-            $order = Order::create([
-                'product_id' => $product->id,
-                'coupon_id' => $coupon?->id,
-                'invoice_number' => $this->orderNumberService->generate(),
-                'buyer_name' => $data['buyer_name'],
-                'buyer_email' => $data['buyer_email'],
-                'buyer_whatsapp' => $data['buyer_whatsapp'],
-                'price' => $finalPrice,
-                'status' => Order::STATUS_PENDING,
-                'payment_method' => 'manual',
-                'coupon_code' => $coupon?->code,
-                'discount_amount' => $discountAmount,
-                'original_price' => $originalPrice,
-                'download_count' => 0,
-            ]);
+        throw ValidationException::withMessages([
+            'checkout' => 'Gagal membuat order. Silakan coba beberapa saat lagi.',
+        ]);
+    }
 
-            if ($coupon) {
-                $coupon->increment('used_count');
-            }
+    private function isDuplicateInvoiceException(QueryException $exception): bool
+    {
+        $message = strtolower((string) $exception->getMessage());
 
-            return $order;
-        });
+        return str_contains($message, 'invoice_number')
+            && (str_contains($message, 'duplicate') || str_contains($message, 'unique'));
     }
 
     private function resolveCoupon(string $couponCode, int $price): Coupon

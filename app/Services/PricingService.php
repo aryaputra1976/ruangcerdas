@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Product;
+use App\Models\Order;
 
 class PricingService
 {
@@ -70,7 +71,11 @@ class PricingService
     private function paidOrdersCount(Product $product): int
     {
         return $product->orders()
-            ->where('status', 'paid')
+            ->whereIn('status', [
+                Order::STATUS_PENDING,
+                Order::STATUS_PAYMENT_UPLOADED,
+                Order::STATUS_PAID,
+            ])
             ->count();
     }
 }

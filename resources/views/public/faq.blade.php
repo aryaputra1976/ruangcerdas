@@ -6,16 +6,14 @@
 @section('canonical', route('public.faq'))
 
 @section('content')
-<section class="bg-slate-50 py-16 md:py-20">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-blue-700">
-            FAQ
-        </span>
-        <h1 class="mt-4 text-3xl font-black text-slate-950 md:text-5xl">Pertanyaan yang Sering Diajukan</h1>
+        <p class="text-sm font-bold uppercase tracking-widest text-blue-600">FAQ</p>
+        <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Pertanyaan yang Sering Diajukan</h1>
         <p class="mx-auto mt-4 max-w-3xl text-slate-600">
             Ringkasan alur pembelian, pembayaran manual, verifikasi admin, sampai akses download produk digital Ruang Cerdas.
         </p>
-        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
                 Lihat Produk
             </a>
@@ -26,7 +24,7 @@
     </div>
 </section>
 
-<section class="bg-white py-12 md:py-16">
+<section class="bg-white py-14 md:py-16">
     <div class="mx-auto max-w-5xl space-y-10 px-6">
         @php
             $faqGroups = [
@@ -64,14 +62,15 @@
 
         @foreach ($faqGroups as $groupTitle => $items)
             <div>
-                <h2 class="text-2xl font-black text-slate-900">{{ $groupTitle }}</h2>
+                <h2 class="text-2xl font-black text-slate-900 md:text-3xl">{{ $groupTitle }}</h2>
                 <div class="mt-4 space-y-3">
                     @foreach ($items as $item)
-                        <details class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-                            <summary class="cursor-pointer list-none pr-6 text-base font-bold text-slate-900">
-                                {{ $item['q'] }}
+                        <details class="group rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 shadow-sm">
+                            <summary class="flex cursor-pointer list-none items-start justify-between gap-4 pr-1 text-base font-bold text-slate-900">
+                                <span>{{ $item['q'] }}</span>
+                                <span class="mt-1 text-slate-400 transition group-open:rotate-45">+</span>
                             </summary>
-                            <p class="mt-3 text-sm leading-7 text-slate-600">{{ $item['a'] }}</p>
+                            <p class="mt-3 border-t border-slate-200 pt-3 text-sm leading-7 text-slate-600">{{ $item['a'] }}</p>
                         </details>
                     @endforeach
                 </div>
@@ -83,9 +82,10 @@
 <section class="bg-slate-50 py-14">
     <div class="mx-auto max-w-5xl px-6">
         <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
-            <h3 class="text-2xl font-black text-slate-900">Masih butuh bantuan?</h3>
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Bantuan</p>
+            <h3 class="mt-3 text-3xl font-black text-slate-900 md:text-4xl">Masih butuh bantuan?</h3>
             <p class="mx-auto mt-3 max-w-2xl text-slate-600">
-                Cek status order Anda atau hubungi admin Ruang Cerdas jika ada kendala pembayaran/download.
+                Cek status order Anda atau hubungi admin Ruang Cerdas jika ada kendala pembayaran atau akses download.
             </p>
             <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white hover:bg-slate-700">

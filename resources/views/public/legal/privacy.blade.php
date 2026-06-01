@@ -6,54 +6,69 @@
 @section('canonical', route('public.privacy'))
 
 @section('content')
-<section class="bg-slate-50 py-16 md:py-20">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <span class="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase tracking-widest text-blue-700">LEGAL</span>
-        <h1 class="mt-4 text-3xl font-black text-slate-950 md:text-5xl">Kebijakan Privasi</h1>
+        <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Legal</p>
+        <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kebijakan Privasi</h1>
         <p class="mx-auto mt-4 max-w-3xl text-slate-600">Penjelasan penggunaan data pembeli pada proses pembelian dan pengiriman produk digital Ruang Cerdas.</p>
         <p class="mt-3 text-sm text-slate-500">Terakhir diperbarui: 2026</p>
     </div>
 </section>
 
-<section class="bg-white py-12 md:py-16">
+<section class="bg-white py-14 md:py-16">
     <div class="mx-auto max-w-5xl px-6">
-        <div class="rounded-3xl border border-slate-200 bg-white p-8 space-y-6">
-            <h2 class="text-2xl font-black text-slate-900">Pengantar</h2>
-            <p class="text-slate-600">Kami menjaga data pembeli dengan prinsip seperlunya untuk menjalankan layanan.</p>
-            <h3 class="text-xl font-bold text-slate-900">Data yang dikumpulkan</h3>
-            <p class="text-slate-600">Data yang dikumpulkan dapat meliputi nama pembeli, email, nomor WhatsApp, data order/invoice, dan bukti pembayaran.</p>
-            <h3 class="text-xl font-bold text-slate-900">Nama pembeli</h3>
-            <p class="text-slate-600">Digunakan untuk identifikasi order dan komunikasi layanan.</p>
-            <h3 class="text-xl font-bold text-slate-900">Email</h3>
-            <p class="text-slate-600">Digunakan untuk pengiriman informasi order dan link download setelah pembayaran disetujui.</p>
-            <h3 class="text-xl font-bold text-slate-900">Nomor WhatsApp</h3>
-            <p class="text-slate-600">Digunakan bila diperlukan untuk konfirmasi atau bantuan order.</p>
-            <h3 class="text-xl font-bold text-slate-900">Data order/invoice</h3>
-            <p class="text-slate-600">Disimpan untuk pencatatan transaksi, verifikasi, dan pelacakan status order.</p>
-            <h3 class="text-xl font-bold text-slate-900">Bukti pembayaran</h3>
-            <p class="text-slate-600">Digunakan untuk verifikasi manual oleh admin.</p>
-            <h3 class="text-xl font-bold text-slate-900">Tujuan penggunaan data</h3>
-            <p class="text-slate-600">Data digunakan untuk memproses pembelian, memverifikasi pembayaran, mengirim link download, dan menangani bantuan pelanggan.</p>
-            <h3 class="text-xl font-bold text-slate-900">Pengiriman link download</h3>
-            <p class="text-slate-600">Link download dikirim ke email pembeli setelah pembayaran disetujui admin.</p>
-            <h3 class="text-xl font-bold text-slate-900">Verifikasi pembayaran</h3>
-            <p class="text-slate-600">Verifikasi dilakukan secara manual berdasarkan bukti pembayaran yang diunggah.</p>
-            <h3 class="text-xl font-bold text-slate-900">Bantuan pelanggan</h3>
-            <p class="text-slate-600">Data kontak digunakan untuk menindaklanjuti kendala order atau download.</p>
-            <h3 class="text-xl font-bold text-slate-900">Penyimpanan data</h3>
-            <p class="text-slate-600">Data disimpan selama diperlukan untuk operasional layanan, keamanan, dan administrasi transaksi.</p>
-            <h3 class="text-xl font-bold text-slate-900">Keamanan data</h3>
-            <p class="text-slate-600">Kami berupaya menerapkan langkah teknis dan operasional yang wajar untuk melindungi data pembeli.</p>
-            <h3 class="text-xl font-bold text-slate-900">Pembagian data kepada pihak ketiga</h3>
-            <p class="text-slate-600">Data tidak dibagikan secara sembarangan, kecuali jika diperlukan untuk operasional layanan atau kewajiban hukum yang berlaku.</p>
-            <h3 class="text-xl font-bold text-slate-900">Cookie atau data teknis</h3>
-            <p class="text-slate-600">Situs dapat menggunakan data teknis dasar untuk fungsi layanan dan keamanan sistem.</p>
-            <h3 class="text-xl font-bold text-slate-900">Hak pembeli</h3>
-            <p class="text-slate-600">Pembeli dapat menghubungi admin untuk permintaan klarifikasi data terkait order yang dimiliki.</p>
-            <h3 class="text-xl font-bold text-slate-900">Perubahan kebijakan privasi</h3>
-            <p class="text-slate-600">Kebijakan ini dapat diperbarui dari waktu ke waktu. Versi terbaru akan tersedia di halaman ini.</p>
-            <h3 class="text-xl font-bold text-slate-900">Kontak</h3>
-            <p class="text-slate-600">Jika ada pertanyaan privasi, silakan hubungi tim Ruang Cerdas melalui kontak resmi yang tersedia.</p>
+        <div class="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            @foreach ([
+                [
+                    'title' => 'Pengantar',
+                    'body' => 'Kami menggunakan data pembeli seperlunya untuk menjalankan layanan Ruang Cerdas, terutama untuk proses pembelian, verifikasi pembayaran, dukungan pelanggan, dan pengiriman akses download.',
+                ],
+                [
+                    'title' => 'Data yang dikumpulkan',
+                    'body' => 'Data yang dapat kami gunakan meliputi nama pembeli, email, nomor WhatsApp atau kontak lain yang diisi saat checkout, data order atau invoice, serta bukti pembayaran yang diunggah pembeli.',
+                ],
+                [
+                    'title' => 'Nama pembeli',
+                    'body' => 'Nama digunakan untuk identifikasi order dan membantu proses verifikasi pembayaran serta layanan pelanggan.',
+                ],
+                [
+                    'title' => 'Email',
+                    'body' => 'Email digunakan untuk pengiriman informasi order dan link download setelah pembayaran disetujui admin.',
+                ],
+                [
+                    'title' => 'WhatsApp atau kontak pembeli',
+                    'body' => 'Nomor WhatsApp digunakan bila diperlukan untuk konfirmasi order, verifikasi pembayaran, atau bantuan terkait kendala pembelian.',
+                ],
+                [
+                    'title' => 'Data order dan invoice',
+                    'body' => 'Data order seperti nomor invoice, produk yang dibeli, waktu transaksi, dan status pembayaran digunakan untuk pencatatan transaksi serta pelacakan status order.',
+                ],
+                [
+                    'title' => 'Bukti pembayaran',
+                    'body' => 'Bukti pembayaran digunakan untuk proses verifikasi manual oleh admin agar pembayaran dapat disetujui dengan lebih akurat.',
+                ],
+                [
+                    'title' => 'Tujuan penggunaan data',
+                    'body' => 'Data pembeli digunakan untuk memproses checkout, verifikasi pembayaran, mengirim link download, menangani bantuan pelanggan, dan menjaga keamanan operasional layanan.',
+                ],
+                [
+                    'title' => 'Keamanan akses download',
+                    'body' => 'Kami tidak menampilkan token download mentah atau jalur file private kepada publik. Akses file diberikan melalui mekanisme sistem yang aman sesuai status order.',
+                ],
+                [
+                    'title' => 'Penyimpanan dan pembaruan data',
+                    'body' => 'Data disimpan selama diperlukan untuk operasional layanan, administrasi transaksi, dan keamanan sistem. Kebijakan ini dapat diperbarui dari waktu ke waktu sesuai kebutuhan layanan.',
+                ],
+                [
+                    'title' => 'Bantuan dan pertanyaan',
+                    'body' => 'Jika Anda memiliki pertanyaan terkait data order atau penggunaan data pribadi dalam transaksi Anda, silakan hubungi admin melalui kanal bantuan yang tersedia di website.',
+                ],
+            ] as $section)
+                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                    <h2 class="text-xl font-black text-slate-900">{{ $section['title'] }}</h2>
+                    <p class="mt-3 text-sm leading-7 text-slate-600">{{ $section['body'] }}</p>
+                </div>
+            @endforeach
         </div>
     </div>
 </section>
@@ -61,7 +76,8 @@
 <section class="bg-slate-50 py-14">
     <div class="mx-auto max-w-5xl px-6">
         <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
-            <h3 class="text-2xl font-black text-slate-900">Akses cepat</h3>
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Akses Cepat</p>
+            <h3 class="mt-3 text-3xl font-black text-slate-900 md:text-4xl">Halaman penting lainnya</h3>
             <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">Lihat Produk</a>
                 <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white hover:bg-slate-700">Cek Order</a>

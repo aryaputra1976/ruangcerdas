@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadPaymentProofRequest;
+use App\Models\LandingSetting;
 use App\Models\Order;
 use App\Services\PaymentSettingService;
 use App\Support\OrderAuditLogger;
@@ -22,6 +23,7 @@ class OrderController extends Controller
         return view('public.orders.thank-you', [
             'order' => $order,
             'paymentConfig' => $paymentSettingService->current(),
+            'supportWhatsapp' => LandingSetting::query()->value('support_whatsapp'),
         ]);
     }
 

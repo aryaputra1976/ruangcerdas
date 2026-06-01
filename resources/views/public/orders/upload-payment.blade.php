@@ -5,11 +5,13 @@
 
 @section('content')
 @php
-    $bankName = $paymentConfig['bank_name'] ?? 'Bank Mandiri';
-    $bankAccountNumber = $paymentConfig['bank_account_number'] ?? '1234567890';
-    $bankAccountHolder = $paymentConfig['bank_account_holder'] ?? 'Ruang Cerdas';
+    $bankName = trim((string) ($paymentConfig['bank_name'] ?? ''));
+    $bankAccountNumber = trim((string) ($paymentConfig['bank_account_number'] ?? ''));
+    $bankAccountHolder = trim((string) ($paymentConfig['bank_account_holder'] ?? ''));
     $qrisImage = $paymentConfig['qris_image_path'] ?? ($paymentConfig['qris_image'] ?? null);
     $qrisExists = $qrisImage && file_exists(public_path($qrisImage));
+    $hasBankInstruction = $bankName !== '' && $bankAccountNumber !== '' && $bankAccountHolder !== '';
+    $hasPaymentInstruction = $hasBankInstruction || $qrisExists;
 
     $statusLabel = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Menunggu Pembayaran',
@@ -55,10 +57,15 @@
                         <h2 class="text-lg font-black text-blue-950">Pastikan pembayaran sudah dilakukan</h2>
                         <div class="mt-4 grid gap-4 md:grid-cols-2">
                             <div class="rounded-2xl bg-white p-4">
-                                <p class="text-sm text-slate-500">Metode</p>
-                                <p class="mt-1 font-black text-slate-950">{{ $bankName }}</p>
-                                <p class="mt-1 text-lg font-black text-blue-600 break-all">{{ $bankAccountNumber }}</p>
-                                <p class="mt-1 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
+                                @if ($hasBankInstruction)
+                                    <p class="text-sm text-slate-500">Metode</p>
+                                    <p class="mt-1 font-black text-slate-950">{{ $bankName }}</p>
+                                    <p class="mt-1 text-lg font-black text-blue-600 break-all">{{ $bankAccountNumber }}</p>
+                                    <p class="mt-1 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
+                                @else
+                                    <p class="text-sm text-slate-500">Instruksi Pembayaran</p>
+                                    <p class="mt-2 text-sm leading-6 text-slate-700">Instruksi pembayaran belum tersedia. Silakan hubungi admin Ruang Cerdas.</p>
+                                @endif
                             </div>
                             <div class="rounded-2xl bg-white p-4">
                                 <p class="text-sm text-slate-500">Total Bayar</p>
@@ -67,6 +74,12 @@
                             </div>
                         </div>
                     </div>
+
+                    @if (! $hasPaymentInstruction)
+                        <div class="mb-6 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-800">
+                            Instruksi pembayaran belum tersedia. Silakan hubungi admin Ruang Cerdas.
+                        </div>
+                    @endif
 
                     @if ($errors->any())
                         <div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">

@@ -5,12 +5,14 @@
 
 @section('content')
 @php
-    $bankName = $paymentConfig['bank_name'] ?? 'Bank Mandiri';
-    $bankAccountNumber = $paymentConfig['bank_account_number'] ?? '1234567890';
-    $bankAccountHolder = $paymentConfig['bank_account_holder'] ?? 'Ruang Cerdas';
+    $bankName = trim((string) ($paymentConfig['bank_name'] ?? ''));
+    $bankAccountNumber = trim((string) ($paymentConfig['bank_account_number'] ?? ''));
+    $bankAccountHolder = trim((string) ($paymentConfig['bank_account_holder'] ?? ''));
     $qrisImage = $paymentConfig['qris_image_path'] ?? ($paymentConfig['qris_image'] ?? null);
     $paymentNote = $paymentConfig['payment_note'] ?? 'Transfer sesuai nominal invoice agar verifikasi lebih cepat.';
     $qrisExists = $qrisImage && file_exists(public_path($qrisImage));
+    $hasBankInstruction = $bankName !== '' && $bankAccountNumber !== '' && $bankAccountHolder !== '';
+    $hasPaymentInstruction = $hasBankInstruction || $qrisExists;
 
     $statusLabel = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Menunggu Pembayaran',
@@ -44,9 +46,9 @@
         default => 'Silakan cek status order Anda secara berkala.',
     };
 
-    $waAdmin = '6285182723065';
+    $supportWhatsappNumber = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
     $waMessage = rawurlencode('Halo Admin Ruang Cerdas, saya sudah upload bukti pembayaran untuk invoice ' . $order->invoice_number . '. Mohon dibantu cek. Terima kasih.');
-    $waUrl = 'https://wa.me/' . $waAdmin . '?text=' . $waMessage;
+    $waUrl = $supportWhatsappNumber !== '' ? 'https://wa.me/' . $supportWhatsappNumber . '?text=' . $waMessage : null;
 @endphp
 
 <section class="bg-slate-50 py-14 md:py-16">
@@ -83,7 +85,7 @@
                     <div class="mt-6 grid gap-3 md:grid-cols-2">
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-sm text-slate-500">Metode Pembayaran</p>
-                            <p class="mt-1 font-black text-slate-950">{{ $bankName }}</p>
+                            <p class="mt-1 font-black text-slate-950">{{ $hasBankInstruction ? $bankName : ($qrisExists ? 'QRIS' : '-') }}</p>
                         </div>
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-sm text-slate-500">Total Bayar</p>
@@ -91,13 +93,19 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                        <p class="text-sm text-slate-500">Nomor Rekening / Tujuan</p>
-                        <p class="mt-2 break-all text-xl font-black tracking-wide text-slate-950">{{ $bankAccountNumber }}</p>
-                        <p class="mt-2 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
-                    </div>
+                    @if ($hasBankInstruction)
+                        <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <p class="text-sm text-slate-500">Nomor Rekening / Tujuan</p>
+                            <p class="mt-2 break-all text-xl font-black tracking-wide text-slate-950">{{ $bankAccountNumber }}</p>
+                            <p class="mt-2 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
+                        </div>
+                    @else
+                        <div class="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-800">
+                            Instruksi pembayaran belum tersedia. Silakan hubungi admin Ruang Cerdas.
+                        </div>
+                    @endif
 
-                    @if (!empty($paymentNote))
+                    @if ($hasPaymentInstruction && !empty($paymentNote))
                         <div class="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-900">
                             {{ $paymentNote }}
                         </div>
@@ -155,9 +163,13 @@
                                 <div class="mt-1 font-normal text-blue-600">Tanggal upload: {{ $order->payment_uploaded_at->format('d M Y H:i') }}</div>
                             @endif
                         </div>
-                        <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
-                            Kirim Pemberitahuan ke Admin WhatsApp
-                        </a>
+                        @if ($waUrl)
+                            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
+                                Kirim Pemberitahuan ke Admin WhatsApp
+                            </a>
+                        @else
+                            <p class="mt-4 text-sm text-slate-600">Jika perlu bantuan, silakan hubungi admin Ruang Cerdas.</p>
+                        @endif
                     @elseif ($order->status !== \App\Models\Order::STATUS_PAID)
                         <p class="mt-4 text-sm leading-6 text-slate-600">
                             Setelah transfer selesai, upload bukti pembayaran dalam format JPG, PNG, atau PDF agar admin mudah memverifikasi.

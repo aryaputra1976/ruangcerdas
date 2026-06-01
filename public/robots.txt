@@ -1,9 +1,11 @@
 User-agent: *
 Allow: /
+
 Disallow: /admin
 Disallow: /login
 Disallow: /register
 Disallow: /checkout
-Disallow: /orders
+Disallow: /order
 Disallow: /download
+
 Sitemap: https://ruangcerdas.id/sitemap.xml

@@ -49,7 +49,7 @@
     $waUrl = 'https://wa.me/' . $waAdmin . '?text=' . $waMessage;
 @endphp
 
-<section class="bg-slate-50 py-16">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         @if (session('success'))
             <div class="mb-6 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
@@ -57,9 +57,9 @@
             </div>
         @endif
 
-        <div class="mb-10">
+        <div class="mb-8">
             <p class="inline-flex rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-blue-700">Pembayaran</p>
-            <h1 class="mt-3 text-4xl font-black tracking-tight text-slate-950 md:text-5xl">{{ $pageTitle }}</h1>
+            <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $pageTitle }}</h1>
             <p class="mt-3 max-w-3xl text-slate-600">{{ $pageSubtitle }}</p>
         </div>
 
@@ -68,32 +68,84 @@
         </div>
 
         <div class="grid gap-8 lg:grid-cols-3">
-            <div class="lg:col-span-2 space-y-6">
-                <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
-                    <h2 class="text-2xl font-black text-slate-950">Instruksi Pembayaran Manual</h2>
-                    <div class="mt-6 grid gap-4 md:grid-cols-2">
+            <div class="space-y-6 lg:col-span-2">
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+                    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Invoice</p>
+                            <h2 class="mt-2 break-all text-2xl font-black text-slate-950 md:text-3xl">{{ $order->invoice_number }}</h2>
+                        </div>
+                        <span class="inline-flex rounded-full px-4 py-2 text-sm font-bold uppercase {{ $statusClass }}">
+                            {{ $statusLabel }}
+                        </span>
+                    </div>
+
+                    <div class="mt-6 grid gap-3 md:grid-cols-2">
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-sm text-slate-500">Metode Pembayaran</p>
                             <p class="mt-1 font-black text-slate-950">{{ $bankName }}</p>
                         </div>
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                            <p class="text-sm text-slate-500">Nominal Transfer</p>
+                            <p class="text-sm text-slate-500">Total Bayar</p>
                             <p class="mt-1 text-2xl font-black text-blue-600">{{ \App\Support\Money::rupiah($order->price) }}</p>
                         </div>
                     </div>
 
                     <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                         <p class="text-sm text-slate-500">Nomor Rekening / Tujuan</p>
-                        <p class="mt-1 break-all text-xl font-black tracking-wide text-slate-950">{{ $bankAccountNumber }}</p>
+                        <p class="mt-2 break-all text-xl font-black tracking-wide text-slate-950">{{ $bankAccountNumber }}</p>
                         <p class="mt-2 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
                     </div>
 
                     @if (!empty($paymentNote))
-                        <p class="mt-4 text-sm leading-7 text-slate-600">{{ $paymentNote }}</p>
+                        <div class="mt-4 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-900">
+                            {{ $paymentNote }}
+                        </div>
                     @endif
                 </div>
 
-                <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+                    <h2 class="text-2xl font-black text-slate-950">Langkah Selanjutnya</h2>
+                    <div class="mt-6 grid gap-3">
+                        @foreach ([
+                            'Transfer sesuai instruksi pembayaran.',
+                            'Upload bukti bayar yang jelas.',
+                            'Admin melakukan verifikasi pembayaran.',
+                            'Link download dikirim ke email setelah status paid.',
+                        ] as $index => $step)
+                            <div class="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+                                <span class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">{{ $index + 1 }}</span>
+                                <span>{{ $step }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    @if ($order->status === \App\Models\Order::STATUS_PENDING)
+                        <div class="mt-5 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-800">
+                            Order masih menunggu pembayaran. Setelah transfer selesai, lanjutkan ke upload bukti pembayaran agar admin bisa memverifikasi.
+                        </div>
+                    @elseif ($order->status === \App\Models\Order::STATUS_PAYMENT_UPLOADED)
+                        <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-800">
+                            Bukti pembayaran sudah diterima. Saat ini order Anda sedang menunggu verifikasi admin.
+                        </div>
+                    @elseif ($order->status === \App\Models\Order::STATUS_PAID)
+                        <div class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-800">
+                            Pembayaran sudah disetujui. Silakan cek inbox dan folder spam email Anda untuk link download.
+                        </div>
+                    @elseif ($order->status === \App\Models\Order::STATUS_REJECTED)
+                        <div class="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm leading-6 text-red-800">
+                            Pembayaran ditolak. Silakan periksa alasannya di bawah dan upload ulang bukti jika diperlukan.
+                        </div>
+                    @endif
+
+                    @if ($order->status === \App\Models\Order::STATUS_REJECTED && !empty($order->rejection_reason))
+                        <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm leading-6 text-red-700">
+                            Alasan penolakan: {{ $order->rejection_reason }}
+                        </div>
+                    @endif
+                </div>
+
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
                     <h2 class="text-2xl font-black text-slate-950">Upload Bukti Pembayaran</h2>
 
                     @if ($order->payment_proof_path)
@@ -107,18 +159,12 @@
                             Kirim Pemberitahuan ke Admin WhatsApp
                         </a>
                     @elseif ($order->status !== \App\Models\Order::STATUS_PAID)
-                        <p class="mt-4 text-sm text-slate-600">
-                            Upload bukti transfer dalam format JPG, PNG, atau PDF sesuai validasi yang berlaku.
+                        <p class="mt-4 text-sm leading-6 text-slate-600">
+                            Setelah transfer selesai, upload bukti pembayaran dalam format JPG, PNG, atau PDF agar admin mudah memverifikasi.
                         </p>
                         <a href="{{ route('orders.payment.form', $order->invoice_number) }}" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
                             Upload Bukti Pembayaran
                         </a>
-                    @endif
-
-                    @if ($order->status === \App\Models\Order::STATUS_REJECTED && !empty($order->rejection_reason))
-                        <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm text-red-700">
-                            Alasan penolakan: {{ $order->rejection_reason }}
-                        </div>
                     @endif
                 </div>
             </div>
@@ -127,7 +173,7 @@
                 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Ringkasan Invoice</p>
                     <div class="mt-4 space-y-3 text-sm">
-                        <div class="flex justify-between gap-3"><span class="text-slate-500">Invoice</span><span class="font-bold text-slate-950">{{ $order->invoice_number }}</span></div>
+                        <div class="flex justify-between gap-3"><span class="text-slate-500">Invoice</span><span class="font-bold text-slate-950 break-all text-right">{{ $order->invoice_number }}</span></div>
                         <div class="flex justify-between gap-3"><span class="text-slate-500">Nama</span><span class="font-bold text-slate-950">{{ $order->buyer_name }}</span></div>
                         <div class="flex justify-between gap-3"><span class="text-slate-500">Email</span><span class="font-bold text-slate-950 break-all text-right">{{ $order->buyer_email }}</span></div>
                         <div class="flex justify-between gap-3"><span class="text-slate-500">WhatsApp</span><span class="font-bold text-slate-950">{{ $order->buyer_whatsapp }}</span></div>
@@ -156,38 +202,6 @@
                         @endif
                     </div>
                 </div>
-
-                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-                    <h3 class="text-lg font-black text-slate-950">Langkah Selanjutnya</h3>
-                    @if ($order->status === \App\Models\Order::STATUS_PENDING)
-                        <ol class="mt-4 list-decimal space-y-2 pl-5 text-sm leading-6 text-slate-600">
-                            <li>Transfer sesuai nominal.</li>
-                            <li>Upload bukti pembayaran.</li>
-                            <li>Tunggu verifikasi admin.</li>
-                            <li>Link download dikirim ke email setelah paid.</li>
-                        </ol>
-                    @elseif ($order->status === \App\Models\Order::STATUS_PAYMENT_UPLOADED)
-                        <ul class="mt-4 space-y-2 text-sm leading-6 text-slate-600">
-                            <li>Bukti sudah diterima.</li>
-                            <li>Admin akan melakukan verifikasi.</li>
-                            <li>Cek email setelah pembayaran disetujui.</li>
-                        </ul>
-                    @elseif ($order->status === \App\Models\Order::STATUS_PAID)
-                        <ul class="mt-4 space-y-2 text-sm leading-6 text-slate-600">
-                            <li>Pembayaran sudah disetujui.</li>
-                            <li>Link download sudah/sedang dikirim ke email.</li>
-                            <li>Cek folder inbox/spam.</li>
-                        </ul>
-                    @elseif ($order->status === \App\Models\Order::STATUS_REJECTED)
-                        <ul class="mt-4 space-y-2 text-sm leading-6 text-slate-600">
-                            <li>Pembayaran ditolak.</li>
-                            <li>Periksa alasan penolakan.</li>
-                            <li>Upload ulang bukti atau hubungi admin.</li>
-                        </ul>
-                    @else
-                        <p class="mt-4 text-sm text-slate-600">Silakan cek status order secara berkala.</p>
-                    @endif
-                </div>
             </aside>
         </div>
 
@@ -204,13 +218,6 @@
                 </span>
             @endif
         </div>
-
-        <p class="mt-6 text-center text-sm text-slate-500">
-            Ruang Cerdas memproses pembayaran secara manual. Link download hanya dikirim setelah pembayaran disetujui admin.
-        </p>
-        <p class="mt-2 text-center text-sm text-slate-500">
-            Jika bukti bayar sudah diupload, silakan tunggu verifikasi admin. Anda dapat cek status order kapan saja.
-        </p>
     </div>
 </section>
 @endsection

@@ -28,20 +28,20 @@
     };
 @endphp
 
-<section class="bg-slate-50 py-16">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mb-8">
             <a href="{{ route('orders.thank-you', $order->invoice_number) }}" class="text-sm font-semibold text-blue-600 hover:text-blue-700">
                 Kembali ke invoice
             </a>
             <p class="mt-5 inline-flex rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-blue-700">Pembayaran</p>
-            <h1 class="mt-3 text-4xl font-black tracking-tight text-slate-950 md:text-5xl">Upload Bukti Pembayaran</h1>
-            <p class="mt-3 text-slate-600">Upload bukti transfer untuk invoice {{ $order->invoice_number }}.</p>
+            <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Upload Bukti Pembayaran</h1>
+            <p class="mt-3 text-slate-600">Upload bukti transfer untuk invoice {{ $order->invoice_number }} agar admin bisa memverifikasi pembayaran Anda.</p>
         </div>
 
         <div class="grid gap-8 lg:grid-cols-3">
             <div class="lg:col-span-2">
-                <div class="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm">
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
                     @if ($order->payment_proof_path)
                         <div class="mb-6 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm font-semibold text-blue-700">
                             Bukti pembayaran sudah diupload.
@@ -57,7 +57,7 @@
                             <div class="rounded-2xl bg-white p-4">
                                 <p class="text-sm text-slate-500">Metode</p>
                                 <p class="mt-1 font-black text-slate-950">{{ $bankName }}</p>
-                                <p class="mt-1 text-lg font-black text-blue-600">{{ $bankAccountNumber }}</p>
+                                <p class="mt-1 text-lg font-black text-blue-600 break-all">{{ $bankAccountNumber }}</p>
                                 <p class="mt-1 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
                             </div>
                             <div class="rounded-2xl bg-white p-4">
@@ -79,15 +79,20 @@
                         <div>
                             <label for="payment_proof" class="block text-sm font-bold text-slate-700">File Bukti Pembayaran</label>
                             <input id="payment_proof" name="payment_proof" type="file" accept=".jpg,.jpeg,.png,.pdf" class="mt-2 w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 file:mr-4 file:rounded-xl file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:font-semibold file:text-white hover:file:bg-blue-700" required>
-                            <p class="mt-2 text-sm text-slate-500">Upload bukti transfer dalam format JPG, PNG, atau PDF sesuai validasi yang berlaku.</p>
+                            <p class="mt-2 text-sm text-slate-500">Format yang diterima: JPG, JPEG, PNG, atau PDF. Gunakan bukti yang jelas agar verifikasi lebih mudah.</p>
                             @error('payment_proof')
                                 <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
+                        <div class="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-800">
+                            Upload bukti pembayaran yang jelas, lengkap, dan sesuai nominal agar proses verifikasi berjalan lebih cepat.
+                        </div>
+
                         <div>
                             <label for="payment_note" class="block text-sm font-bold text-slate-700">Catatan Pembayaran</label>
                             <textarea id="payment_note" name="payment_note" rows="4" placeholder="Contoh: Transfer dari BCA atas nama Khairul Anwar" class="mt-2 w-full rounded-2xl border border-slate-300 px-4 py-3 focus:border-blue-600 focus:ring-blue-600">{{ old('payment_note', $order->payment_note) }}</textarea>
+                            <p class="mt-2 text-sm text-slate-500">Opsional. Bisa diisi jika ada informasi tambahan yang membantu admin memverifikasi pembayaran.</p>
                             @error('payment_note')
                                 <p class="mt-2 text-sm font-semibold text-red-600">{{ $message }}</p>
                             @enderror
@@ -103,13 +108,28 @@
             <aside class="space-y-6">
                 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                     <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Ringkasan Invoice</p>
-                    <h2 class="mt-4 text-2xl font-black text-slate-950">{{ $order->invoice_number }}</h2>
+                    <h2 class="mt-4 break-all text-2xl font-black text-slate-950">{{ $order->invoice_number }}</h2>
                     <div class="mt-6 space-y-3 text-sm">
                         <div class="flex justify-between gap-3"><span class="text-slate-500">Produk</span><span class="font-bold text-slate-950 text-right">{{ $order->product->name }}</span></div>
                         <div class="flex justify-between gap-3"><span class="text-slate-500">Pembeli</span><span class="font-bold text-slate-950">{{ $order->buyer_name }}</span></div>
                         <div class="flex justify-between gap-3"><span class="text-slate-500">Total</span><span class="text-xl font-black text-blue-600">{{ \App\Support\Money::rupiah($order->price) }}</span></div>
                         <div class="flex justify-between gap-3"><span class="text-slate-500">Status</span><span class="rounded-full px-3 py-1 text-xs font-bold uppercase {{ $statusClass }}">{{ $statusLabel }}</span></div>
                     </div>
+                </div>
+
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <h3 class="text-lg font-black text-slate-950">Status Saat Ini</h3>
+                    @if ($order->status === \App\Models\Order::STATUS_PENDING)
+                        <p class="mt-4 text-sm leading-6 text-slate-600">Order masih menunggu pembayaran. Silakan transfer lalu upload bukti pembayaran.</p>
+                    @elseif ($order->status === \App\Models\Order::STATUS_PAYMENT_UPLOADED)
+                        <p class="mt-4 text-sm leading-6 text-slate-600">Bukti pembayaran sudah diterima dan saat ini menunggu verifikasi admin.</p>
+                    @elseif ($order->status === \App\Models\Order::STATUS_PAID)
+                        <p class="mt-4 text-sm leading-6 text-slate-600">Pembayaran sudah disetujui. Silakan cek email untuk link download produk Anda.</p>
+                    @elseif ($order->status === \App\Models\Order::STATUS_REJECTED)
+                        <p class="mt-4 text-sm leading-6 text-slate-600">Pembayaran ditolak. Silakan cek alasan penolakan di halaman invoice lalu upload ulang bukti jika diperlukan.</p>
+                    @else
+                        <p class="mt-4 text-sm leading-6 text-slate-600">Silakan cek status order Anda secara berkala.</p>
+                    @endif
                 </div>
 
                 <div class="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-6 shadow-sm">

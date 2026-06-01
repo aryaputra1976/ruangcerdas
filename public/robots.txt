@@ -6,4 +6,4 @@ Disallow: /register
 Disallow: /checkout
 Disallow: /orders
 Disallow: /download
-Sitemap: https://ruangcerdas.test/sitemap.xml
+Sitemap: https://ruangcerdas.id/sitemap.xml

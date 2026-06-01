@@ -15,6 +15,14 @@ class ProductController extends Controller
 {
     public function index(Request $request, PricingService $pricingService)
     {
+        $publicVisibleProducts = Product::query()
+            ->with('category')
+            ->visibleToPublic()
+            ->latest('published_at')
+            ->get()
+            ->filter(fn (Product $product) => $product->isVisibleToPublic())
+            ->values();
+
         $query = Product::query()
             ->with('category')
             ->visibleToPublic()
@@ -64,7 +72,7 @@ class ProductController extends Controller
         );
 
         $categories = Category::query()
-            ->whereIn('id', $allProducts->pluck('category_id')->filter()->unique()->values())
+            ->whereIn('id', $publicVisibleProducts->pluck('category_id')->filter()->unique()->values())
             ->orderBy('name')
             ->get();
 

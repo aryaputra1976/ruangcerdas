@@ -127,7 +127,7 @@
                                     {{ $order->product?->category?->name ?? '-' }}
                                 </div>
 
-                                <div class="text-muted fs-13">
+                                <div class="text-muted fs-12 mt-1">
                                     Slug:
                                     {{ $order->product->slug ?? '-' }}
                                 </div>
@@ -383,51 +383,42 @@
             </div>
             <div class="card-body">
                 @if ($order->auditTrails->count())
-                    <div class="table-responsive table-card">
-                        <table class="table table-hover table-centered align-middle table-nowrap mb-0">
-                            <thead class="table-light text-muted">
-                                <tr>
-                                    <th style="width: 160px;">Waktu</th>
-                                    <th style="width: 180px;">Action</th>
-                                    <th style="width: 160px;">Status</th>
-                                    <th style="width: 200px;">User/Admin</th>
-                                    <th>Description</th>
-                                    <th style="width: 140px;">IP</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($order->auditTrails as $trail)
-                                    <tr>
-                                        <td>
-                                            <div>{{ $trail->created_at?->format('d M Y') }}</div>
-                                            <div class="fs-13 text-muted">{{ $trail->created_at?->format('H:i:s') }}</div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-primary-subtle text-primary">{{ $trail->action }}</span>
-                                        </td>
-                                        <td>
-                                            @if ($trail->from_status || $trail->to_status)
-                                                <span class="text-muted">{{ $trail->from_status ?? '-' }}</span>
-                                                <span class="mx-1">-></span>
-                                                <span class="fw-semibold text-dark">{{ $trail->to_status ?? '-' }}</span>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($trail->user)
-                                                <div class="fw-medium text-dark">{{ $trail->user->name }}</div>
-                                                <div class="text-muted fs-13">{{ $trail->user->email }}</div>
-                                            @else
-                                                <span class="text-muted">System / Public</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-wrap">{{ $trail->description ?? '-' }}</td>
-                                        <td>{{ $trail->ip_address ?? '-' }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                    <div class="d-flex flex-column gap-3">
+                        @foreach ($order->auditTrails as $trail)
+                            <div class="border rounded-3 p-3 bg-light">
+                                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap mb-2">
+                                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                                        <span class="badge bg-primary-subtle text-primary">{{ $trail->action }}</span>
+                                        @if ($trail->from_status || $trail->to_status)
+                                            <span class="fs-13 text-muted">
+                                                {{ $trail->from_status ?? '-' }} -> <span class="fw-semibold text-dark">{{ $trail->to_status ?? '-' }}</span>
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="text-muted fs-13">
+                                        {{ $trail->created_at?->format('d M Y H:i:s') ?? '-' }}
+                                    </div>
+                                </div>
+
+                                <div class="text-dark mb-2">
+                                    {{ $trail->description ?? '-' }}
+                                </div>
+
+                                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                                    <div class="fs-13">
+                                        @if ($trail->user)
+                                            <div class="fw-medium text-dark">{{ $trail->user->name }}</div>
+                                            <div class="text-muted">{{ $trail->user->email }}</div>
+                                        @else
+                                            <div class="text-muted">System / Public</div>
+                                        @endif
+                                    </div>
+                                    <div class="text-muted fs-12">
+                                        IP: {{ $trail->ip_address ?? '-' }}
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
                     </div>
                 @else
                     <div class="text-muted">Belum ada audit trail untuk order ini.</div>

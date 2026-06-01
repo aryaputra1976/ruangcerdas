@@ -2,14 +2,15 @@
     <div class="mx-auto max-w-7xl px-6 py-10">
         <div class="grid gap-8 md:grid-cols-3">
             <div>
-                <h3 class="text-lg font-bold">Ruang Cerdas</h3>
+                <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Ruang Cerdas</p>
+                <h3 class="mt-3 text-lg font-bold">Produk digital untuk kerja yang lebih rapi</h3>
                 <p class="mt-3 text-sm leading-6 text-slate-600">
                     Produk digital, template, aplikasi, dan tools AI untuk kerja lebih cepat dan profesional.
                 </p>
             </div>
 
             <div>
-                <h4 class="font-semibold">Link Cepat</h4>
+                <h4 class="text-sm font-bold uppercase tracking-widest text-slate-500">Link Cepat</h4>
                 <ul class="mt-3 space-y-2 text-sm text-slate-600">
                     <li><a href="{{ route('home') }}" class="hover:text-blue-600">Beranda</a></li>
                     <li><a href="{{ route('products.index') }}" class="hover:text-blue-600">Produk</a></li>
@@ -21,7 +22,7 @@
             </div>
 
             <div>
-                <h4 class="font-semibold">Bantuan</h4>
+                <h4 class="text-sm font-bold uppercase tracking-widest text-slate-500">Bantuan</h4>
                 <p class="mt-3 text-sm text-slate-600">
                     Butuh bantuan pembelian? Hubungi admin Ruang Cerdas melalui WhatsApp.
                 </p>

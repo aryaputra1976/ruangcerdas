@@ -5,12 +5,12 @@
 @section('robots', 'noindex,nofollow')
 
 @section('content')
-<section class="bg-slate-50 py-16">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-3xl px-6">
-        <div class="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <div class="text-center">
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Order Tracking</p>
-                <h1 class="mt-3 text-3xl font-black text-slate-950">Cek Status Order</h1>
+                <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Cek Status Order</h1>
                 <p class="mt-2 text-slate-600">Masukkan nomor invoice dan email/WhatsApp yang dipakai saat checkout.</p>
             </div>
 

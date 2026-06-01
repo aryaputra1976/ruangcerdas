@@ -1,5 +1,5 @@
 <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur">
-    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
         <a href="{{ route('home') }}" class="flex items-center gap-2">
             <img
                 src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
@@ -30,7 +30,7 @@
             </a>
         </nav>
 
-        <a href="{{ route('products.index') }}" class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
+        <a href="{{ route('products.index') }}" class="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700">
             Lihat Produk
         </a>
     </div>

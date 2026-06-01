@@ -15,10 +15,10 @@
 
 <section class="relative overflow-hidden bg-slate-50">
     <div class="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,#dbeafe,transparent_45%),radial-gradient(circle_at_bottom_right,#dcfce7,transparent_35%)]"></div>
-    <div class="mx-auto grid max-w-7xl gap-8 px-6 pt-12 pb-16 md:gap-10 md:pt-14 md:pb-20 lg:grid-cols-2 lg:items-center">
+    <div class="mx-auto grid max-w-7xl gap-8 px-6 pt-12 pb-16 md:gap-10 md:pt-14 md:pb-16 lg:grid-cols-2 lg:items-center">
         <div class="max-w-2xl">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">{{ $landing['hero_badge'] }}</p>
-            <h1 class="mt-3 max-w-xl text-4xl font-extrabold leading-[1.12] tracking-tight text-slate-950 sm:text-4xl md:text-5xl xl:text-[3.25rem]">
+            <h1 class="mt-3 max-w-xl text-4xl font-extrabold leading-tight tracking-tight text-slate-950 sm:text-5xl lg:text-6xl">
                 {{ $landing['hero_title'] }}
             </h1>
             <p class="mt-3 max-w-2xl text-lg leading-8 text-slate-600">
@@ -88,14 +88,14 @@
     </div>
 </section>
 
-<section class="bg-white py-16">
+<section class="bg-white py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Cocok Untuk Siapa</p>
             <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Dibuat untuk kebutuhan kerja nyata</h2>
         </div>
 
-        <div class="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             @foreach ([
                 'ASN dan staf kantor yang butuh format kerja rapi',
                 'Pelaku UMKM yang ingin materi digital siap jalan',
@@ -112,14 +112,14 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-16">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Manfaat</p>
             <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kenapa Ruang Cerdas?</h2>
         </div>
 
-        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+        <div class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-5">
             @foreach ([
                 ['title' => 'Tidak mulai dari nol', 'desc' => 'Anda langsung pakai struktur yang sudah jadi.'],
                 ['title' => 'Format sudah rapi', 'desc' => 'Dokumen dan materi siap edit dengan standar profesional.'],
@@ -136,9 +136,9 @@
     </div>
 </section>
 
-<section class="bg-white py-16">
+<section class="bg-white py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
-        <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div class="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Produk Unggulan</p>
                 <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">{{ $landing['featured_section_title'] }}</h2>
@@ -165,9 +165,10 @@
     </div>
 </section>
 
-<section class="bg-slate-950 py-16 text-white">
+<section class="bg-slate-950 py-14 md:py-16 text-white">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <h2 class="text-3xl font-black md:text-4xl">Sudah tahu kebutuhanmu? Langsung pilih produknya.</h2>
+        <p class="text-sm font-bold uppercase tracking-widest text-blue-300">Mulai Sekarang</p>
+        <h2 class="mt-3 text-3xl font-black md:text-4xl">Sudah tahu kebutuhanmu? Langsung pilih produknya.</h2>
         <p class="mx-auto mt-3 max-w-2xl text-slate-300">
             Katalog kami berisi produk digital siap pakai untuk mempercepat pekerjaan, bisnis, dan proses operasional harian.
         </p>
@@ -182,23 +183,23 @@
     </div>
 </section>
 
-<section id="cara-beli" class="scroll-mt-24 bg-white pt-10 pb-16 md:pt-12 md:pb-20">
+<section id="cara-beli" class="scroll-mt-24 bg-white py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Cara Beli</p>
             <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Pembelian mudah dengan pembayaran manual</h2>
         </div>
 
-        <div class="mt-12 grid gap-6 md:grid-cols-4">
+        <div class="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
             @foreach ([
                 ['1', 'Pilih produk', 'Buka katalog dan pilih produk digital yang dibutuhkan.'],
                 ['2', 'Isi checkout', 'Masukkan nama, email aktif, dan nomor WhatsApp.'],
                 ['3', 'Bayar dan upload bukti', 'Lakukan pembayaran manual lalu upload bukti bayar.'],
                 ['4', 'Admin approve, link download dikirim email', 'Setelah diverifikasi, link download aman dikirim ke email.'],
             ] as $step)
-                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white">{{ $step[0] }}</div>
-                    <h3 class="mt-5 text-lg font-bold">{{ $step[1] }}</h3>
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+                    <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-base font-bold text-white">{{ $step[0] }}</div>
+                    <h3 class="mt-4 text-lg font-bold">{{ $step[1] }}</h3>
                     <p class="mt-2 text-sm leading-6 text-slate-600">{{ $step[2] }}</p>
                 </div>
             @endforeach
@@ -206,13 +207,13 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-20">
+<section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Trust</p>
             <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kenapa aman membeli di Ruang Cerdas?</h2>
         </div>
-        <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             @foreach ([
                 ['title' => 'Verifikasi Admin', 'desc' => 'Pembayaran diverifikasi manual oleh admin sebelum akses diberikan.'],
                 ['title' => 'Token Aman', 'desc' => 'Download memakai token aman sesuai masa berlaku sistem.'],
@@ -234,14 +235,14 @@
 </section>
 
 @if (($testimonials ?? collect())->isNotEmpty())
-<section class="bg-white py-20">
+<section class="bg-white py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Testimonial</p>
             <h2 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Dipercaya oleh pengguna Ruang Cerdas</h2>
         </div>
 
-        <div class="mt-10 grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div class="mt-8 grid gap-4 md:gap-5 md:grid-cols-2 lg:grid-cols-3">
             @foreach ($testimonials as $testimonial)
                 <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm md:p-6">
                     <div class="flex items-center gap-1 text-amber-500" aria-label="Rating {{ (int) $testimonial->rating }} dari 5">
@@ -265,7 +266,7 @@
 </section>
 @endif
 
-<section id="faq" class="bg-slate-50 py-20">
+<section id="faq" class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">FAQ</p>
@@ -275,7 +276,7 @@
             </a>
         </div>
 
-        <div class="mx-auto mt-10 grid max-w-5xl gap-4">
+        <div class="mx-auto mt-8 grid max-w-5xl gap-4">
             @foreach ([
                 ['q' => 'Bagaimana cara mendapatkan file?', 'a' => 'Setelah pembayaran disetujui admin, link download dikirim ke email pembeli.'],
                 ['q' => 'Apakah pembayaran otomatis?', 'a' => 'Belum. Saat ini pembayaran dilakukan manual lalu upload bukti bayar.'],
@@ -294,7 +295,8 @@
 <section class="bg-white py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center">
-            <h3 class="text-2xl font-black text-slate-900">{{ $landing['support_title'] }}</h3>
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Bantuan</p>
+            <h3 class="mt-3 text-3xl font-black text-slate-900 md:text-4xl">{{ $landing['support_title'] }}</h3>
             <p class="mx-auto mt-2 max-w-2xl text-slate-600">{{ $landing['support_text'] }}</p>
             @if (!empty($landing['support_whatsapp']))
                 @php
@@ -319,9 +321,10 @@
     </div>
 </section>
 
-<section class="bg-slate-950 py-20 text-white">
+<section class="bg-slate-950 py-14 md:py-16 text-white">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <h2 class="text-3xl font-black md:text-4xl">Siap mulai lebih cepat?</h2>
+        <p class="text-sm font-bold uppercase tracking-widest text-blue-300">Penutup</p>
+        <h2 class="mt-3 text-3xl font-black md:text-4xl">Siap mulai lebih cepat?</h2>
         <p class="mx-auto mt-3 max-w-2xl text-slate-300">
             Pilih produk digital Ruang Cerdas yang dibutuhkan, lanjutkan checkout, dan selesaikan pembelian dengan alur yang jelas.
         </p>

@@ -111,7 +111,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('orders.payment.upload', $order->invoice_number) }}" enctype="multipart/form-data" class="space-y-6">
+                    <form method="POST" action="{{ route('orders.payment.upload', $order->invoice_number) }}" enctype="multipart/form-data" class="space-y-6" onsubmit="window.rcTrack && window.rcTrack('PurchasePending', {source: 'upload_payment'});">
                         @csrf
                         <div>
                             <label for="payment_proof" class="block text-sm font-bold text-slate-700">File Bukti Pembayaran</label>

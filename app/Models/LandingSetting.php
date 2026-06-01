@@ -24,5 +24,10 @@ class LandingSetting extends Model
         'seo_description',
         'seo_keywords',
         'og_image_url',
+        'meta_pixel_id',
+        'google_analytics_id',
+        'google_tag_manager_id',
+        'whatsapp_cta_text',
+        'whatsapp_default_message',
     ];
 }

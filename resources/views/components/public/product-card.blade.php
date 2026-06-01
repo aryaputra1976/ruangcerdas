@@ -1,5 +1,8 @@
 @props([
     'product',
+    'supportWhatsapp' => null,
+    'whatsappCtaText' => 'Tanya via WhatsApp',
+    'whatsappDefaultMessage' => null,
 ])
 
 @php
@@ -16,14 +19,30 @@
         : null;
     $categoryName = strtolower((string) ($product->category->name ?? ''));
     $isTryoutCategory = str_contains($categoryName, 'tryout');
+    $supportNumber = preg_replace('/\D+/', '', (string) $supportWhatsapp);
+    if (str_starts_with($supportNumber, '0')) {
+        $supportNumber = '62' . substr($supportNumber, 1);
+    }
+    $messageTemplate = trim((string) $whatsappDefaultMessage) !== ''
+        ? trim((string) $whatsappDefaultMessage)
+        : 'Halo Ruang Cerdas, saya tertarik dengan produk: {nama}. Harga: {harga}. Link: {url}';
+    $waMessage = strtr($messageTemplate, [
+        '{nama}' => $product->name,
+        '{harga}' => \App\Support\Money::rupiah($price),
+        '{url}' => route('products.show', $product->slug),
+    ]);
+    $waUrl = $supportNumber !== '' ? 'https://wa.me/' . $supportNumber . '?text=' . rawurlencode($waMessage) : null;
 @endphp
 
 <div class="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-    <a href="{{ route('products.show', $product->slug) }}" class="block">
+    <a href="{{ route('products.show', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('ProductCardClick', {source: 'product_cover', content_type: 'product', content_ids: [{{ $product->id }}]});" class="block">
         <div class="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-blue-50 to-emerald-50">
             @if ($coverUrl)
                 <img src="{{ $coverUrl }}"
                      alt="{{ $product->name }}"
+                     loading="lazy"
+                     width="640"
+                     height="400"
                      class="h-full w-full object-cover">
             @else
                 <div class="text-center">
@@ -88,6 +107,9 @@
                 <p class="mt-1 text-sm text-slate-400 line-through">
                     {{ \App\Support\Money::rupiah($normalPrice) }}
                 </p>
+                <p class="mt-1 inline-flex rounded-full bg-red-50 px-2 py-1 text-xs font-bold text-red-700">
+                    Promo
+                </p>
             @endif
 
             <p class="mt-1 text-3xl font-black text-slate-950">
@@ -95,16 +117,27 @@
             </p>
         </div>
 
-        <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div class="mt-6 flex flex-col gap-3">
             <a href="{{ route('products.show', $product->slug) }}"
+               onclick="window.rcTrack && window.rcTrack('ProductCardClick', {source: 'product_detail_button', content_type: 'product', content_ids: [{{ $product->id }}]});"
                class="inline-flex flex-1 items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-600 hover:text-blue-600">
                 Lihat Detail
             </a>
 
             <a href="{{ route('checkout.create', $product->slug) }}"
+               onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'product_card_checkout', content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});"
                class="inline-flex flex-1 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
                 Beli Sekarang
             </a>
+
+            @if ($waUrl)
+                <a href="{{ $waUrl }}"
+                   target="_blank" rel="noopener noreferrer"
+                   onclick="window.rcTrack && window.rcTrack('Contact', {source: 'product_card_whatsapp'});"
+                   class="inline-flex flex-1 items-center justify-center rounded-2xl bg-green-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-green-600/20 transition hover:bg-green-700">
+                    {{ $whatsappCtaText }}
+                </a>
+            @endif
         </div>
     </div>
 </div>

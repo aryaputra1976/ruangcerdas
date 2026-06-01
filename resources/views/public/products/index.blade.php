@@ -2,6 +2,7 @@
 
 @section('title', 'Produk Digital - Ruang Cerdas')
 @section('meta_description', 'Katalog produk digital siap pakai dari Ruang Cerdas.')
+@section('canonical', route('products.index'))
 
 @section('content')
 @php
@@ -146,7 +147,12 @@
         @if ($products->isNotEmpty())
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($products as $product)
-                    @include('components.public.product-card', ['product' => $product])
+                    @include('components.public.product-card', [
+                        'product' => $product,
+                        'supportWhatsapp' => $supportWhatsapp ?? null,
+                        'whatsappCtaText' => $landingSetting?->whatsapp_cta_text ?? 'Tanya via WhatsApp',
+                        'whatsappDefaultMessage' => $landingSetting?->whatsapp_default_message,
+                    ])
                 @endforeach
             </div>
             <div class="mt-10">{{ $products->links() }}</div>
@@ -181,4 +187,23 @@
         @endif
     </div>
 </section>
+
+<div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
+    <div class="mx-auto flex max-w-7xl gap-2">
+        <a href="{{ route('products.index') }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_products_catalog'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
+            Katalog Produk
+        </a>
+        @php
+            $stickySupport = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
+            if (str_starts_with($stickySupport, '0')) {
+                $stickySupport = '62' . substr($stickySupport, 1);
+            }
+        @endphp
+        @if ($stickySupport !== '')
+            <a href="https://wa.me/{{ $stickySupport }}?text={{ rawurlencode('Halo Ruang Cerdas, saya butuh rekomendasi produk.') }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_products_whatsapp'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white">
+                WhatsApp
+            </a>
+        @endif
+    </div>
+</div>
 @endsection

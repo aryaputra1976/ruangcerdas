@@ -60,3 +60,6 @@ php artisan test
 ```
 
 Dokumen checklist produksi: `docs/PRODUCTION-READINESS-CHECKLIST.md`.
+Panduan setup tracking: `docs/TRACKING-SETUP.md`.
+Panduan schema markup: `docs/SCHEMA-SETUP.md`.
+Catatan optimasi landing: `docs/LANDING-CONVERSION.md`.

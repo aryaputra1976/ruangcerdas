@@ -1,9 +1,20 @@
 @extends('layouts.public')
 
-@section('title', 'Ruang Cerdas - Produk Digital & Belajar Online')
-@section('meta_description', 'Ruang Cerdas menyediakan eBook, template, tools AI, aplikasi siap pakai, paket belajar digital, dan persiapan tryout online untuk kerja dan belajar lebih cerdas.')
+@section('title', $landing['seo_title'] ?? 'Ruang Cerdas - Produk Digital & Belajar Online')
+@section('meta_description', $landing['seo_description'] ?? 'Ruang Cerdas menyediakan eBook, template, tools AI, aplikasi siap pakai, paket belajar digital, dan persiapan tryout online untuk kerja dan belajar lebih cerdas.')
 @section('meta_keywords', $landing['seo_keywords'] ?? '')
 @section('og_image', $landing['og_image_url'] ?? '')
+@section('canonical', route('home'))
+@section('og_type', 'website')
+@section('schema_jsonld')
+    @php
+        $supportNumber = preg_replace('/\D+/', '', (string) ($landing['support_whatsapp'] ?? ''));
+        if (str_starts_with($supportNumber, '0')) {
+            $supportNumber = '62' . substr($supportNumber, 1);
+        }
+    @endphp
+    @include('public.partials.schema.organization', ['supportNumber' => $supportNumber])
+@endsection
 
 @section('content')
 <section class="relative overflow-hidden bg-slate-50">
@@ -19,20 +30,34 @@
             </p>
 
             <div class="mt-7 flex flex-col gap-3 sm:flex-row">
-                <a href="{{ route('products.index') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
+                <a href="{{ route('products.index') }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'home_hero_products'});" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
                     Lihat Produk
                 </a>
                 <a href="{{ route('home') }}#tryout" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-800 hover:border-blue-600 hover:text-blue-600">
                     Lihat Tryout
                 </a>
+                @if (!empty($landing['support_whatsapp']))
+                    @php
+                        $heroWaNumber = preg_replace('/\D+/', '', (string) $landing['support_whatsapp']);
+                        if (str_starts_with($heroWaNumber, '0')) {
+                            $heroWaNumber = '62' . substr($heroWaNumber, 1);
+                        }
+                        $heroWaMessage = 'Halo Ruang Cerdas, saya ingin tanya produk digital yang paling cocok untuk kebutuhan saya.';
+                    @endphp
+                    @if ($heroWaNumber !== '')
+                        <a href="https://wa.me/{{ $heroWaNumber }}?text={{ rawurlencode($heroWaMessage) }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'home_hero_whatsapp'});" class="inline-flex items-center justify-center rounded-2xl bg-green-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-green-600/20 hover:bg-green-700">
+                            Tanya via WhatsApp
+                        </a>
+                    @endif
+                @endif
             </div>
 
             <div class="mt-6 grid gap-2 sm:grid-cols-2">
                 @foreach ([
-                    'Pembayaran manual dengan verifikasi admin',
-                    'Link download dikirim ke email pembeli',
-                    'Token download aman sesuai masa berlaku',
-                    'Bisa cek status order kapan saja',
+                    'Hemat waktu kerja dengan file digital siap pakai',
+                    'Template dan tools langsung bisa dipakai',
+                    'Download aman setelah verifikasi admin',
+                    'Link file dikirim lewat email pembeli',
                 ] as $trustLine)
                     <div class="flex items-start gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 shadow-sm">
                         <span class="mt-0.5 inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
@@ -202,7 +227,12 @@
         @if ($featuredProducts->isNotEmpty())
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($featuredProducts as $product)
-                    @include('components.public.product-card', ['product' => $product])
+                    @include('components.public.product-card', [
+                        'product' => $product,
+                        'supportWhatsapp' => $landing['support_whatsapp'] ?? null,
+                        'whatsappCtaText' => $landing['whatsapp_cta_text'] ?? 'Tanya via WhatsApp',
+                        'whatsappDefaultMessage' => $landing['whatsapp_default_message'] ?? null,
+                    ])
                 @endforeach
             </div>
         @else
@@ -243,8 +273,10 @@
             @foreach ([
                 ['1', 'Pilih produk', 'Buka katalog dan pilih produk digital yang dibutuhkan.'],
                 ['2', 'Isi checkout', 'Masukkan nama, email aktif, dan nomor WhatsApp.'],
-                ['3', 'Bayar dan upload bukti', 'Lakukan pembayaran manual lalu upload bukti bayar.'],
-                ['4', 'Admin approve, link download dikirim email', 'Setelah diverifikasi, link download aman dikirim ke email.'],
+                ['3', 'Bayar manual', 'Lakukan transfer sesuai instruksi pembayaran.'],
+                ['4', 'Upload bukti bayar', 'Upload bukti pembayaran yang jelas di halaman order.'],
+                ['5', 'Admin verifikasi', 'Admin akan memvalidasi pembayaran Anda.'],
+                ['6', 'Link download ke email', 'Setelah approved, link download aman dikirim ke email pembeli.'],
             ] as $step)
                 <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
                     <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-base font-bold text-white">{{ $step[0] }}</div>
@@ -350,11 +382,22 @@
             @if (!empty($landing['support_whatsapp']))
                 @php
                     $supportNumber = preg_replace('/\D+/', '', (string) $landing['support_whatsapp']);
+                    if (str_starts_with($supportNumber, '0')) {
+                        $supportNumber = '62' . substr($supportNumber, 1);
+                    }
+                    $ctaText = trim((string) ($landing['whatsapp_cta_text'] ?? '')) ?: 'Hubungi WhatsApp Admin';
+                    $defaultMessage = trim((string) ($landing['whatsapp_default_message'] ?? ''));
+                    $waMessage = $defaultMessage !== ''
+                        ? $defaultMessage
+                        : 'Halo Ruang Cerdas, saya tertarik dengan produk di website Ruang Cerdas. Link: ' . route('home');
+                    $waUrl = $supportNumber !== '' ? 'https://wa.me/' . $supportNumber . '?text=' . rawurlencode($waMessage) : null;
                 @endphp
                 <div class="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                    <a href="https://wa.me/{{ $supportNumber }}" target="_blank" rel="noopener noreferrer" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
-                        Hubungi WhatsApp Admin
-                    </a>
+                    @if ($waUrl)
+                        <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'home_support'});" class="rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
+                            {{ $ctaText }}
+                        </a>
+                    @endif
                     <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-800 hover:border-blue-600 hover:text-blue-600">
                         Cek Order
                     </a>
@@ -387,4 +430,26 @@
         </div>
     </div>
 </section>
+
+<div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
+    <div class="mx-auto flex max-w-7xl gap-2">
+        <a href="{{ route('products.index') }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_home_products'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
+            Lihat Produk
+        </a>
+        @if (!empty($landing['support_whatsapp']))
+            @php
+                $stickyWaNumber = preg_replace('/\D+/', '', (string) $landing['support_whatsapp']);
+                if (str_starts_with($stickyWaNumber, '0')) {
+                    $stickyWaNumber = '62' . substr($stickyWaNumber, 1);
+                }
+                $stickyWaMessage = 'Halo Ruang Cerdas, saya ingin konsultasi produk digital.';
+            @endphp
+            @if ($stickyWaNumber !== '')
+                <a href="https://wa.me/{{ $stickyWaNumber }}?text={{ rawurlencode($stickyWaMessage) }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_home_whatsapp'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white">
+                    WhatsApp
+                </a>
+            @endif
+        @endif
+    </div>
+</div>
 @endsection

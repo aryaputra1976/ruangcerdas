@@ -5,7 +5,8 @@ Disallow: /admin
 Disallow: /dashboard
 Disallow: /login
 Disallow: /register
-Disallow: /order-tracking
+Disallow: /checkout
 Disallow: /order/
+Disallow: /storage/payment-proofs
 
-Sitemap: {{ route('public.sitemap') }}
+Sitemap: https://ruangcerdas.id/sitemap.xml

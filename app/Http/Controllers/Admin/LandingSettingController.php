@@ -36,6 +36,11 @@ class LandingSettingController extends Controller
             'seo_description' => ['nullable', 'string', 'max:500'],
             'seo_keywords' => ['nullable', 'string', 'max:255'],
             'og_image_url' => ['nullable', 'string', 'max:255'],
+            'meta_pixel_id' => ['nullable', 'string', 'max:100'],
+            'google_analytics_id' => ['nullable', 'string', 'max:100'],
+            'google_tag_manager_id' => ['nullable', 'string', 'max:100'],
+            'whatsapp_cta_text' => ['nullable', 'string', 'max:100'],
+            'whatsapp_default_message' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $landingSetting = LandingSetting::query()->firstOrCreate([]);

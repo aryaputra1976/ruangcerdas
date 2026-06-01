@@ -6,10 +6,13 @@
     <link rel="icon" type="image/png" href="{{ asset('hando/assets/images/rc/rc_ico.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('hando/assets/images/rc/rc_ico.png') }}">
     @include('public.partials.seo')
+    @include('public.partials.tracking-head')
+    @yield('schema_jsonld')
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
+    @include('public.partials.tracking-body')
 
     @include('components.public.navbar')
 
@@ -18,6 +21,19 @@
     </main>
 
     @include('components.public.footer')
+    <script>
+        window.rcTrack = function (eventName, params) {
+            const payload = params || {};
+
+            if (typeof window.fbq === 'function' && window.rcTrackingConfig?.hasMetaPixel) {
+                window.fbq('track', eventName, payload);
+            }
+
+            if (typeof window.gtag === 'function' && window.rcTrackingConfig?.hasGoogleAnalytics) {
+                window.gtag('event', eventName, payload);
+            }
+        };
+    </script>
 
 </body>
 </html>

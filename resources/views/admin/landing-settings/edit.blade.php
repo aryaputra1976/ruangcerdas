@@ -158,6 +158,53 @@
                            value="{{ old('og_image_url', $landingSetting->og_image_url) }}">
                     @error('og_image_url')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
+
+                <div class="col-12 mt-3">
+                    <hr>
+                    <h5 class="mb-1">Tracking & WhatsApp CTA</h5>
+                    <p class="text-muted fs-13 mb-0">Kosongkan jika belum digunakan.</p>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="meta_pixel_id" class="form-label">Meta Pixel ID</label>
+                    <input type="text" id="meta_pixel_id" name="meta_pixel_id"
+                           class="form-control @error('meta_pixel_id') is-invalid @enderror"
+                           value="{{ old('meta_pixel_id', $landingSetting->meta_pixel_id) }}">
+                    @error('meta_pixel_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-4">
+                    <label for="google_analytics_id" class="form-label">Google Analytics ID (GA4)</label>
+                    <input type="text" id="google_analytics_id" name="google_analytics_id"
+                           class="form-control @error('google_analytics_id') is-invalid @enderror"
+                           value="{{ old('google_analytics_id', $landingSetting->google_analytics_id) }}">
+                    @error('google_analytics_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-4">
+                    <label for="google_tag_manager_id" class="form-label">Google Tag Manager ID</label>
+                    <input type="text" id="google_tag_manager_id" name="google_tag_manager_id"
+                           class="form-control @error('google_tag_manager_id') is-invalid @enderror"
+                           value="{{ old('google_tag_manager_id', $landingSetting->google_tag_manager_id) }}">
+                    @error('google_tag_manager_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-md-6">
+                    <label for="whatsapp_cta_text" class="form-label">WhatsApp CTA Text</label>
+                    <input type="text" id="whatsapp_cta_text" name="whatsapp_cta_text"
+                           class="form-control @error('whatsapp_cta_text') is-invalid @enderror"
+                           value="{{ old('whatsapp_cta_text', $landingSetting->whatsapp_cta_text) }}"
+                           placeholder="Contoh: Tanya via WhatsApp">
+                    @error('whatsapp_cta_text')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="col-12">
+                    <label for="whatsapp_default_message" class="form-label">WhatsApp Default Message</label>
+                    <textarea id="whatsapp_default_message" name="whatsapp_default_message" rows="3"
+                              class="form-control @error('whatsapp_default_message') is-invalid @enderror"
+                              placeholder="Contoh: Halo Ruang Cerdas, saya tertarik dengan produk ini.">{{ old('whatsapp_default_message', $landingSetting->whatsapp_default_message) }}</textarea>
+                    @error('whatsapp_default_message')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                </div>
             </div>
 
             <div class="mt-4">

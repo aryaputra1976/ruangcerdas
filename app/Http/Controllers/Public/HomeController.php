@@ -30,6 +30,8 @@ class HomeController extends Controller
             'seo_description' => 'Ruang Cerdas menyediakan eBook, template, tools AI, aplikasi siap pakai, paket belajar digital, dan persiapan tryout online.',
             'seo_keywords' => null,
             'og_image_url' => null,
+            'whatsapp_cta_text' => 'Hubungi WhatsApp Admin',
+            'whatsapp_default_message' => null,
         ];
 
         $landingSetting = LandingSetting::query()->first();
@@ -52,6 +54,8 @@ class HomeController extends Controller
             'seo_description' => $landingSetting?->seo_description,
             'seo_keywords' => $landingSetting?->seo_keywords,
             'og_image_url' => $landingSetting?->og_image_url,
+            'whatsapp_cta_text' => $landingSetting?->whatsapp_cta_text,
+            'whatsapp_default_message' => $landingSetting?->whatsapp_default_message,
         ], fn ($value) => filled($value)));
 
         $featuredProducts = Product::query()

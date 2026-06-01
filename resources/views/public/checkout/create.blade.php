@@ -11,6 +11,9 @@
     $remainingQuota = $pricing['remaining_quota'] ?? 0;
     $priceLabel = $pricing['label'] ?? 'Harga Produk';
     $supportNumber = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
+    if (str_starts_with($supportNumber, '0')) {
+        $supportNumber = '62' . substr($supportNumber, 1);
+    }
 @endphp
 
 <section class="bg-slate-50 py-14 md:py-16">
@@ -48,7 +51,7 @@
                         </p>
                     </div>
 
-                    <form method="POST" action="{{ route('checkout.store', $product->slug) }}" class="space-y-6">
+                    <form method="POST" action="{{ route('checkout.store', $product->slug) }}" class="space-y-6" onsubmit="window.rcTrack && window.rcTrack('Lead', {source: 'checkout_form', content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});">
                         @csrf
 
                         <div class="grid gap-6 md:grid-cols-2">
@@ -176,7 +179,7 @@
                     </div>
 
                     @if ($supportNumber !== '')
-                        <a href="https://wa.me/{{ $supportNumber }}" target="_blank" rel="noopener noreferrer" class="inline-flex w-full items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
+                        <a href="https://wa.me/{{ $supportNumber }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'checkout_sidebar'});" class="inline-flex w-full items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
                             Butuh Bantuan? WhatsApp Admin
                         </a>
                     @endif

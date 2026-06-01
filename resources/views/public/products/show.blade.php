@@ -2,8 +2,10 @@
 
 @section('title', $product->name . ' - Ruang Cerdas')
 @section('meta_description', $product->short_description ?: 'Produk digital Ruang Cerdas siap pakai.')
+@section('meta_keywords', $product->category?->name ? ($product->category->name . ', produk digital, ruang cerdas') : 'produk digital, ruang cerdas')
 @section('og_type', 'product')
-@section('canonical', isset($isPreview) && $isPreview ? route('admin.products.preview', $product) : url()->current())
+@section('canonical', isset($isPreview) && $isPreview ? route('admin.products.preview', $product) : route('products.show', $product->slug))
+@section('og_url', isset($isPreview) && $isPreview ? route('admin.products.preview', $product) : route('products.show', $product->slug))
 @if (isset($isPreview) && $isPreview)
     @section('robots', 'noindex,nofollow')
 @endif
@@ -27,7 +29,41 @@
     $benefits = collect(preg_split('/\r\n|\r|\n/', (string) $product->benefits))->map(fn ($item) => trim($item))->filter()->values();
     $contents = collect(preg_split('/\r\n|\r|\n/', (string) $product->contents))->map(fn ($item) => trim($item))->filter()->values();
     $supportNumber = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
+    if (str_starts_with($supportNumber, '0')) {
+        $supportNumber = '62' . substr($supportNumber, 1);
+    }
+    $defaultWaTemplate = trim((string) ($landingSetting->whatsapp_default_message ?? ''));
+    $waTemplate = $defaultWaTemplate !== ''
+        ? $defaultWaTemplate
+        : 'Halo Ruang Cerdas, saya tertarik dengan produk: {nama}. Harga: {harga}. Link: {url}';
+    $waMessage = strtr($waTemplate, [
+        '{nama}' => $product->name,
+        '{harga}' => \App\Support\Money::rupiah($price),
+        '{url}' => url()->current(),
+    ]);
+    $waUrl = $supportNumber !== '' ? 'https://wa.me/' . $supportNumber . '?text=' . rawurlencode($waMessage) : null;
+    $waCtaText = trim((string) ($landingSetting->whatsapp_cta_text ?? '')) ?: 'Hubungi Admin via WhatsApp';
 @endphp
+@section('schema_jsonld')
+    @include('public.partials.schema.product', [
+        'product' => $product,
+        'price' => $price,
+        'canCheckout' => $canCheckout,
+        'coverUrl' => $coverUrl,
+    ])
+    @include('public.partials.schema.breadcrumb', ['product' => $product])
+    @if ($product->faqs->isNotEmpty())
+        @include('public.partials.schema.faq', ['product' => $product])
+    @endif
+@endsection
+<script>
+    window.rcTrack && window.rcTrack('ViewContent', {
+        content_type: 'product',
+        content_ids: [{{ $product->id }}],
+        value: {{ (int) $price }},
+        currency: 'IDR'
+    });
+</script>
 
 <section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-7xl px-6">
@@ -187,7 +223,7 @@
                     </div>
 
                     @if ($canCheckout)
-                        <a href="{{ route('checkout.create', $product->slug) }}" class="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
+                        <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
                             Beli Sekarang
                         </a>
                     @else
@@ -244,9 +280,9 @@
                     <h3 class="text-xl font-black text-slate-950">Butuh bantuan sebelum membeli?</h3>
                     <p class="mt-3 text-sm leading-6 text-slate-600">Jika ada pertanyaan tentang isi produk, alur pembayaran, atau status order, tim kami siap membantu.</p>
                     <div class="mt-5 flex flex-col gap-3">
-                        @if ($supportNumber !== '')
-                            <a href="https://wa.me/{{ $supportNumber }}" target="_blank" rel="noopener noreferrer" class="inline-flex w-full items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
-                                Hubungi Admin via WhatsApp
+                        @if ($waUrl)
+                            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'product_detail'});" class="inline-flex w-full items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
+                                {{ $waCtaText }}
                             </a>
                         @endif
                         <a href="{{ route('public.order-tracking.index') }}" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-600 hover:text-blue-600">
@@ -359,4 +395,19 @@
     </div>
 </section>
 @endif
+
+<div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
+    <div class="mx-auto flex max-w-7xl gap-2">
+        @if ($canCheckout)
+            <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_product_checkout', content_type: 'product', content_ids: [{{ $product->id }}]});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
+                Beli Sekarang
+            </a>
+        @endif
+        @if ($waUrl)
+            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_product_whatsapp'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white">
+                WhatsApp
+            </a>
+        @endif
+    </div>
+</div>
 @endsection

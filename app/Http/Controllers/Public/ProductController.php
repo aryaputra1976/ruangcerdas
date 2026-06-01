@@ -76,7 +76,10 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('public.products.index', compact('products', 'categories'));
+        $landingSetting = LandingSetting::query()->first();
+        $supportWhatsapp = $landingSetting?->support_whatsapp;
+
+        return view('public.products.index', compact('products', 'categories', 'landingSetting', 'supportWhatsapp'));
     }
 
     public function show(Product $product, PricingService $pricingService)
@@ -100,8 +103,9 @@ class ProductController extends Controller
             ->take(3)
             ->get();
 
-        $supportWhatsapp = LandingSetting::query()->value('support_whatsapp');
+        $landingSetting = LandingSetting::query()->first();
+        $supportWhatsapp = $landingSetting?->support_whatsapp;
 
-        return view('public.products.show', compact('product', 'pricing', 'testimonials', 'supportWhatsapp'));
+        return view('public.products.show', compact('product', 'pricing', 'testimonials', 'supportWhatsapp', 'landingSetting'));
     }
 }

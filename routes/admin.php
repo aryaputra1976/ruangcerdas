@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ProductFaqController;
 use App\Http\Controllers\Admin\CustomerContactController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -44,6 +45,7 @@ Route::prefix('admin')
         Route::get('/customers', [CustomerContactController::class, 'index'])->name('customers.index');
         Route::resource('/testimonials', TestimonialController::class)->except(['show']);
         Route::resource('/coupons', CouponController::class)->except(['show']);
+        Route::resource('/users', UserController::class)->except(['show']);
 
         Route::resource('/products', ProductController::class);
         Route::get('/products/{product}/preview', [ProductController::class, 'preview'])

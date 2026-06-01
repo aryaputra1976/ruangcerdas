@@ -7,6 +7,7 @@ use App\Http\Controllers\Public\CheckoutController;
 use App\Http\Controllers\Public\OrderController;
 use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\SitemapController;
+use App\Http\Controllers\Public\RobotsController;
 use App\Http\Controllers\Public\OrderTrackingController;
 use App\Http\Controllers\Public\FaqController;
 use App\Http\Controllers\Public\LegalPageController;
@@ -25,6 +26,7 @@ Route::post('/order/{invoice}/upload-payment', [OrderController::class, 'uploadP
 
 Route::get('/order/{invoice}/download/{token}', [DownloadController::class, 'download'])->name('orders.download');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('public.sitemap');
+Route::get('/robots.txt', [RobotsController::class, 'index'])->name('public.robots');
 Route::get('/faq', [FaqController::class, 'index'])->name('public.faq');
 Route::get('/terms', [LegalPageController::class, 'terms'])->name('public.terms');
 Route::get('/privacy', [LegalPageController::class, 'privacy'])->name('public.privacy');

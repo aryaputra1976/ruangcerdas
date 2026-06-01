@@ -200,9 +200,15 @@ class OrderController extends Controller
                 'error' => $exception->getMessage(),
             ]);
 
+            $errorMessage = 'Gagal mengirim ulang email link download. Periksa konfigurasi mail server (SMTP) dan kredensial akun email.';
+
+            if (str_contains(strtolower($exception->getMessage()), 'authenticate')) {
+                $errorMessage = 'Gagal autentikasi SMTP. Periksa MAIL_USERNAME dan MAIL_PASSWORD pada file .env.';
+            }
+
             return redirect()
                 ->back()
-                ->with('error', 'Link download belum dapat dikirim ulang karena order belum paid / email tidak tersedia / file produk belum tersedia.');
+                ->with('error', $errorMessage);
         }
 
         ActivityLogger::log(

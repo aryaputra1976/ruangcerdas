@@ -475,18 +475,13 @@ Bonus prompt AI">{{ old('contents', $product->contents ?? '') }}</textarea>
                             <span>Download File</span>
                         </a>
 
-                        <form method="POST"
-                              action="{{ route('admin.products.file.destroy', $product) }}"
-                              onsubmit="return confirm('Hapus file digital produk ini?');">
-                            @csrf
-                            @method('DELETE')
-
-                            <button type="submit"
-                                    class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1">
-                                <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
-                                <span>Hapus File</span>
-                            </button>
-                        </form>
+                        <button type="submit"
+                                form="delete-product-file-form"
+                                onclick="return confirm('Hapus file digital produk ini?');"
+                                class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                            <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+                            <span>Hapus File</span>
+                        </button>
                     </div>
                 @else
                     <div class="alert alert-warning">

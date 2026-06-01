@@ -5,6 +5,8 @@
     $subtitle = $product->name;
 
     $isPublished = $product->published_at && $product->published_at->lte(now());
+    $formIsActive = old('is_active', $product->is_active) ? true : false;
+    $formIsPublished = old('is_published', $isPublished) ? true : false;
     $hasDiscount = !empty($product->sale_price) && $product->sale_price < $product->normal_price;
 @endphp
 
@@ -46,23 +48,36 @@
             </div>
 
             <div class="card-body">
+                @if ($errors->any())
+                    <div class="alert alert-danger mb-3">
+                        <div class="fw-semibold mb-1">
+                            Gagal menyimpan perubahan.
+                        </div>
+                        <ul class="mb-0 ps-3">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="alert alert-info mb-3">
                     Produk hanya tampil di public jika aktif, dipublish, dan file digital private tersedia.
                 </div>
 
-                @if ($product->is_active && $product->isMissingPrivateFile())
+                @if ($formIsActive && $product->isMissingPrivateFile())
                     <div class="alert alert-warning mb-3">
                         Produk ini aktif tetapi belum memiliki file digital private.
                     </div>
                 @endif
 
-                @if (! $product->is_active)
+                @if (! $formIsActive)
                     <div class="alert alert-warning mb-3">
                         Produk nonaktif, sehingga tidak tampil di public.
                     </div>
                 @endif
 
-                @if (! $isPublished)
+                @if (! $formIsPublished)
                     <div class="alert alert-warning mb-3">
                         Produk masih draft, sehingga belum tampil di public.
                     </div>
@@ -75,6 +90,14 @@
                     @method('PUT')
 
                     @include('admin.products._form', ['product' => $product])
+                </form>
+
+                <form id="delete-product-file-form"
+                      method="POST"
+                      action="{{ route('admin.products.file.destroy', $product) }}"
+                      class="d-none">
+                    @csrf
+                    @method('DELETE')
                 </form>
             </div>
         </div>

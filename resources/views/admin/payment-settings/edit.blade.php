@@ -3,6 +3,29 @@
 @php
     $title = 'Pengaturan Pembayaran';
     $subtitle = 'Atur informasi transfer dan QRIS untuk checkout manual.';
+    $legacyBankRow = [
+        'bank_name' => $paymentSetting->bank_name,
+        'account_number' => $paymentSetting->bank_account_number,
+        'account_holder' => $paymentSetting->bank_account_holder,
+        'is_primary' => true,
+    ];
+    $bankAccountsInput = old('bank_accounts', $paymentSetting->bank_accounts ?: [$legacyBankRow]);
+    $bankAccounts = collect($bankAccountsInput)
+        ->map(fn ($row) => [
+            'bank_name' => data_get($row, 'bank_name', ''),
+            'account_number' => data_get($row, 'account_number', ''),
+            'account_holder' => data_get($row, 'account_holder', ''),
+            'is_primary' => (bool) data_get($row, 'is_primary', false),
+        ])
+        ->values();
+    while ($bankAccounts->count() < 3) {
+        $bankAccounts->push([
+            'bank_name' => '',
+            'account_number' => '',
+            'account_holder' => '',
+            'is_primary' => false,
+        ]);
+    }
 @endphp
 
 @section('content')
@@ -23,43 +46,106 @@
                     @method('PUT')
 
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="bank_name" class="form-label">Nama Bank</label>
-                            <input type="text"
-                                   id="bank_name"
-                                   name="bank_name"
-                                   class="form-control @error('bank_name') is-invalid @enderror"
-                                   value="{{ old('bank_name', $paymentSetting->bank_name) }}"
-                                   placeholder="Contoh: Bank Mandiri">
-                            @error('bank_name')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
+                        <div class="col-12">
+                            <div class="border rounded-3 p-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                                    <h6 class="mb-0">Daftar Rekening Bank</h6>
+                                    <span class="text-muted fs-13">Isi minimal satu rekening lengkap.</span>
+                                </div>
 
-                        <div class="col-md-6">
-                            <label for="bank_account_number" class="form-label">Nomor Rekening</label>
-                            <input type="text"
-                                   id="bank_account_number"
-                                   name="bank_account_number"
-                                   class="form-control @error('bank_account_number') is-invalid @enderror"
-                                   value="{{ old('bank_account_number', $paymentSetting->bank_account_number) }}"
-                                   placeholder="Contoh: 1234567890">
-                            @error('bank_account_number')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                                @foreach ($bankAccounts as $index => $account)
+                                    <div class="row g-2 {{ $index > 0 ? 'mt-1' : '' }}">
+                                        <div class="col-md-3">
+                                            <label class="form-label fs-13">Nama Bank</label>
+                                            <input type="text"
+                                                   name="bank_accounts[{{ $index }}][bank_name]"
+                                                   class="form-control @error('bank_accounts.'.$index.'.bank_name') is-invalid @enderror"
+                                                   value="{{ $account['bank_name'] }}"
+                                                   placeholder="Contoh: Bank Jago">
+                                            @error('bank_accounts.'.$index.'.bank_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label fs-13">Nomor Rekening</label>
+                                            <input type="text"
+                                                   name="bank_accounts[{{ $index }}][account_number]"
+                                                   class="form-control @error('bank_accounts.'.$index.'.account_number') is-invalid @enderror"
+                                                   value="{{ $account['account_number'] }}"
+                                                   placeholder="Contoh: 1234567890">
+                                            @error('bank_accounts.'.$index.'.account_number')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label fs-13">Nama Pemilik</label>
+                                            <input type="text"
+                                                   name="bank_accounts[{{ $index }}][account_holder]"
+                                                   class="form-control @error('bank_accounts.'.$index.'.account_holder') is-invalid @enderror"
+                                                   value="{{ $account['account_holder'] }}"
+                                                   placeholder="Contoh: Ruang Cerdas">
+                                            @error('bank_accounts.'.$index.'.account_holder')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-2">
+                                            <label class="form-label fs-13 d-block">Primary</label>
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       name="bank_accounts[{{ $index }}][is_primary]"
+                                                       value="1"
+                                                       @checked((bool) $account['is_primary'])>
+                                                <label class="form-check-label">Utama</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
 
                         <div class="col-12">
-                            <label for="bank_account_holder" class="form-label">Nama Pemilik Rekening</label>
-                            <input type="text"
-                                   id="bank_account_holder"
-                                   name="bank_account_holder"
-                                   class="form-control @error('bank_account_holder') is-invalid @enderror"
-                                   value="{{ old('bank_account_holder', $paymentSetting->bank_account_holder) }}"
-                                   placeholder="Contoh: Ruang Cerdas">
-                            @error('bank_account_holder')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="border rounded-3 p-3 bg-light">
+                                <div class="fw-semibold fs-13 mb-2">Field Legacy/Fallback (Kompatibilitas)</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4">
+                                        <label for="bank_name" class="form-label fs-13">Nama Bank (Legacy)</label>
+                                        <input type="text"
+                                               id="bank_name"
+                                               name="bank_name"
+                                               class="form-control @error('bank_name') is-invalid @enderror"
+                                               value="{{ old('bank_name', $paymentSetting->bank_name) }}"
+                                               placeholder="Contoh: Bank Mandiri">
+                                        @error('bank_name')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="bank_account_number" class="form-label fs-13">Nomor Rekening (Legacy)</label>
+                                        <input type="text"
+                                               id="bank_account_number"
+                                               name="bank_account_number"
+                                               class="form-control @error('bank_account_number') is-invalid @enderror"
+                                               value="{{ old('bank_account_number', $paymentSetting->bank_account_number) }}"
+                                               placeholder="Contoh: 1234567890">
+                                        @error('bank_account_number')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="bank_account_holder" class="form-label fs-13">Nama Pemilik (Legacy)</label>
+                                        <input type="text"
+                                               id="bank_account_holder"
+                                               name="bank_account_holder"
+                                               class="form-control @error('bank_account_holder') is-invalid @enderror"
+                                               value="{{ old('bank_account_holder', $paymentSetting->bank_account_holder) }}"
+                                               placeholder="Contoh: Ruang Cerdas">
+                                        @error('bank_account_holder')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="col-12">

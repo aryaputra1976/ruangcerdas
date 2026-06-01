@@ -5,13 +5,21 @@
 
 @section('content')
 @php
-    $bankName = trim((string) ($paymentConfig['bank_name'] ?? ''));
-    $bankAccountNumber = trim((string) ($paymentConfig['bank_account_number'] ?? ''));
-    $bankAccountHolder = trim((string) ($paymentConfig['bank_account_holder'] ?? ''));
+    $bankAccounts = collect($paymentConfig['bank_accounts'] ?? [])
+        ->map(function ($row, $index) {
+            return [
+                'bank_name' => trim((string) data_get($row, 'bank_name', '')),
+                'account_number' => trim((string) data_get($row, 'account_number', '')),
+                'account_holder' => trim((string) data_get($row, 'account_holder', '')),
+                'is_primary' => (bool) data_get($row, 'is_primary', $index === 0),
+            ];
+        })
+        ->filter(fn ($row) => $row['bank_name'] !== '' && $row['account_number'] !== '' && $row['account_holder'] !== '')
+        ->values();
     $qrisImage = $paymentConfig['qris_image_path'] ?? ($paymentConfig['qris_image'] ?? null);
     $paymentNote = $paymentConfig['payment_note'] ?? 'Transfer sesuai nominal invoice agar verifikasi lebih cepat.';
     $qrisExists = $qrisImage && file_exists(public_path($qrisImage));
-    $hasBankInstruction = $bankName !== '' && $bankAccountNumber !== '' && $bankAccountHolder !== '';
+    $hasBankInstruction = $bankAccounts->isNotEmpty();
     $hasPaymentInstruction = $hasBankInstruction || $qrisExists;
 
     $statusLabel = match ($order->status) {
@@ -85,7 +93,7 @@
                     <div class="mt-6 grid gap-3 md:grid-cols-2">
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-sm text-slate-500">Metode Pembayaran</p>
-                            <p class="mt-1 font-black text-slate-950">{{ $hasBankInstruction ? $bankName : ($qrisExists ? 'QRIS' : '-') }}</p>
+                            <p class="mt-1 font-black text-slate-950">{{ $hasBankInstruction ? 'Transfer Bank' : ($qrisExists ? 'QRIS' : '-') }}</p>
                         </div>
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-sm text-slate-500">Total Bayar</p>
@@ -94,10 +102,22 @@
                     </div>
 
                     @if ($hasBankInstruction)
-                        <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                            <p class="text-sm text-slate-500">Nomor Rekening / Tujuan</p>
-                            <p class="mt-2 break-all text-xl font-black tracking-wide text-slate-950">{{ $bankAccountNumber }}</p>
-                            <p class="mt-2 text-sm text-slate-600">a.n. {{ $bankAccountHolder }}</p>
+                        <div class="mt-4">
+                            <p class="text-sm text-slate-500">Rekening Tujuan</p>
+                            <div class="mt-2 grid gap-3 md:grid-cols-2">
+                                @foreach ($bankAccounts as $account)
+                                    <div class="rounded-2xl border {{ $account['is_primary'] ? 'border-blue-200 bg-blue-50' : 'border-slate-200 bg-slate-50' }} p-4">
+                                        <div class="flex items-center justify-between gap-2">
+                                            <p class="font-black text-slate-950">{{ $account['bank_name'] }}</p>
+                                            @if ($account['is_primary'])
+                                                <span class="rounded-full bg-blue-100 px-2 py-1 text-[11px] font-bold uppercase tracking-wide text-blue-700">Utama</span>
+                                            @endif
+                                        </div>
+                                        <p class="mt-2 break-all text-lg font-black tracking-wide text-slate-950">{{ $account['account_number'] }}</p>
+                                        <p class="mt-1 text-sm text-slate-600">a.n. {{ $account['account_holder'] }}</p>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @else
                         <div class="mt-4 rounded-2xl border border-amber-100 bg-amber-50 px-4 py-4 text-sm leading-6 text-amber-800">

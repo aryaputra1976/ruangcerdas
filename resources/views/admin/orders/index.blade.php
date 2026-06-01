@@ -3,6 +3,7 @@
 @php
     $title = 'Order Masuk';
     $subtitle = 'Kelola order, bukti pembayaran, dan status pembelian produk digital.';
+    $hasActiveFilter = filled($q ?? null) || filled($status ?? null) || filled($from ?? null) || filled($to ?? null);
 
     $statusCards = [
         [
@@ -52,9 +53,11 @@
                 ? blank($status)
                 : $status === $card['key'];
 
-            $url = blank($card['key'])
-                ? route('admin.orders.index')
-                : route('admin.orders.index', ['status' => $card['key']]);
+            $queryParams = request()->except('status');
+            if (!blank($card['key'])) {
+                $queryParams['status'] = $card['key'];
+            }
+            $url = route('admin.orders.index', $queryParams);
         @endphp
 
         <div class="col-xl col-md-4 col-sm-6">
@@ -99,7 +102,7 @@
             </div>
 
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                @if ($status)
+                @if ($hasActiveFilter)
                     <a href="{{ route('admin.orders.index') }}"
                        class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1">
                         <i data-feather="x" style="width: 14px; height: 14px;"></i>
@@ -117,6 +120,52 @@
     </div>
 
     <div class="card-body">
+        <form method="GET" action="{{ route('admin.orders.index') }}" class="row g-2 mb-3">
+            <div class="col-lg-4 col-md-6">
+                <input type="text"
+                       name="q"
+                       value="{{ $q }}"
+                       class="form-control"
+                       placeholder="Cari invoice / nama / email / WhatsApp">
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <select name="status" class="form-select">
+                    <option value="">Semua Status</option>
+                    <option value="pending" @selected($status === 'pending')>Pending</option>
+                    <option value="payment_uploaded" @selected($status === 'payment_uploaded')>Menunggu Verifikasi</option>
+                    <option value="paid" @selected($status === 'paid')>Paid</option>
+                    <option value="rejected" @selected($status === 'rejected')>Rejected</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <input type="date" name="from" value="{{ $from }}" class="form-control">
+            </div>
+            <div class="col-lg-2 col-md-6">
+                <input type="date" name="to" value="{{ $to }}" class="form-control">
+            </div>
+            <div class="col-lg-2 col-md-12 d-flex gap-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+                <a href="{{ route('admin.orders.index') }}" class="btn btn-light w-100">Reset</a>
+            </div>
+        </form>
+
+        @if ($hasActiveFilter)
+            <div class="mb-3 p-2 rounded bg-light border text-muted fs-13">
+                Filter aktif:
+                @if (filled($q))
+                    <span class="badge bg-primary-subtle text-primary rounded-pill">Q: {{ $q }}</span>
+                @endif
+                @if (filled($status))
+                    <span class="badge bg-info-subtle text-info rounded-pill">Status: {{ $status }}</span>
+                @endif
+                @if (filled($from))
+                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">Dari: {{ $from }}</span>
+                @endif
+                @if (filled($to))
+                    <span class="badge bg-secondary-subtle text-secondary rounded-pill">Sampai: {{ $to }}</span>
+                @endif
+            </div>
+        @endif
 
         @if (($orders ?? collect())->count())
             <div class="table-responsive table-card">
@@ -253,14 +302,14 @@
                 <h5 class="text-dark mb-1">Belum ada order</h5>
 
                 <p class="text-muted mb-0">
-                    @if ($status)
-                        Tidak ada order dengan status filter yang dipilih.
+                    @if ($hasActiveFilter)
+                        Tidak ada order dengan filter yang dipilih.
                     @else
                         Order pembelian akan muncul di halaman ini.
                     @endif
                 </p>
 
-                @if ($status)
+                @if ($hasActiveFilter)
                     <div class="mt-3">
                         <a href="{{ route('admin.orders.index') }}"
                            class="btn btn-sm btn-primary rounded-pill px-3">

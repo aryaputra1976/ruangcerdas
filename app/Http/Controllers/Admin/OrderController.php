@@ -17,12 +17,29 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
+        $q = trim((string) $request->query('q', ''));
         $status = $request->query('status');
+        $from = $request->query('from');
+        $to = $request->query('to');
 
         $orders = Order::query()
             ->with(['product', 'notes'])
+            ->when($q !== '', function ($query) use ($q) {
+                $query->where(function ($sub) use ($q) {
+                    $sub->where('invoice_number', 'like', "%{$q}%")
+                        ->orWhere('buyer_name', 'like', "%{$q}%")
+                        ->orWhere('buyer_email', 'like', "%{$q}%")
+                        ->orWhere('buyer_whatsapp', 'like', "%{$q}%");
+                });
+            })
             ->when($status, function ($query) use ($status) {
                 $query->where('status', $status);
+            })
+            ->when($from, function ($query) use ($from) {
+                $query->whereDate('created_at', '>=', $from);
+            })
+            ->when($to, function ($query) use ($to) {
+                $query->whereDate('created_at', '<=', $to);
             })
             ->latest()
             ->paginate(15)
@@ -36,7 +53,7 @@ class OrderController extends Controller
             'rejected' => Order::where('status', Order::STATUS_REJECTED)->count(),
         ];
 
-        return view('admin.orders.index', compact('orders', 'counts', 'status'));
+        return view('admin.orders.index', compact('orders', 'counts', 'q', 'status', 'from', 'to'));
     }
 
     public function show(Order $order)

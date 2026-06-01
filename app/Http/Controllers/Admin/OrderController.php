@@ -175,7 +175,7 @@ class OrderController extends Controller
     public function reject(Request $request, Order $order)
     {
         $request->validate([
-            'rejection_reason' => ['nullable', 'string', 'max:1000'],
+            'rejection_reason' => ['required', 'string', 'max:1000'],
         ]);
 
         abort_if($order->isPaid(), 422, 'Order yang sudah paid tidak bisa ditolak.');

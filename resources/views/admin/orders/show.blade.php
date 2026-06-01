@@ -514,6 +514,35 @@
                 <hr>
 
                 @if ($order->status === 'payment_uploaded')
+                    <div class="border rounded-3 p-3 bg-light mb-3">
+                        <div class="fw-semibold text-dark mb-2">Checklist Verifikasi Sebelum Approve</div>
+                        <div class="row g-2 fs-13">
+                            <div class="col-md-6"><span class="text-muted">Invoice:</span> <span class="fw-semibold text-dark">{{ $order->invoice_number }}</span></div>
+                            <div class="col-md-6"><span class="text-muted">Pembeli:</span> <span class="fw-semibold text-dark">{{ $order->buyer_name }}</span></div>
+                            <div class="col-md-6"><span class="text-muted">Email:</span> <span class="fw-semibold text-dark text-break">{{ $order->buyer_email }}</span></div>
+                            <div class="col-md-6"><span class="text-muted">Total Bayar:</span> <span class="fw-semibold text-dark">{{ \App\Support\Money::format($order->price ?? 0) }}</span></div>
+                            <div class="col-md-6">
+                                <span class="text-muted">Bukti Pembayaran:</span>
+                                @if ($order->payment_proof_path)
+                                    <span class="badge bg-success-subtle text-success rounded-pill">Tersedia</span>
+                                @else
+                                    <span class="badge bg-danger-subtle text-danger rounded-pill">Belum tersedia</span>
+                                @endif
+                            </div>
+                            <div class="col-md-6">
+                                <span class="text-muted">File Produk:</span>
+                                @if ($order->product?->privateFileExists())
+                                    <span class="badge bg-success-subtle text-success rounded-pill">Siap download</span>
+                                @else
+                                    <span class="badge bg-warning-subtle text-warning rounded-pill">Belum tersedia</span>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="alert alert-warning mt-3 mb-0 py-2 px-3 fs-13">
+                            Approve akan mengaktifkan akses download dan mengirim email link download ke pembeli.
+                        </div>
+                    </div>
+
                     <div class="alert alert-info">
                         Bukti pembayaran sudah diupload. Silakan periksa sebelum approve.
                     </div>
@@ -521,7 +550,7 @@
                     <div class="d-grid gap-2">
                         <form method="POST"
                               action="{{ route('admin.orders.approve', $order) }}"
-                              onsubmit="return confirm('Approve pembayaran order ini? Link download akan aktif.');">
+                              onsubmit="return confirm('Approve pembayaran invoice {{ $order->invoice_number }}? Link download akan aktif dan email akan dikirim ke {{ $order->buyer_email }}.');">
                             @csrf
                             @method('PATCH')
 
@@ -539,10 +568,15 @@
                             @method('PATCH')
 
                             <div class="mb-2">
+                                <label for="rejection_reason" class="form-label mb-1">Alasan Penolakan <span class="text-danger">*</span></label>
                                 <textarea name="rejection_reason"
+                                          id="rejection_reason"
                                           rows="3"
                                           class="form-control"
-                                          placeholder="Alasan penolakan, opsional">{{ old('rejection_reason', $order->rejection_reason) }}</textarea>
+                                          placeholder="Alasan penolakan wajib diisi">{{ old('rejection_reason', $order->rejection_reason) }}</textarea>
+                                <div class="form-text">
+                                    Alasan akan membantu pembeli memperbaiki bukti pembayaran.
+                                </div>
 
                                 @error('rejection_reason')
                                     <div class="text-danger fs-13 mt-1">

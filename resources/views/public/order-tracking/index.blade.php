@@ -11,7 +11,7 @@
             <div class="text-center">
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Order Tracking</p>
                 <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Cek Status Order</h1>
-                <p class="mt-2 text-slate-600">Masukkan nomor invoice dan email/WhatsApp yang dipakai saat checkout.</p>
+                <p class="mt-2 text-slate-600">Masukkan nomor invoice dan email atau WhatsApp yang dipakai saat checkout.</p>
             </div>
 
             @if ($errors->has('tracking'))
@@ -20,25 +20,29 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('public.order-tracking.show') }}" class="mt-6 space-y-4">
+            <form method="POST" action="{{ route('public.order-tracking.show') }}" class="mt-6 space-y-5">
                 @csrf
                 <div>
-                    <label for="invoice_number" class="mb-1 block text-sm font-semibold text-slate-700">Nomor Invoice</label>
+                    <label for="invoice_number" class="mb-2 block text-sm font-semibold text-slate-700">Nomor Invoice</label>
                     <input id="invoice_number" name="invoice_number" type="text" required
                            value="{{ old('invoice_number') }}"
-                           class="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none ring-blue-200 focus:ring"
-                           placeholder="Contoh: INV-RC-20260531-0001">
+                           class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none ring-blue-200 focus:ring"
+                           placeholder="Contoh: RC-20260531-0001">
                 </div>
 
                 <div>
-                    <label for="contact" class="mb-1 block text-sm font-semibold text-slate-700">Email atau WhatsApp</label>
+                    <label for="contact" class="mb-2 block text-sm font-semibold text-slate-700">Email atau WhatsApp</label>
                     <input id="contact" name="contact" type="text" required
                            value="{{ old('contact') }}"
-                           class="w-full rounded-xl border border-slate-300 px-4 py-3 text-slate-900 outline-none ring-blue-200 focus:ring"
+                           class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none ring-blue-200 focus:ring"
                            placeholder="nama@email.com / 0812xxxx">
                 </div>
 
-                <button type="submit" class="w-full rounded-xl bg-blue-600 px-5 py-3 font-semibold text-white hover:bg-blue-700">
+                <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-900">
+                    Gunakan data yang sama seperti saat checkout agar status order bisa ditemukan dengan benar.
+                </div>
+
+                <button type="submit" class="w-full rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white hover:bg-blue-700">
                     Cek Order
                 </button>
             </form>

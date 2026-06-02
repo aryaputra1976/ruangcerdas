@@ -44,6 +44,11 @@
                         <i data-feather="eye" style="width: 14px; height: 14px;"></i>
                         <span>Preview Produk</span>
                     </a>
+                    <a href="{{ route('admin.products.preview-images.index', $product) }}"
+                       class="btn btn-sm bg-success-subtle text-success rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="image" style="width: 14px; height: 14px;"></i>
+                        <span>Preview Images</span>
+                    </a>
                 </div>
             </div>
 

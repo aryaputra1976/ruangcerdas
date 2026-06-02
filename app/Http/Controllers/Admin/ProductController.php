@@ -159,6 +159,9 @@ class ProductController extends Controller
     {
         $product->load([
             'category',
+            'previewImages' => fn ($query) => $query
+                ->orderBy('sort_order')
+                ->orderBy('id'),
             'faqs' => fn ($query) => $query
                 ->where('is_active', true)
                 ->orderBy('sort_order')

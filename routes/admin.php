@@ -13,8 +13,12 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ProductFaqController;
+use App\Http\Controllers\Admin\ProductPreviewImageController;
 use App\Http\Controllers\Admin\CustomerContactController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\ArticleController;
+use App\Http\Controllers\Admin\LeadMagnetController;
+use App\Http\Controllers\Admin\LeadSubscriberController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -46,6 +50,9 @@ Route::prefix('admin')
         Route::resource('/testimonials', TestimonialController::class)->except(['show']);
         Route::resource('/coupons', CouponController::class)->except(['show']);
         Route::resource('/users', UserController::class)->except(['show']);
+        Route::resource('/articles', ArticleController::class)->except(['show']);
+        Route::resource('/lead-magnets', LeadMagnetController::class)->except(['show']);
+        Route::get('/lead-subscribers', [LeadSubscriberController::class, 'index'])->name('lead-subscribers.index');
 
         Route::resource('/products', ProductController::class);
         Route::get('/products/{product}/preview', [ProductController::class, 'preview'])
@@ -54,6 +61,9 @@ Route::prefix('admin')
         Route::post('/products/{product}/faqs', [ProductFaqController::class, 'store'])->name('products.faqs.store');
         Route::patch('/products/{product}/faqs/{faq}', [ProductFaqController::class, 'update'])->name('products.faqs.update');
         Route::delete('/products/{product}/faqs/{faq}', [ProductFaqController::class, 'destroy'])->name('products.faqs.destroy');
+        Route::get('/products/{product}/preview-images', [ProductPreviewImageController::class, 'index'])->name('products.preview-images.index');
+        Route::post('/products/{product}/preview-images', [ProductPreviewImageController::class, 'store'])->name('products.preview-images.store');
+        Route::delete('/products/{product}/preview-images/{previewImage}', [ProductPreviewImageController::class, 'destroy'])->name('products.preview-images.destroy');
         Route::get('/products/{product}/file/download', [ProductController::class, 'downloadFile'])
             ->name('products.file.download');
         Route::delete('/products/{product}/file', [ProductController::class, 'destroyFile'])

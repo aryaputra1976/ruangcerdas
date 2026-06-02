@@ -88,7 +88,9 @@
                     <label for="support_whatsapp" class="form-label">Support WhatsApp</label>
                     <input type="text" id="support_whatsapp" name="support_whatsapp"
                            class="form-control @error('support_whatsapp') is-invalid @enderror"
-                           value="{{ old('support_whatsapp', $landingSetting->support_whatsapp) }}">
+                           value="{{ old('support_whatsapp', $landingSetting->support_whatsapp) }}"
+                           placeholder="Contoh: 081234567890">
+                    <small class="text-muted d-block mt-1">Boleh isi format 08xxx atau 62xxx. Sistem otomatis konversi ke link `wa.me`.</small>
                     @error('support_whatsapp')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 

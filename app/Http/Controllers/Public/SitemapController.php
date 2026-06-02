@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Models\Article;
+use App\Models\LeadMagnet;
 use App\Models\Product;
 use Illuminate\Http\Response;
 
@@ -41,6 +43,18 @@ class SitemapController extends Controller
                 'changefreq' => 'yearly',
                 'priority' => '0.4',
             ],
+            [
+                'loc' => route('articles.index'),
+                'lastmod' => now()->toAtomString(),
+                'changefreq' => 'weekly',
+                'priority' => '0.7',
+            ],
+            [
+                'loc' => route('lead-magnets.index'),
+                'lastmod' => now()->toAtomString(),
+                'changefreq' => 'weekly',
+                'priority' => '0.7',
+            ],
         ];
 
         $products = Product::query()
@@ -54,6 +68,34 @@ class SitemapController extends Controller
                 'lastmod' => $product->updated_at?->toAtomString(),
                 'changefreq' => 'weekly',
                 'priority' => '0.8',
+            ];
+        }
+
+        $articles = Article::query()
+            ->published()
+            ->latest('updated_at')
+            ->get(['slug', 'updated_at']);
+
+        foreach ($articles as $article) {
+            $urls[] = [
+                'loc' => route('articles.show', $article->slug),
+                'lastmod' => $article->updated_at?->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
+            ];
+        }
+
+        $leadMagnets = LeadMagnet::query()
+            ->where('is_active', true)
+            ->latest('updated_at')
+            ->get(['slug', 'updated_at']);
+
+        foreach ($leadMagnets as $leadMagnet) {
+            $urls[] = [
+                'loc' => route('lead-magnets.show', $leadMagnet->slug),
+                'lastmod' => $leadMagnet->updated_at?->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.6',
             ];
         }
 

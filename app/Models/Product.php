@@ -63,6 +63,16 @@ class Product extends Model
         return $this->hasMany(ProductFaq::class);
     }
 
+    public function previewImages(): HasMany
+    {
+        return $this->hasMany(ProductPreviewImage::class);
+    }
+
+    public function viewEvents(): HasMany
+    {
+        return $this->hasMany(ProductViewEvent::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);

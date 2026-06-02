@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\LandingSetting;
 use App\Models\Product;
 use App\Models\Testimonial;
+use App\Models\Article;
+use App\Models\LeadMagnet;
 use App\Services\PricingService;
 
 class HomeController extends Controller
@@ -14,20 +16,20 @@ class HomeController extends Controller
     {
         $defaultLanding = [
             'hero_badge' => 'Ruang Cerdas',
-            'hero_title' => 'Produk Digital dan Belajar Online untuk Kerja Lebih Cerdas',
-            'hero_subtitle' => 'Temukan eBook, template, tools AI, aplikasi siap pakai, serta paket belajar dan tryout online untuk membantu pekerjaan, bisnis, dan persiapan karier secara lebih terarah.',
+            'hero_title' => 'Produk Digital Praktis untuk Belajar, Kerja, dan Seleksi ASN',
+            'hero_subtitle' => 'Ruang Cerdas menyediakan eBook, checklist, template, dan panduan siap pakai untuk membantu Anda belajar lebih terarah, bekerja lebih rapi, dan menyiapkan administrasi dengan lebih mudah.',
             'primary_cta_text' => 'Lihat Produk',
             'primary_cta_url' => route('products.index'),
-            'secondary_cta_text' => 'Lihat Tryout',
-            'secondary_cta_url' => '#tryout',
-            'support_title' => 'Butuh bantuan?',
-            'support_text' => 'Hubungi tim Ruang Cerdas untuk pertanyaan produk, pembayaran, dan akses download.',
+            'secondary_cta_text' => 'CPNS/PPPK Starter Kit',
+            'secondary_cta_url' => '#kategori-utama',
+            'support_title' => 'Butuh bantuan memilih produk?',
+            'support_text' => 'Tim Ruang Cerdas siap membantu Anda memilih produk digital edukasi yang paling sesuai dengan kebutuhan belajar dan kerja.',
             'support_whatsapp' => null,
-            'featured_section_title' => 'Produk dan Paket Digital Unggulan',
-            'featured_section_subtitle' => 'Pilihan eBook, template, tools AI, aplikasi, dan paket belajar digital untuk membantu kerja dan belajar lebih terarah.',
-            'footer_short_text' => 'Ruang Cerdas - Produk digital dan belajar online untuk kerja lebih cerdas.',
-            'seo_title' => 'Ruang Cerdas - Produk Digital & Belajar Online',
-            'seo_description' => 'Ruang Cerdas menyediakan eBook, template, tools AI, aplikasi siap pakai, paket belajar digital, dan persiapan tryout online.',
+            'featured_section_title' => 'Produk Digital Unggulan',
+            'featured_section_subtitle' => 'Pilihan eBook, checklist, template, dan panduan praktis untuk belajar, kerja, dan persiapan seleksi.',
+            'footer_short_text' => 'Ruang Cerdas - Produk digital praktis untuk belajar, kerja, dan seleksi ASN.',
+            'seo_title' => 'Ruang Cerdas - Produk Digital Praktis untuk Belajar, Kerja, dan Seleksi ASN',
+            'seo_description' => 'Ruang Cerdas menyediakan eBook, checklist, template, dan panduan siap pakai untuk CPNS/PPPK, ASN, administrasi kerja, skill digital pemula, dan produktivitas.',
             'seo_keywords' => null,
             'og_image_url' => null,
             'whatsapp_cta_text' => 'Hubungi WhatsApp Admin',
@@ -84,6 +86,18 @@ class HomeController extends Controller
             ->take(6)
             ->get();
 
-        return view('public.home', compact('featuredProducts', 'landing', 'testimonials'));
+        $latestArticles = Article::query()
+            ->published()
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        $leadMagnets = LeadMagnet::query()
+            ->where('is_active', true)
+            ->latest()
+            ->take(3)
+            ->get();
+
+        return view('public.home', compact('featuredProducts', 'landing', 'testimonials', 'latestArticles', 'leadMagnets'));
     }
 }

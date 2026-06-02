@@ -1,26 +1,74 @@
-*.log
-.DS_Store
+# -----------------------------------
+# Strict allowlist for repository root
+# -----------------------------------
+*
+!app/
+!bootstrap/
+!config/
+!database/
+!public/
+!resources/
+!routes/
+!storage/
+!artisan
+!composer.json
+!composer.lock
+!package.json
+!package-lock.json
+!yarn.lock
+!pnpm-lock.yaml
+!vite.config.js
+!postcss.config.js
+!tailwind.config.js
+!.gitignore
+
+!app/**
+!bootstrap/**
+!config/**
+!database/**
+!public/**
+!resources/**
+!routes/**
+!storage/**
+
+# -----------------------------
+# Sensitive / generated content
+# -----------------------------
 .env
-.env.backup
-.env.production
-.phpactor.json
+.env.*
+!.env.example
+vendor/
+node_modules/
+
+# Build outputs
+public/build/
+public/hot
+
+# Public storage symlink target
+public/storage
+
+# Storage runtime files
+storage/*.key
+storage/pail
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+
+# Optional cache artifacts if created inside allowlisted dirs
+bootstrap/cache/*.php
+
+# IDE / OS artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.fleet/
+.zed/
+.nova/
+.phpunit.cache/
 .phpunit.result.cache
-/.fleet
-/.idea
-/.nova
-/.phpunit.cache
-/.vscode
-/.zed
-/auth.json
-/node_modules
-/public/build
-/public/hot
-/public/storage
-/storage/*.key
-/storage/pail
-/vendor
+.phpactor.json
+auth.json
 Homestead.json
 Homestead.yaml
-Thumbs.db
-# Ignore file STEP24.md
-docs/STEP.md

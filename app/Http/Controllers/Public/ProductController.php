@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\LandingSetting;
 use App\Models\Product;
+use App\Models\ProductViewEvent;
 use App\Models\Testimonial;
 use App\Services\PricingService;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -86,8 +88,19 @@ class ProductController extends Controller
     {
         abort_unless($product->isVisibleToPublic(), 404);
 
+        ProductViewEvent::create([
+            'product_id' => $product->id,
+            'session_id' => request()->session()->getId(),
+            'ip_address' => request()->ip(),
+            'user_agent' => Str::limit((string) request()->userAgent(), 1000, ''),
+            'referrer' => Str::limit((string) request()->headers->get('referer'), 2000, ''),
+        ]);
+
         $product->load([
             'category',
+            'previewImages' => fn ($query) => $query
+                ->orderBy('sort_order')
+                ->orderBy('id'),
             'faqs' => fn ($query) => $query
                 ->where('is_active', true)
                 ->orderBy('sort_order')

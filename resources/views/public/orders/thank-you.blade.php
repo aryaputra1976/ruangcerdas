@@ -54,9 +54,10 @@
         default => 'Silakan cek status order Anda secara berkala.',
     };
 
-    $supportWhatsappNumber = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
-    $waMessage = rawurlencode('Halo Admin Ruang Cerdas, saya sudah upload bukti pembayaran untuk invoice ' . $order->invoice_number . '. Mohon dibantu cek. Terima kasih.');
-    $waUrl = $supportWhatsappNumber !== '' ? 'https://wa.me/' . $supportWhatsappNumber . '?text=' . $waMessage : null;
+    $waUrl = \App\Support\WhatsApp::waMeUrl(
+        $supportWhatsapp ?? null,
+        'Halo Admin Ruang Cerdas, saya butuh bantuan untuk invoice ' . $order->invoice_number . '.'
+    );
 @endphp
 
 <section class="bg-slate-50 py-14 md:py-16">
@@ -74,7 +75,7 @@
         </div>
 
         <div class="mb-6 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-center text-sm font-semibold text-slate-700">
-            Pembayaran manual • Verifikasi admin • Link download via email • Token aman
+            Pembayaran manual � Verifikasi admin � Link download via email � Token aman
         </div>
 
         <div class="grid gap-8 lg:grid-cols-3">
@@ -91,6 +92,14 @@
                     </div>
 
                     <div class="mt-6 grid gap-3 md:grid-cols-2">
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <p class="text-sm text-slate-500">Nama Produk</p>
+                            <p class="mt-1 font-black text-slate-950">{{ $order->product->name }}</p>
+                        </div>
+                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                            <p class="text-sm text-slate-500">Email Pembeli</p>
+                            <p class="mt-1 break-all font-black text-slate-950">{{ $order->buyer_email }}</p>
+                        </div>
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
                             <p class="text-sm text-slate-500">Metode Pembayaran</p>
                             <p class="mt-1 font-black text-slate-950">{{ $hasBankInstruction ? 'Transfer Bank' : ($qrisExists ? 'QRIS' : '-') }}</p>
@@ -141,10 +150,10 @@
                     <h2 class="text-2xl font-black text-slate-950">Langkah Selanjutnya</h2>
                     <div class="mt-6 grid gap-3">
                         @foreach ([
-                            'Transfer sesuai instruksi pembayaran.',
-                            'Upload bukti bayar yang jelas.',
-                            'Admin melakukan verifikasi pembayaran.',
-                            'Link download dikirim ke email setelah status paid.',
+                            'Transfer sesuai nominal.',
+                            'Upload bukti pembayaran.',
+                            'Tunggu verifikasi admin.',
+                            'Link download dikirim ke email.',
                         ] as $index => $step)
                             <div class="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
                                 <span class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">{{ $index + 1 }}</span>
@@ -203,7 +212,28 @@
                             Upload Bukti Pembayaran
                         </a>
                     @endif
+
+                    @if ($order->status === \App\Models\Order::STATUS_PAID && filled($order->download_token))
+                        <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
+                            Pembayaran Anda sudah disetujui. Anda bisa langsung mengunduh file digital melalui tombol di bawah.
+                        </div>
+                        <a href="{{ route('orders.download', ['invoice' => $order->invoice_number, 'token' => $order->download_token]) }}" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white hover:bg-emerald-700">
+                            Download File Digital
+                        </a>
+                    @endif
                 </div>
+
+                @if ($waUrl)
+                    <div class="rounded-[2rem] border border-green-200 bg-green-50 p-6 shadow-sm md:p-8">
+                        <h2 class="text-2xl font-black text-green-900">Butuh Bantuan Pembelian?</h2>
+                        <p class="mt-3 text-sm leading-7 text-green-800">
+                            Anda tetap dapat menyelesaikan pembelian secara mandiri. Jika ada kendala, tim support siap membantu melalui WhatsApp.
+                        </p>
+                        <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-green-600 px-6 py-3 text-sm font-bold text-white hover:bg-green-700">
+                            WhatsApp Support
+                        </a>
+                    </div>
+                @endif
             </div>
 
             <aside class="space-y-6">
@@ -251,7 +281,7 @@
             </a>
             @if ($order->status === \App\Models\Order::STATUS_PAID)
                 <span class="flex-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-center font-semibold text-emerald-700">
-                    Cek Email Download
+                    Pembayaran Sudah Disetujui
                 </span>
             @endif
         </div>

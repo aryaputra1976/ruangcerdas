@@ -39,6 +39,7 @@ class OrderController extends Controller
         return view('public.orders.upload-payment', [
             'order' => $order,
             'paymentConfig' => $paymentSettingService->current(),
+            'supportWhatsapp' => LandingSetting::query()->value('support_whatsapp'),
         ]);
     }
 

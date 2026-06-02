@@ -9,11 +9,10 @@
     $hasFilter = request()->filled('q') || request()->filled('category');
     $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
     $presetCategories = [
-        'produk-digital' => 'Produk Digital',
-        'paket-belajar' => 'Paket Belajar',
-        'tryout-online' => 'Tryout Online Coming Soon',
-        'template-kerja' => 'Template Kerja',
-        'tools-ai' => 'Tools AI',
+        'cpns-pppk' => 'CPNS & PPPK',
+        'administrasi-kerja' => 'Administrasi Kerja',
+        'skill-digital-pemula' => 'Skill Digital Pemula',
+        'template-produktivitas' => 'Template Produktivitas',
         'aplikasi-siap-pakai' => 'Aplikasi Siap Pakai',
     ];
     $categoryLabelMap = [];
@@ -35,13 +34,13 @@
                 <p class="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-100">
                     Produk Digital
                 </p>
-                <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">Katalog Produk Ruang Cerdas</h1>
+                <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">Produk Digital Praktis Ruang Cerdas</h1>
                 <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
-                    Pilih produk digital siap pakai untuk mempercepat pekerjaan administrasi, dokumen kantor, template, dan produktivitas berbasis AI.
+                    Pilih produk digital edukasi praktis untuk persiapan CPNS/PPPK, administrasi kerja, skill digital pemula, dan template siap pakai.
                 </p>
                 <div class="mt-8 flex flex-wrap gap-3">
                     <a href="#katalog" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700">
-                        Lihat Katalog
+                        Lihat Produk
                     </a>
                     <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
                         Kembali ke Beranda
@@ -135,15 +134,6 @@
             @endif
         </div>
 
-        <div class="mb-8 rounded-3xl border border-amber-100 bg-amber-50 p-5">
-            <p class="text-xs font-bold uppercase tracking-wider text-amber-700">Tryout Online</p>
-            <h3 class="mt-1 text-lg font-black text-amber-900">Tryout Online akan tersedia bertahap</h3>
-            <p class="mt-2 text-sm leading-6 text-amber-800">
-                Kategori tryout disiapkan sebagai bagian pengembangan platform belajar. Beberapa produk tryout dapat tampil sebagai
-                <span class="font-bold">Coming Soon</span> sebelum modul penuh dirilis.
-            </p>
-        </div>
-
         @if ($products->isNotEmpty())
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($products as $product)
@@ -191,8 +181,8 @@
 <div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
     <div class="mx-auto flex max-w-7xl gap-2">
         <a href="{{ route('products.index') }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_products_catalog'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
-            Katalog Produk
-        </a>
+                        Lihat Produk
+            </a>
         @php
             $stickySupport = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
             if (str_starts_with($stickySupport, '0')) {

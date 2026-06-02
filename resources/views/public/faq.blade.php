@@ -18,7 +18,7 @@
                 Lihat Produk
             </a>
             <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">
-                Cek Order
+                Cek Status Order
             </a>
         </div>
     </div>
@@ -53,7 +53,7 @@
                     ['q' => 'Kenapa kode kupon tidak bisa digunakan?', 'a' => 'Kode bisa tidak berlaku karena sudah kedaluwarsa, kuota habis, tidak memenuhi syarat minimum, atau tidak berlaku untuk produk yang dipilih.'],
                 ],
                 'Bantuan Order' => [
-                    ['q' => 'Bagaimana cara cek status order?', 'a' => 'Gunakan halaman Cek Order dengan invoice dan email/WhatsApp yang sama seperti saat checkout.'],
+                    ['q' => 'Bagaimana cara cek status order?', 'a' => 'Gunakan halaman Cek Status Order dengan invoice dan email/WhatsApp yang sama seperti saat checkout.'],
                     ['q' => 'Apa yang harus dilakukan jika email download tidak masuk?', 'a' => 'Periksa folder spam/promosi terlebih dulu. Jika tetap tidak ada, hubungi admin untuk pengecekan dan pengiriman ulang link.'],
                     ['q' => 'Bagaimana jika bukti pembayaran ditolak?', 'a' => 'Periksa alasan penolakan pada status order Anda, lalu unggah ulang bukti yang lebih jelas sesuai instruksi.'],
                 ],
@@ -89,7 +89,7 @@
             </p>
             <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white hover:bg-slate-700">
-                    Cek Order
+                    Cek Status Order
                 </a>
                 <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
                     Lihat Produk

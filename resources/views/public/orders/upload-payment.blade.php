@@ -36,6 +36,11 @@
         \App\Models\Order::STATUS_REJECTED => 'bg-red-100 text-red-700',
         default => 'bg-slate-100 text-slate-700',
     };
+
+    $waSupportUrl = \App\Support\WhatsApp::waMeUrl(
+        $supportWhatsapp ?? null,
+        'Halo Admin Ruang Cerdas, saya butuh bantuan untuk invoice ' . $order->invoice_number . '.'
+    );
 @endphp
 
 <section class="bg-slate-50 py-14 md:py-16">
@@ -168,6 +173,18 @@
                         <p class="mt-4 text-sm leading-6 text-slate-600">Silakan cek status order Anda secara berkala.</p>
                     @endif
                 </div>
+
+                @if ($waSupportUrl)
+                    <div class="rounded-[2rem] border border-green-200 bg-green-50 p-6 shadow-sm">
+                        <h3 class="text-lg font-black text-green-900">Butuh Bantuan Upload Bukti Bayar?</h3>
+                        <p class="mt-3 text-sm leading-6 text-green-800">
+                            Upload bukti bayar tetap bisa dilakukan mandiri. Jika ada kendala, hubungi admin lewat WhatsApp.
+                        </p>
+                        <a href="{{ $waSupportUrl }}" target="_blank" rel="noopener noreferrer" class="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-green-600 px-5 py-3 text-sm font-bold text-white hover:bg-green-700">
+                            WhatsApp Support
+                        </a>
+                    </div>
+                @endif
 
                 <div class="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
                     <h3 class="text-lg font-black text-emerald-950">QRIS</h3>

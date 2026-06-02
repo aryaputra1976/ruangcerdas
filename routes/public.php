@@ -11,6 +11,8 @@ use App\Http\Controllers\Public\RobotsController;
 use App\Http\Controllers\Public\OrderTrackingController;
 use App\Http\Controllers\Public\FaqController;
 use App\Http\Controllers\Public\LegalPageController;
+use App\Http\Controllers\Public\ArticleController;
+use App\Http\Controllers\Public\LeadMagnetController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -38,3 +40,10 @@ Route::get('/order-tracking', [OrderTrackingController::class, 'index'])->name('
 Route::post('/order-tracking', [OrderTrackingController::class, 'show'])
     ->middleware('throttle:15,1')
     ->name('public.order-tracking.show');
+Route::get('/artikel', [ArticleController::class, 'index'])->name('articles.index');
+Route::get('/artikel/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/gratis', [LeadMagnetController::class, 'index'])->name('lead-magnets.index');
+Route::get('/gratis/{leadMagnet:slug}', [LeadMagnetController::class, 'show'])->name('lead-magnets.show');
+Route::post('/gratis/{leadMagnet:slug}/download', [LeadMagnetController::class, 'download'])
+    ->middleware('throttle:20,1')
+    ->name('lead-magnets.download');

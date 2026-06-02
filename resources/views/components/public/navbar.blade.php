@@ -19,17 +19,17 @@
             <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Produk
             </a>
-            <a href="{{ route('home') }}#paket-belajar" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Paket Belajar
+            <a href="{{ route('articles.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Artikel
             </a>
-            <a href="{{ route('home') }}#tryout" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Tryout
+            <a href="{{ route('lead-magnets.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Panduan Gratis
             </a>
             <a href="{{ route('home') }}#cara-beli" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Cara Beli
             </a>
             <a href="{{ route('public.order-tracking.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Cek Order
+                Cek Status Order
             </a>
             <a href="{{ route('public.faq') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 FAQ
@@ -68,17 +68,17 @@
             <a href="{{ route('products.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Produk
             </a>
-            <a href="{{ route('home') }}#paket-belajar" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Paket Belajar
+            <a href="{{ route('articles.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Artikel
             </a>
-            <a href="{{ route('home') }}#tryout" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Tryout
+            <a href="{{ route('lead-magnets.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Panduan Gratis
             </a>
             <a href="{{ route('home') }}#cara-beli" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Cara Beli
             </a>
             <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Cek Order
+                Cek Status Order
             </a>
             <a href="{{ route('public.faq') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 FAQ

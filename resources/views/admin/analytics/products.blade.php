@@ -2,7 +2,7 @@
 
 @php
     $title = 'Analytics Produk';
-    $subtitle = 'Analisis sederhana performa penjualan produk digital.';
+    $subtitle = 'Funnel sederhana dari view produk sampai order paid.';
 @endphp
 
 @section('content')
@@ -29,7 +29,7 @@
                 <select id="status" name="status" class="form-select">
                     @foreach ($statusOptions as $statusOption)
                         <option value="{{ $statusOption }}" @selected($filters['status'] === $statusOption)>
-                            {{ ucfirst(str_replace('_', ' ', $statusOption)) }}
+                            {{ $statusOption === '' ? 'Semua Status' : ucfirst(str_replace('_', ' ', $statusOption)) }}
                         </option>
                     @endforeach
                 </select>
@@ -93,8 +93,32 @@
     <div class="col-xl col-md-4 col-sm-6">
         <div class="card rc-dashboard-card h-100">
             <div class="card-body">
-                <p class="text-muted fs-13 mb-1">Produk Terjual</p>
-                <h4 class="mb-0 text-dark">{{ number_format($summary['total_products_sold'], 0, ',', '.') }}</h4>
+                <p class="text-muted fs-13 mb-1">Produk dengan Aktivitas</p>
+                <h4 class="mb-0 text-dark">{{ number_format($summary['total_products_with_activity'], 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Produk Dilihat</p>
+                <h4 class="mb-0 text-dark">{{ number_format($summary['total_views'], 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Checkout Dimulai</p>
+                <h4 class="mb-0 text-primary">{{ number_format($summary['total_checkout_started'], 0, ',', '.') }}</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl col-md-4 col-sm-6">
+        <div class="card rc-dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted fs-13 mb-1">Payment Proof Uploaded</p>
+                <h4 class="mb-0 text-info">{{ number_format($summary['total_payment_uploaded'], 0, ',', '.') }}</h4>
             </div>
         </div>
     </div>
@@ -109,32 +133,8 @@
     <div class="col-xl col-md-4 col-sm-6">
         <div class="card rc-dashboard-card h-100">
             <div class="card-body">
-                <p class="text-muted fs-13 mb-1">Omzet Paid</p>
-                <h4 class="mb-0 text-dark">{{ \App\Support\Money::format($summary['total_revenue_paid']) }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl col-md-4 col-sm-6">
-        <div class="card rc-dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted fs-13 mb-1">Rata-rata Order Paid</p>
-                <h4 class="mb-0 text-primary">{{ \App\Support\Money::format($summary['average_paid_order_value']) }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl col-md-4 col-sm-6">
-        <div class="card rc-dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted fs-13 mb-1">Total Download</p>
-                <h4 class="mb-0 text-info">{{ number_format($summary['total_downloads'], 0, ',', '.') }}</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl col-md-4 col-sm-6">
-        <div class="card rc-dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted fs-13 mb-1">Produk Terlaris</p>
-                <h6 class="mb-0 text-dark">{{ $summary['best_seller'] }}</h6>
+                <p class="text-muted fs-13 mb-1">Paid / View Conversion</p>
+                <h6 class="mb-0 text-dark">{{ number_format($summary['conversion_paid_views'], 2, ',', '.') }}%</h6>
             </div>
         </div>
     </div>
@@ -142,8 +142,8 @@
 
 <div class="card mb-3">
     <div class="card-header">
-        <h5 class="card-title mb-1">Produk Terlaris</h5>
-        <p class="text-muted mb-0 fs-13">Urutan berdasarkan jumlah order paid lalu omzet paid.</p>
+        <h5 class="card-title mb-1">Top Funnel Produk</h5>
+        <p class="text-muted mb-0 fs-13">Urutan berdasarkan jumlah view produk pada periode filter.</p>
     </div>
     <div class="card-body">
         @if ($topProducts->isNotEmpty())
@@ -153,8 +153,9 @@
                         <tr>
                             <th style="width: 70px;">No</th>
                             <th>Produk</th>
-                            <th style="width: 160px;">Order Paid</th>
-                            <th style="width: 180px;">Omzet Paid</th>
+                            <th style="width: 120px;">Views</th>
+                            <th style="width: 140px;">Total Order</th>
+                            <th style="width: 160px;">Order/View</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -162,8 +163,9 @@
                             <tr>
                                 <td>{{ $index + 1 }}</td>
                                 <td class="fw-medium text-dark">{{ $row['product']?->name ?? 'Produk tidak ditemukan' }}</td>
-                                <td>{{ number_format($row['paid_orders'], 0, ',', '.') }}</td>
-                                <td class="fw-semibold">{{ \App\Support\Money::format($row['paid_revenue']) }}</td>
+                                <td>{{ number_format($row['total_views'], 0, ',', '.') }}</td>
+                                <td>{{ number_format($row['total_orders'], 0, ',', '.') }}</td>
+                                <td class="fw-semibold">{{ number_format($row['conversion_order_views'], 2, ',', '.') }}%</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -178,7 +180,7 @@
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-1">Performa Produk</h5>
-        <p class="text-muted mb-0 fs-13">Ringkasan order per produk berdasarkan filter periode.</p>
+        <p class="text-muted mb-0 fs-13">Funnel dari product view sampai order paid per produk.</p>
     </div>
     <div class="card-body">
         @if ($rows->isNotEmpty())
@@ -188,15 +190,13 @@
                         <tr>
                             <th>Produk</th>
                             <th>Kategori</th>
+                            <th>Views</th>
+                            <th>Checkout Dimulai</th>
+                            <th>Payment Uploaded</th>
                             <th>Order Paid</th>
-                            <th>Omzet Paid</th>
-                            <th>Avg Paid Order</th>
-                            <th>Download</th>
-                            <th>Pending</th>
-                            <th>Rejected</th>
                             <th>Total Order</th>
-                            <th>Conversion</th>
-                            <th style="min-width: 160px;">Progress Omzet</th>
+                            <th>Order/View</th>
+                            <th>Paid/View</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -204,20 +204,13 @@
                             <tr>
                                 <td class="fw-medium text-dark">{{ $row['product']?->name ?? 'Produk tidak ditemukan' }}</td>
                                 <td>{{ $row['product']?->category?->name ?? '-' }}</td>
+                                <td>{{ number_format($row['total_views'], 0, ',', '.') }}</td>
+                                <td>{{ number_format($row['checkout_started'], 0, ',', '.') }}</td>
+                                <td>{{ number_format($row['payment_uploaded_orders'], 0, ',', '.') }}</td>
                                 <td>{{ number_format($row['paid_orders'], 0, ',', '.') }}</td>
-                                <td>{{ \App\Support\Money::format($row['paid_revenue']) }}</td>
-                                <td>{{ \App\Support\Money::format($row['average_order_value']) }}</td>
-                                <td>{{ number_format($row['download_count'], 0, ',', '.') }}</td>
-                                <td>{{ number_format($row['pending_orders'], 0, ',', '.') }}</td>
-                                <td>{{ number_format($row['rejected_orders'], 0, ',', '.') }}</td>
                                 <td>{{ number_format($row['total_orders'], 0, ',', '.') }}</td>
-                                <td>{{ number_format($row['conversion_rate'], 2, ',', '.') }}%</td>
-                                <td>
-                                    <div class="progress" style="height: 8px;">
-                                        <div class="progress-bar bg-primary" role="progressbar" style="width: {{ $row['revenue_progress'] }}%"></div>
-                                    </div>
-                                    <div class="fs-13 text-muted mt-1">{{ number_format($row['revenue_progress'], 2, ',', '.') }}%</div>
-                                </td>
+                                <td>{{ number_format($row['conversion_order_views'], 2, ',', '.') }}%</td>
+                                <td>{{ number_format($row['conversion_paid_views'], 2, ',', '.') }}%</td>
                             </tr>
                         @endforeach
                     </tbody>

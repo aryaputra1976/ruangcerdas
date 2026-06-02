@@ -147,7 +147,7 @@
                         <span class="menu-arrow"></span>
                     </a>
 
-                    <div class="collapse {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.categories.*') ? 'show' : '' }}"
+                    <div class="collapse {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.categories.*') || request()->routeIs('admin.articles.*') || request()->routeIs('admin.lead-magnets.*') || request()->routeIs('admin.lead-subscribers.*') ? 'show' : '' }}"
                         id="sidebarProducts">
                         <ul class="nav-second-level">
                             <li>
@@ -159,6 +159,24 @@
                             <li>
                                 <a href="{{ route('admin.categories.index') }}" class="tp-link">
                                     Kategori Produk
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.articles.index') }}" class="tp-link">
+                                    Artikel
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.lead-magnets.index') }}" class="tp-link">
+                                    Panduan Gratis
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.lead-subscribers.index') }}" class="tp-link">
+                                    Lead Subscribers
                                 </a>
                             </li>
                         </ul>

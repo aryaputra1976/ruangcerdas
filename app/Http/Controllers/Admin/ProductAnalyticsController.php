@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\ProductViewEvent;
 use App\Support\ActivityLogger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class ProductAnalyticsController extends Controller
         return view('admin.analytics.products', [
             'filters' => $analyticsData['filters'],
             'statusOptions' => [
+                '',
                 Order::STATUS_PAID,
                 Order::STATUS_PENDING,
                 Order::STATUS_PAYMENT_UPLOADED,
@@ -67,14 +69,13 @@ class ProductAnalyticsController extends Controller
                 'Product ID',
                 'Product Name',
                 'Category',
+                'Views',
+                'Checkout Started',
+                'Payment Proof Uploaded',
                 'Paid Orders',
-                'Paid Revenue',
-                'Average Paid Order Value',
-                'Downloads',
-                'Pending Orders',
-                'Rejected Orders',
                 'Total Orders',
-                'Conversion Rate',
+                'Order per View Conversion',
+                'Paid per View Conversion',
                 'Period From',
                 'Period To',
             ]);
@@ -84,14 +85,13 @@ class ProductAnalyticsController extends Controller
                     $row['product']?->id,
                     $row['product']?->name ?? 'Produk tidak ditemukan',
                     $row['product']?->category?->name ?? '-',
+                    $row['total_views'],
+                    $row['checkout_started'],
+                    $row['payment_uploaded_orders'],
                     $row['paid_orders'],
-                    $row['paid_revenue'],
-                    $row['average_order_value'],
-                    $row['download_count'],
-                    $row['pending_orders'],
-                    $row['rejected_orders'],
                     $row['total_orders'],
-                    rtrim(rtrim(number_format($row['conversion_rate'], 2, '.', ''), '0'), '.') . '%',
+                    rtrim(rtrim(number_format($row['conversion_order_views'], 2, '.', ''), '0'), '.') . '%',
+                    rtrim(rtrim(number_format($row['conversion_paid_views'], 2, '.', ''), '0'), '.') . '%',
                     $filters['from'],
                     $filters['to'],
                 ]);
@@ -127,68 +127,68 @@ class ProductAnalyticsController extends Controller
             [$from, $to] = [$to->copy()->startOfDay(), $from->copy()->endOfDay()];
         }
 
-        $status = (string) $request->query('status', Order::STATUS_PAID);
+        $status = (string) $request->query('status', '');
         $productId = $request->query('product_id');
         $categoryId = $request->query('category_id');
 
-        $baseOrdersQuery = Order::query()
-            ->with('product.category')
+        $ordersQuery = Order::query()
             ->whereBetween('created_at', [$from, $to])
-            ->where('status', $status)
+            ->when($status !== '', fn ($query) => $query->where('status', $status))
             ->when($productId, fn ($query) => $query->where('product_id', $productId))
             ->when($categoryId, function ($query) use ($categoryId) {
                 $query->whereHas('product', fn ($productQuery) => $productQuery->where('category_id', $categoryId));
             });
 
-        $orders = (clone $baseOrdersQuery)->get();
+        $orders = (clone $ordersQuery)->get();
 
-        $rows = $orders
-            ->groupBy('product_id')
-            ->map(function ($group) {
-                $product = $group->first()?->product;
-                $paidOrders = $group->where('status', Order::STATUS_PAID);
-                $pendingOrders = $group->where('status', Order::STATUS_PENDING);
-                $rejectedOrders = $group->where('status', Order::STATUS_REJECTED);
-
-                $paidCount = $paidOrders->count();
-                $totalCount = $group->count();
-                $paidRevenue = (int) $paidOrders->sum('price');
-                $downloadCount = (int) $group->sum('download_count');
-
-                return [
-                    'product' => $product,
-                    'paid_orders' => $paidCount,
-                    'paid_revenue' => $paidRevenue,
-                    'average_order_value' => $paidCount > 0 ? (int) round($paidRevenue / $paidCount) : 0,
-                    'download_count' => $downloadCount,
-                    'pending_orders' => $pendingOrders->count(),
-                    'rejected_orders' => $rejectedOrders->count(),
-                    'total_orders' => $totalCount,
-                    'conversion_rate' => $totalCount > 0 ? round(($paidCount / $totalCount) * 100, 2) : 0,
-                ];
+        $viewEvents = ProductViewEvent::query()
+            ->whereBetween('created_at', [$from, $to])
+            ->when($productId, fn ($query) => $query->where('product_id', $productId))
+            ->when($categoryId, function ($query) use ($categoryId) {
+                $query->whereHas('product', fn ($productQuery) => $productQuery->where('category_id', $categoryId));
             })
-            ->sortBy([
-                ['paid_orders', 'desc'],
-                ['paid_revenue', 'desc'],
-            ])
+            ->get();
+
+        $orderGroups = $orders->groupBy('product_id');
+        $viewGroups = $viewEvents->groupBy('product_id');
+        $productIds = $orderGroups->keys()->merge($viewGroups->keys())->filter()->unique()->values();
+
+        $productsById = Product::query()
+            ->with('category')
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
+        $rows = $productIds->map(function ($pid) use ($orderGroups, $viewGroups, $productsById) {
+            $orderGroup = $orderGroups->get($pid, collect());
+            $viewGroup = $viewGroups->get($pid, collect());
+
+            $totalViews = $viewGroup->count();
+            $totalOrders = $orderGroup->count();
+            $paidOrders = $orderGroup->where('status', Order::STATUS_PAID)->count();
+            $paymentUploadedOrders = $orderGroup->where('status', Order::STATUS_PAYMENT_UPLOADED)->count();
+
+            return [
+                'product' => $productsById->get($pid),
+                'total_views' => $totalViews,
+                'checkout_started' => $totalOrders,
+                'total_orders' => $totalOrders,
+                'payment_uploaded_orders' => $paymentUploadedOrders,
+                'paid_orders' => $paidOrders,
+                'conversion_order_views' => $totalViews > 0 ? round(($totalOrders / $totalViews) * 100, 2) : 0,
+                'conversion_paid_views' => $totalViews > 0 ? round(($paidOrders / $totalViews) * 100, 2) : 0,
+            ];
+        })
+            ->sortByDesc('total_views')
             ->values();
 
-        $topProduct = $rows->first();
-        $highestRevenue = (int) ($topProduct['paid_revenue'] ?? 0);
-
-        $rows = $rows->map(function ($row) use ($highestRevenue) {
-            $row['revenue_progress'] = $highestRevenue > 0
-                ? round(($row['paid_revenue'] / $highestRevenue) * 100, 2)
-                : 0;
-
-            return $row;
-        });
+        $topProduct = $rows->sortByDesc('paid_orders')->first();
 
         $topProducts = $rows->take(10);
-
-        $paidOrders = $orders->where('status', Order::STATUS_PAID);
-        $totalPaidOrders = $paidOrders->count();
-        $totalRevenuePaid = (int) $paidOrders->sum('price');
+        $totalViews = (int) $viewEvents->count();
+        $totalOrders = (int) $orders->count();
+        $totalPaymentUploaded = (int) $orders->where('status', Order::STATUS_PAYMENT_UPLOADED)->count();
+        $totalPaidOrders = (int) $orders->where('status', Order::STATUS_PAID)->count();
 
         return [
             'filters' => [
@@ -201,12 +201,15 @@ class ProductAnalyticsController extends Controller
             'rows' => $rows,
             'topProducts' => $topProducts,
             'summary' => [
-                'total_products_sold' => $rows->where('paid_orders', '>', 0)->count(),
+                'total_products_with_activity' => $rows->count(),
+                'total_views' => $totalViews,
+                'total_checkout_started' => $totalOrders,
+                'total_orders' => $totalOrders,
+                'total_payment_uploaded' => $totalPaymentUploaded,
                 'total_paid_orders' => $totalPaidOrders,
-                'total_revenue_paid' => $totalRevenuePaid,
-                'average_paid_order_value' => $totalPaidOrders > 0 ? (int) round($totalRevenuePaid / $totalPaidOrders) : 0,
-                'total_downloads' => (int) $orders->sum('download_count'),
-                'best_seller' => $topProduct['product']?->name ?? '-',
+                'conversion_order_views' => $totalViews > 0 ? round(($totalOrders / $totalViews) * 100, 2) : 0,
+                'conversion_paid_views' => $totalViews > 0 ? round(($totalPaidOrders / $totalViews) * 100, 2) : 0,
+                'best_converter' => data_get($topProduct, 'product.name', '-'),
             ],
         ];
     }

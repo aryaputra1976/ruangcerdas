@@ -11,7 +11,10 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class,
             CategorySeeder::class,
+            RuangCerdasCategorySeeder::class,
             ProductSeeder::class,
+            CpnsStarterKitProductSeeder::class,
+            ArticleSeeder::class,
         ]);
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use Illuminate\Support\Str;
 
 class OrderNumberService
 {
@@ -20,7 +21,7 @@ class OrderNumberService
             return $prefix . '-0001';
         }
 
-        $lastNumber = (int) str()->afterLast($lastOrderToday->invoice_number, '-')->toString();
+        $lastNumber = (int) Str::afterLast($lastOrderToday->invoice_number, '-');
         $nextNumber = $lastNumber + 1;
 
         return $prefix . '-' . str_pad((string) $nextNumber, 4, '0', STR_PAD_LEFT);

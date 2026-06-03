@@ -183,6 +183,39 @@
                     </div>
                 </li>
 
+                <li class="menu-title mt-2">Tryout CPNS</li>
+
+                <li>
+                    <a href="#sidebarTryout" data-bs-toggle="collapse">
+                        <i data-feather="edit-3"></i>
+                        <span> Tryout CPNS </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+
+                    <div class="collapse {{ request()->routeIs('admin.tryout-packages.*') || request()->routeIs('admin.question-categories.*') || request()->routeIs('admin.questions.*') ? 'show' : '' }}"
+                        id="sidebarTryout">
+                        <ul class="nav-second-level">
+                            <li>
+                                <a href="{{ route('admin.tryout-packages.index') }}" class="tp-link">
+                                    Paket Tryout
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.question-categories.index') }}" class="tp-link">
+                                    Kategori Soal
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.questions.index') }}" class="tp-link">
+                                    Bank Soal
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
                 <li class="menu-title mt-2">Website</li>
 
                 <li>

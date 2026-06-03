@@ -14,7 +14,11 @@ class DatabaseSeeder extends Seeder
             RuangCerdasCategorySeeder::class,
             ProductSeeder::class,
             CpnsStarterKitProductSeeder::class,
+            TryoutPremiumProductSeeder::class,
             ArticleSeeder::class,
+            TryoutPackageSeeder::class,
+            QuestionCategorySeeder::class,
+            TryoutFreeQuestionSeeder::class,
         ]);
     }
 }

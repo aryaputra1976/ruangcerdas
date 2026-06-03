@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -55,5 +56,10 @@ class User extends Authenticatable
     public function approvedOrders()
     {
         return $this->hasMany(Order::class, 'approved_by');
-    }    
+    }
+
+    public function tryoutSessions(): HasMany
+    {
+        return $this->hasMany(TryoutSession::class);
+    }
 }

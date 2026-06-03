@@ -22,6 +22,9 @@
             <a href="{{ route('articles.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Artikel
             </a>
+            <a href="{{ route('public.tryouts.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Tryout CPNS
+            </a>
             <a href="{{ route('lead-magnets.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Panduan Gratis
             </a>
@@ -70,6 +73,9 @@
             </a>
             <a href="{{ route('articles.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Artikel
+            </a>
+            <a href="{{ route('public.tryouts.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Tryout CPNS
             </a>
             <a href="{{ route('lead-magnets.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Panduan Gratis

@@ -144,6 +144,18 @@
                             {{ $paymentNote }}
                         </div>
                     @endif
+
+                    @if ($order->status !== \App\Models\Order::STATUS_PAID && ! $order->payment_proof_path)
+                        <div class="mt-5 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                            <h3 class="text-lg font-black text-amber-950">Sudah transfer?</h3>
+                            <p class="mt-2 text-sm leading-6 text-amber-800">
+                                Setelah transfer, upload bukti pembayaran agar admin bisa segera memverifikasi order Anda.
+                            </p>
+                            <a href="{{ route('orders.payment.form', $order->invoice_number) }}" class="mt-4 inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 sm:w-auto">
+                                Saya Sudah Bayar, Upload Bukti Pembayaran
+                            </a>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
@@ -187,7 +199,7 @@
                     @endif
                 </div>
 
-                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+                <div id="upload-bukti" class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8 scroll-mt-24">
                     <h2 class="text-2xl font-black text-slate-950">Upload Bukti Pembayaran</h2>
 
                     @if ($order->payment_proof_path)
@@ -209,7 +221,7 @@
                             Setelah transfer selesai, upload bukti pembayaran dalam format JPG, PNG, atau PDF agar admin mudah memverifikasi.
                         </p>
                         <a href="{{ route('orders.payment.form', $order->invoice_number) }}" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
-                            Upload Bukti Pembayaran
+                            Saya Sudah Bayar, Upload Bukti Pembayaran
                         </a>
                     @endif
 

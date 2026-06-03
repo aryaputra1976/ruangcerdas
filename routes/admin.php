@@ -19,6 +19,9 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\ArticleController;
 use App\Http\Controllers\Admin\LeadMagnetController;
 use App\Http\Controllers\Admin\LeadSubscriberController;
+use App\Http\Controllers\Admin\QuestionCategoryController;
+use App\Http\Controllers\Admin\QuestionController;
+use App\Http\Controllers\Admin\TryoutPackageController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -53,6 +56,9 @@ Route::prefix('admin')
         Route::resource('/articles', ArticleController::class)->except(['show']);
         Route::resource('/lead-magnets', LeadMagnetController::class)->except(['show']);
         Route::get('/lead-subscribers', [LeadSubscriberController::class, 'index'])->name('lead-subscribers.index');
+        Route::resource('/tryout-packages', TryoutPackageController::class);
+        Route::resource('/question-categories', QuestionCategoryController::class);
+        Route::resource('/questions', QuestionController::class);
 
         Route::resource('/products', ProductController::class);
         Route::get('/products/{product}/preview', [ProductController::class, 'preview'])

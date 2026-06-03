@@ -7,23 +7,37 @@ use App\Http\Requests\UploadPaymentProofRequest;
 use App\Models\LandingSetting;
 use App\Models\Order;
 use App\Services\PaymentSettingService;
+use App\Services\TryoutAccessService;
 use App\Support\OrderAuditLogger;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class OrderController extends Controller
 {
-    public function thankYou(PaymentSettingService $paymentSettingService, string $invoice)
+    public function thankYou(
+        PaymentSettingService $paymentSettingService,
+        TryoutAccessService $tryoutAccessService,
+        string $invoice
+    )
     {
         $order = Order::query()
             ->with('product.category')
             ->where('invoice_number', $invoice)
             ->firstOrFail();
 
+        $tryoutPackage = $tryoutAccessService->resolvePackageFromOrder($order);
+        $tryoutAccess = null;
+
+        if ($order->isPaid() && $tryoutPackage) {
+            $tryoutAccess = $tryoutAccessService->ensureAccessFromPaidOrder($order);
+        }
+
         return view('public.orders.thank-you', [
             'order' => $order,
             'paymentConfig' => $paymentSettingService->current(),
             'supportWhatsapp' => LandingSetting::query()->value('support_whatsapp'),
+            'tryoutPackage' => $tryoutPackage,
+            'tryoutAccess' => $tryoutAccess,
         ]);
     }
 

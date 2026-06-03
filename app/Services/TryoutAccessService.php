@@ -103,6 +103,67 @@ class TryoutAccessService
         return $access->isCurrentlyActive() ? $access : null;
     }
 
+    public function resolvePackageFromOrder(Order $order): ?TryoutPackage
+    {
+        $productSlug = $order->product?->slug;
+
+        if (blank($productSlug)) {
+            return null;
+        }
+
+        return TryoutPackage::query()
+            ->where('slug', $productSlug)
+            ->where('is_free', false)
+            ->first();
+    }
+
+    public function ensureAccessFromPaidOrder(Order $order): ?TryoutAccess
+    {
+        if (! $order->isPaid()) {
+            return null;
+        }
+
+        $tryoutPackage = $this->resolvePackageFromOrder($order);
+
+        if (! $tryoutPackage || blank($order->buyer_email)) {
+            return null;
+        }
+
+        $email = $this->normalizeEmail($order->buyer_email);
+
+        $existingAccess = TryoutAccess::query()
+            ->where('tryout_package_id', $tryoutPackage->id)
+            ->where('order_id', $order->id)
+            ->where('buyer_email', $email)
+            ->latest('id')
+            ->first();
+
+        $startsAt = $order->paid_at ?? $order->created_at ?? now();
+        $expiresAt = $tryoutPackage->access_days
+            ? $startsAt->copy()->addDays((int) $tryoutPackage->access_days)
+            : null;
+
+        $remainingAttempts = $existingAccess?->remaining_attempts;
+
+        if ($remainingAttempts === null) {
+            $remainingAttempts = max(1, (int) ($tryoutPackage->attempt_limit ?? 1));
+        }
+
+        return TryoutAccess::query()->updateOrCreate(
+            [
+                'tryout_package_id' => $tryoutPackage->id,
+                'order_id' => $order->id,
+                'buyer_email' => $email,
+            ],
+            [
+                'starts_at' => $startsAt,
+                'expires_at' => $expiresAt,
+                'remaining_attempts' => $remainingAttempts,
+                'is_active' => $remainingAttempts > 0,
+            ]
+        );
+    }
+
     public function consumeAttempt(TryoutAccess $tryoutAccess): TryoutAccess
     {
         $lockedAccess = TryoutAccess::query()

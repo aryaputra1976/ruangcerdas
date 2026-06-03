@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\OrderPaidDownloadLinkMail;
 use App\Models\Order;
 use App\Models\OrderNote;
+use App\Services\TryoutAccessService;
 use App\Support\ActivityLogger;
 use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
@@ -109,7 +110,7 @@ class OrderController extends Controller
         abort(404);
     }
 
-    public function approve(Request $request, Order $order)
+    public function approve(Request $request, Order $order, TryoutAccessService $tryoutAccessService)
     {
         abort_if($order->isPaid(), 422, 'Order sudah paid.');
 
@@ -126,6 +127,8 @@ class OrderController extends Controller
             'rejected_at' => null,
             'rejection_reason' => null,
         ]);
+
+        $tryoutAccess = $tryoutAccessService->ensureAccessFromPaidOrder($order->fresh('product'));
 
         OrderAuditLogger::log(
             $order,
@@ -153,6 +156,10 @@ class OrderController extends Controller
         }
 
         $successMessage = 'Pembayaran berhasil di-approve. Link download sudah aktif.';
+
+        if ($tryoutAccess) {
+            $successMessage = 'Pembayaran berhasil di-approve. Akses tryout premium sudah aktif untuk email pembeli.';
+        }
 
         try {
             Mail::to($order->buyer_email)->send(new OrderPaidDownloadLinkMail($order->fresh('product')));

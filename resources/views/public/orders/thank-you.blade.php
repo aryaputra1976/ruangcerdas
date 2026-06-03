@@ -1,4 +1,4 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 
 @section('title', 'Instruksi Pembayaran - ' . $order->invoice_number)
 @section('robots', 'noindex,nofollow')
@@ -21,6 +21,7 @@
     $qrisExists = $qrisImage && file_exists(public_path($qrisImage));
     $hasBankInstruction = $bankAccounts->isNotEmpty();
     $hasPaymentInstruction = $hasBankInstruction || $qrisExists;
+    $isTryoutOrder = isset($tryoutPackage) && $tryoutPackage;
 
     $statusLabel = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Menunggu Pembayaran',
@@ -49,7 +50,9 @@
     $pageSubtitle = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Silakan transfer sesuai nominal, lalu upload bukti pembayaran untuk verifikasi admin.',
         \App\Models\Order::STATUS_PAYMENT_UPLOADED => 'Bukti pembayaran sudah diterima. Tim admin akan melakukan verifikasi.',
-        \App\Models\Order::STATUS_PAID => 'Pembayaran Anda sudah disetujui. Silakan cek email untuk link download.',
+        \App\Models\Order::STATUS_PAID => $isTryoutOrder
+            ? 'Pembayaran Anda sudah disetujui. Akses tryout premium aktif untuk email pembelian ini.'
+            : 'Pembayaran Anda sudah disetujui. Silakan cek email untuk link download.',
         \App\Models\Order::STATUS_REJECTED => 'Pembayaran ditolak. Silakan periksa alasan dan upload ulang bukti jika diperlukan.',
         default => 'Silakan cek status order Anda secara berkala.',
     };
@@ -75,7 +78,11 @@
         </div>
 
         <div class="mb-6 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-center text-sm font-semibold text-slate-700">
-            Pembayaran manual � Verifikasi admin � Link download via email � Token aman
+            @if ($isTryoutOrder)
+                Pembayaran manual · Verifikasi admin · Akses tryout aktif · Mulai dengan email pembelian
+            @else
+                Pembayaran manual · Verifikasi admin · Link download via email · Token aman
+            @endif
         </div>
 
         <div class="grid gap-8 lg:grid-cols-3">
@@ -161,12 +168,19 @@
                 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
                     <h2 class="text-2xl font-black text-slate-950">Langkah Selanjutnya</h2>
                     <div class="mt-6 grid gap-3">
-                        @foreach ([
-                            'Transfer sesuai nominal.',
-                            'Upload bukti pembayaran.',
-                            'Tunggu verifikasi admin.',
-                            'Link download dikirim ke email.',
-                        ] as $index => $step)
+                        @foreach (($isTryoutOrder
+                            ? [
+                                'Transfer sesuai nominal.',
+                                'Upload bukti pembayaran.',
+                                'Tunggu verifikasi admin.',
+                                'Setelah approved, buka halaman tryout dan gunakan email pembelian untuk mulai.',
+                            ]
+                            : [
+                                'Transfer sesuai nominal.',
+                                'Upload bukti pembayaran.',
+                                'Tunggu verifikasi admin.',
+                                'Link download dikirim ke email.',
+                            ]) as $index => $step)
                             <div class="flex items-start gap-3 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
                                 <span class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">{{ $index + 1 }}</span>
                                 <span>{{ $step }}</span>
@@ -184,7 +198,11 @@
                         </div>
                     @elseif ($order->status === \App\Models\Order::STATUS_PAID)
                         <div class="mt-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-sm leading-6 text-emerald-800">
-                            Pembayaran sudah disetujui. Silakan cek inbox dan folder spam email Anda untuk link download.
+                            @if ($isTryoutOrder)
+                                Pembayaran sudah disetujui. Akses tryout premium aktif. Silakan buka halaman tryout dan gunakan email pembelian Anda.
+                            @else
+                                Pembayaran sudah disetujui. Silakan cek inbox dan folder spam email Anda untuk link download.
+                            @endif
                         </div>
                     @elseif ($order->status === \App\Models\Order::STATUS_REJECTED)
                         <div class="mt-5 rounded-2xl border border-red-100 bg-red-50 px-4 py-4 text-sm leading-6 text-red-800">
@@ -195,6 +213,26 @@
                     @if ($order->status === \App\Models\Order::STATUS_REJECTED && !empty($order->rejection_reason))
                         <div class="mt-4 rounded-2xl border border-red-100 bg-red-50 p-4 text-sm leading-6 text-red-700">
                             Alasan penolakan: {{ $order->rejection_reason }}
+                        </div>
+                    @endif
+
+                    @if ($isTryoutOrder)
+                        <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50 p-5">
+                            <h3 class="text-lg font-black text-blue-950">Cara membuka tryout premium</h3>
+                            <ul class="mt-3 space-y-2 text-sm leading-6 text-blue-900">
+                                <li>- Buka halaman Tryout CPNS setelah pembayaran disetujui.</li>
+                                <li>- Pilih paket <span class="font-bold">{{ $tryoutPackage->title }}</span>.</li>
+                                <li>- Klik <span class="font-bold">Mulai Tryout</span>.</li>
+                                <li>- Gunakan email pembelian: <span class="font-bold">{{ $order->buyer_email }}</span>.</li>
+                            </ul>
+                            <div class="mt-4 flex flex-col gap-3 sm:flex-row">
+                                <a href="{{ route('public.tryouts.index') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                                    Buka Halaman Tryout
+                                </a>
+                                <a href="{{ route('public.tryouts.start', $tryoutPackage) }}" class="inline-flex items-center justify-center rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-50">
+                                    Mulai Paket Ini
+                                </a>
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -225,13 +263,17 @@
                         </a>
                     @endif
 
-                    @if ($order->status === \App\Models\Order::STATUS_PAID && filled($order->download_token))
+                    @if ($order->status === \App\Models\Order::STATUS_PAID && ! $isTryoutOrder && filled($order->download_token))
                         <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
                             Pembayaran Anda sudah disetujui. Anda bisa langsung mengunduh file digital melalui tombol di bawah.
                         </div>
                         <a href="{{ route('orders.download', ['invoice' => $order->invoice_number, 'token' => $order->download_token]) }}" class="mt-4 inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-bold text-white hover:bg-emerald-700">
                             Download File Digital
                         </a>
+                    @elseif ($order->status === \App\Models\Order::STATUS_PAID && $isTryoutOrder)
+                        <div class="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4 text-sm leading-6 text-emerald-800">
+                            Akses tryout premium Anda sudah aktif. Gunakan email pembelian ini saat mulai tryout.
+                        </div>
                     @endif
                 </div>
 
@@ -293,7 +335,7 @@
             </a>
             @if ($order->status === \App\Models\Order::STATUS_PAID)
                 <span class="flex-1 rounded-2xl border border-emerald-200 bg-emerald-50 px-6 py-4 text-center font-semibold text-emerald-700">
-                    Pembayaran Sudah Disetujui
+                    {{ $isTryoutOrder ? 'Akses Tryout Sudah Aktif' : 'Pembayaran Sudah Disetujui' }}
                 </span>
             @endif
         </div>

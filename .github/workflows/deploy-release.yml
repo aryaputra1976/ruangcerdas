@@ -44,7 +44,7 @@ jobs:
             Port ${{ secrets.SSH_PORT }}
             IdentityFile ~/.ssh/id_rsa
             StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
+            UserKnownHostsFile /dev/null
             BatchMode yes
             ConnectTimeout 30
           EOF
@@ -57,7 +57,7 @@ jobs:
         run: |
           set -e
 
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+          ssh deploy-server "
             set -e
 
             mkdir -p $APP_ROOT/releases/$RELEASE_ID
@@ -81,7 +81,7 @@ jobs:
           set -e
 
           rsync -az --delete \
-            -e "ssh -p ${{ secrets.SSH_PORT }}" \
+            -e "ssh -F ~/.ssh/config" \
             --exclude='.git/' \
             --exclude='.github/' \
             --exclude='.vscode/' \
@@ -92,13 +92,13 @@ jobs:
             --exclude='.env' \
             --exclude='public/rc-files/' \
             ./ \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$APP_ROOT/releases/$RELEASE_ID/"
+            "deploy-server:$APP_ROOT/releases/$RELEASE_ID/"
 
       - name: Verify uploaded release
         run: |
           set -e
 
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+          ssh deploy-server "
             set -e
 
             echo 'Checking Laravel release structure...'
@@ -120,7 +120,7 @@ jobs:
         run: |
           set -e
 
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+          ssh deploy-server "
             set -e
 
             cd $APP_ROOT/releases/$RELEASE_ID
@@ -149,7 +149,7 @@ jobs:
             if [ -f $APP_ROOT/shared/.env ]; then
               ln -sfn $APP_ROOT/shared/.env .env
             else
-              echo 'ERROR: $APP_ROOT/shared/.env not found'
+              echo 'ERROR: shared/.env not found'
               exit 1
             fi
 
@@ -165,7 +165,7 @@ jobs:
         run: |
           set -e
 
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+          ssh deploy-server "
             set -e
 
             ln -sfn $APP_ROOT/releases/$RELEASE_ID $APP_ROOT/current
@@ -178,7 +178,7 @@ jobs:
         run: |
           set -e
 
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+          ssh deploy-server "
             set -e
 
             echo 'Checking active release...'

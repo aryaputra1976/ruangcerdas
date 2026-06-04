@@ -35,7 +35,6 @@ jobs:
       - name: Set up SSH
         run: |
           set -e
-
           mkdir -p "$HOME/.ssh"
 
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > "$HOME/.ssh/id_rsa"
@@ -48,17 +47,11 @@ jobs:
             Port ${{ secrets.SSH_PORT }}
             IdentityFile $HOME/.ssh/id_rsa
             StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-            BatchMode yes
-            ConnectTimeout 30
           EOF
-
-          chmod 600 "$HOME/.ssh/config"
 
       - name: Test SSH connection
         run: |
-          set -e
-          ssh -F "$HOME/.ssh/config" deploy-server "echo SSH OK"
+          ssh -vvv -o ConnectTimeout=15 -o BatchMode=yes -F "$HOME/.ssh/config" deploy-server "echo SSH OK"
 
       - name: Create release and shared folders
         run: |

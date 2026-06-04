@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             RuangCerdasCategorySeeder::class,
             ProductSeeder::class,
             CpnsStarterKitProductSeeder::class,
+            PppkTendikProductSeeder::class,
             TryoutPremiumProductSeeder::class,
             ArticleSeeder::class,
             TryoutPackageSeeder::class,

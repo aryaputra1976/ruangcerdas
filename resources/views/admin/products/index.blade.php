@@ -194,6 +194,12 @@
                                                         Draft
                                                     </span>
                                                 @endif
+
+                                                @if (($product->visible_reviews_count ?? 0) > 0)
+                                                    <span class="badge bg-success-subtle text-success rounded-pill">
+                                                        {{ number_format((int) $product->visible_reviews_count, 0, ',', '.') }} review / {{ number_format((float) $product->visible_reviews_avg, 1, ',', '.') }}
+                                                    </span>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -308,6 +314,12 @@
                                            class="btn btn-sm bg-warning-subtle text-warning rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
                                             <i data-feather="help-circle" style="width: 14px; height: 14px;"></i>
                                             <span>FAQ</span>
+                                        </a>
+
+                                        <a href="{{ route('admin.products.reviews.index', $product) }}"
+                                           class="btn btn-sm bg-success-subtle text-success rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                            <i data-feather="message-square" style="width: 14px; height: 14px;"></i>
+                                            <span>Review</span>
                                         </a>
 
                                         <a href="{{ route('admin.products.edit', $product) }}"

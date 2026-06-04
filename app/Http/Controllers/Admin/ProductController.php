@@ -21,6 +21,12 @@ class ProductController extends Controller
     {
         $query = Product::query()
             ->with('category')
+            ->withCount([
+                'reviews as visible_reviews_count' => fn ($query) => $query->where('is_visible', true),
+            ])
+            ->withAvg([
+                'reviews as visible_reviews_avg' => fn ($query) => $query->where('is_visible', true),
+            ], 'rating')
             ->latest();
 
         if ($request->filled('q')) {
@@ -148,6 +154,12 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        $product->loadCount([
+            'reviews as visible_reviews_count' => fn ($query) => $query->where('is_visible', true),
+        ])->loadAvg([
+            'reviews as visible_reviews_avg' => fn ($query) => $query->where('is_visible', true),
+        ], 'rating');
+
         $categories = Category::query()
             ->orderBy('name')
             ->get();
@@ -166,6 +178,10 @@ class ProductController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->orderBy('id'),
+            'reviews' => fn ($query) => $query
+                ->where('is_visible', true)
+                ->orderByDesc('reviewed_at')
+                ->orderByDesc('id'),
         ]);
 
         $pricing = $pricingService->resolve($product);
@@ -177,6 +193,7 @@ class ProductController extends Controller
             ->take(3)
             ->get();
 
+        $landingSetting = LandingSetting::query()->first();
         $supportWhatsapp = LandingSetting::query()->value('support_whatsapp');
         $isPreview = true;
         $canCheckout = $product->isVisibleToPublic();
@@ -190,6 +207,7 @@ class ProductController extends Controller
             'product',
             'pricing',
             'testimonials',
+            'landingSetting',
             'supportWhatsapp',
             'isPreview',
             'canCheckout',

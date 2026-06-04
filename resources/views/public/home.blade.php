@@ -12,6 +12,10 @@
         if (str_starts_with($supportNumber, '0')) {
             $supportNumber = '62' . substr($supportNumber, 1);
         }
+
+        $pppkTendikUrl = \Illuminate\Support\Facades\Route::has('public.pppk.tendik')
+            ? route('public.pppk.tendik')
+            : url('/pppk-tendik-sekolah-rakyat-2026');
     @endphp
     @include('public.partials.schema.organization', ['supportNumber' => $supportNumber])
 @endsection
@@ -49,6 +53,63 @@
                 ] as $focus)
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">{{ $focus }}</div>
                 @endforeach
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="bg-slate-50 py-10 md:py-12">
+    <div class="mx-auto max-w-7xl px-6">
+        <div class="overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-br from-slate-950 via-blue-950 to-sky-700 shadow-sm">
+            <div class="grid gap-6 px-6 py-8 md:px-8 md:py-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,360px)] lg:items-center">
+                <div class="max-w-3xl">
+                    <p class="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-sky-100">
+                        Info PPPK 2026
+                    </p>
+                    <h2 class="mt-4 text-3xl font-black tracking-tight text-white md:text-4xl">
+                        PPPK Tendik Sekolah Rakyat 2026 Dibuka
+                    </h2>
+                    <p class="mt-4 text-sm leading-7 text-slate-200 md:text-base md:leading-8">
+                        Kementerian Sosial RI membuka 5.127 formasi PPPK Tenaga Kependidikan Sekolah Rakyat. Cek jadwal, formasi, syarat, dan checklist dokumen.
+                    </p>
+
+                    <div class="mt-6 grid gap-3 sm:grid-cols-3">
+                        @foreach ([
+                            '5.127 Formasi',
+                            'Pendaftaran 8-14 Juni 2026',
+                            'SLTA/D-III/S-1/D-IV',
+                        ] as $highlight)
+                            <div class="rounded-3xl border border-white/10 bg-white/10 px-4 py-3 text-sm font-semibold text-white">
+                                {{ $highlight }}
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <a href="{{ $pppkTendikUrl }}" class="inline-flex items-center justify-center rounded-3xl bg-yellow-400 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-yellow-300">
+                            Lihat Info Lengkap
+                        </a>
+                        <a href="{{ $pppkTendikUrl }}#checklist" class="inline-flex items-center justify-center rounded-3xl border border-white/20 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
+                            Cek Checklist Dokumen
+                        </a>
+                    </div>
+                </div>
+
+                <div class="rounded-3xl border border-white/10 bg-white/10 p-5 shadow-sm backdrop-blur md:p-6">
+                    <p class="text-sm font-bold uppercase tracking-widest text-yellow-300">Ringkas</p>
+                    <div class="mt-4 space-y-3">
+                        @foreach ([
+                            ['label' => 'Formasi utama', 'value' => 'Wali Asuh dan Wali Asrama'],
+                            ['label' => 'Pendaftaran', 'value' => '8-14 Juni 2026'],
+                            ['label' => 'Tujuan halaman', 'value' => 'Bantu cek info dan siapkan dokumen'],
+                        ] as $item)
+                            <div class="rounded-3xl border border-white/10 bg-slate-950/30 px-4 py-4">
+                                <p class="text-xs font-semibold uppercase tracking-wider text-sky-100">{{ $item['label'] }}</p>
+                                <p class="mt-2 text-sm font-bold leading-6 text-white">{{ $item['value'] }}</p>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -105,6 +105,10 @@ class ProductController extends Controller
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->orderBy('id'),
+            'reviews' => fn ($query) => $query
+                ->where('is_visible', true)
+                ->orderByDesc('reviewed_at')
+                ->orderByDesc('id'),
         ]);
 
         $pricing = $pricingService->resolve($product);

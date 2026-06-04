@@ -13,6 +13,7 @@ use App\Http\Controllers\Public\FaqController;
 use App\Http\Controllers\Public\LegalPageController;
 use App\Http\Controllers\Public\ArticleController;
 use App\Http\Controllers\Public\LeadMagnetController;
+use App\Http\Controllers\Public\PppkTendikController;
 use App\Http\Controllers\Public\TryoutController;
 use App\Http\Controllers\Public\TryoutSessionController;
 
@@ -44,6 +45,7 @@ Route::post('/order-tracking', [OrderTrackingController::class, 'show'])
     ->name('public.order-tracking.show');
 Route::get('/artikel', [ArticleController::class, 'index'])->name('articles.index');
 Route::get('/artikel/{article:slug}', [ArticleController::class, 'show'])->name('articles.show');
+Route::get('/pppk-tendik-sekolah-rakyat-2026', [PppkTendikController::class, 'index'])->name('public.pppk.tendik');
 Route::get('/gratis', [LeadMagnetController::class, 'index'])->name('lead-magnets.index');
 Route::get('/gratis/{leadMagnet:slug}', [LeadMagnetController::class, 'show'])->name('lead-magnets.show');
 Route::post('/gratis/{leadMagnet:slug}/download', [LeadMagnetController::class, 'download'])

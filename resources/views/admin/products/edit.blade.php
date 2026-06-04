@@ -39,6 +39,11 @@
                         <i data-feather="help-circle" style="width: 14px; height: 14px;"></i>
                         <span>FAQ Produk</span>
                     </a>
+                    <a href="{{ route('admin.products.reviews.index', $product) }}"
+                       class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="message-square" style="width: 14px; height: 14px;"></i>
+                        <span>Testimoni</span>
+                    </a>
                     <a href="{{ route('admin.products.preview', $product) }}"
                        class="btn btn-sm bg-info-subtle text-info rounded-pill px-3 d-inline-flex align-items-center gap-1">
                         <i data-feather="eye" style="width: 14px; height: 14px;"></i>
@@ -248,6 +253,25 @@
                     @else
                         <div class="text-danger">
                             File digital belum tersedia.
+                        </div>
+                    @endif
+                </div>
+
+                <div class="border rounded-3 p-3 mt-3">
+                    <div class="text-muted fs-13 mb-1">
+                        Testimoni Visible
+                    </div>
+
+                    @if (($product->visible_reviews_count ?? 0) > 0)
+                        <div class="fw-semibold text-dark">
+                            {{ number_format((int) $product->visible_reviews_count, 0, ',', '.') }} review
+                        </div>
+                        <div class="text-muted fs-13 mt-1">
+                            Rating rata-rata {{ number_format((float) $product->visible_reviews_avg, 1, ',', '.') }}/5
+                        </div>
+                    @else
+                        <div class="text-muted">
+                            Belum ada review visible.
                         </div>
                     @endif
                 </div>

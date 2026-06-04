@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\TestimonialController;
 use App\Http\Controllers\Admin\CouponController;
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\ProductFaqController;
+use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\ProductPreviewImageController;
 use App\Http\Controllers\Admin\CustomerContactController;
 use App\Http\Controllers\Admin\UserController;
@@ -67,6 +68,10 @@ Route::prefix('admin')
         Route::post('/products/{product}/faqs', [ProductFaqController::class, 'store'])->name('products.faqs.store');
         Route::patch('/products/{product}/faqs/{faq}', [ProductFaqController::class, 'update'])->name('products.faqs.update');
         Route::delete('/products/{product}/faqs/{faq}', [ProductFaqController::class, 'destroy'])->name('products.faqs.destroy');
+        Route::get('/products/{product}/reviews', [ProductReviewController::class, 'index'])->name('products.reviews.index');
+        Route::post('/products/{product}/reviews', [ProductReviewController::class, 'store'])->name('products.reviews.store');
+        Route::patch('/products/{product}/reviews/{review}', [ProductReviewController::class, 'update'])->name('products.reviews.update');
+        Route::delete('/products/{product}/reviews/{review}', [ProductReviewController::class, 'destroy'])->name('products.reviews.destroy');
         Route::get('/products/{product}/preview-images', [ProductPreviewImageController::class, 'index'])->name('products.preview-images.index');
         Route::post('/products/{product}/preview-images', [ProductPreviewImageController::class, 'store'])->name('products.preview-images.store');
         Route::delete('/products/{product}/preview-images/{previewImage}', [ProductPreviewImageController::class, 'destroy'])->name('products.preview-images.destroy');

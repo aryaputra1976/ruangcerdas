@@ -1,4 +1,4 @@
-name: deploy-safe
+name: deploy-release
 
 on:
   push:
@@ -7,6 +7,10 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      APP_ROOT: /home/u232419966/domains/ruangcerdas.id
+      RELEASE_ID: ${{ github.run_id }}-${{ github.sha }}
 
     steps:
       - name: Checkout code
@@ -19,23 +23,54 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Sync files to server
+      - name: Create release folder
         run: |
-          rsync -az --delete \
+          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+            mkdir -p $APP_ROOT/releases/$RELEASE_ID
+            mkdir -p $APP_ROOT/shared/storage/app/public
+            mkdir -p $APP_ROOT/shared/bootstrap/cache
+          "
+
+      - name: Upload files to release
+        run: |
+          rsync -az \
             --exclude='.git/' \
             --exclude='.github/' \
             --exclude='node_modules/' \
             --exclude='vendor/' \
+            --exclude='storage/' \
+            --exclude='bootstrap/cache/' \
+            --exclude='.env' \
             ./ \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/home/u232419966/domains/ruangcerdas.id/public_html/"
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$APP_ROOT/releases/$RELEASE_ID/"
 
-      - name: Run remote deploy commands
+      - name: Install dependencies and prepare release
         run: |
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" '
-            cd /home/u232419966/domains/ruangcerdas.id/public_html &&
-            if [ -f composer.json ]; then composer install --no-dev --optimize-autoloader; fi &&
-            php artisan optimize:clear &&
-            php artisan config:cache &&
-            php artisan route:cache &&
+          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+            set -e
+            cd $APP_ROOT/releases/$RELEASE_ID
+
+            if [ -f composer.json ]; then
+              composer install --no-dev --optimize-autoloader
+            fi
+
+            rm -rf storage
+            ln -sfn $APP_ROOT/shared/storage storage
+            rm -rf public/storage
+            ln -sfn $APP_ROOT/shared/storage/app/public public/storage
+
+            if [ -f $APP_ROOT/shared/.env ]; then
+              ln -sfn $APP_ROOT/shared/.env .env
+            fi
+
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
             php artisan view:cache
-          '
+          "
+
+      - name: Activate release
+        run: |
+          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
+            ln -sfn $APP_ROOT/releases/$RELEASE_ID $APP_ROOT/current
+          "

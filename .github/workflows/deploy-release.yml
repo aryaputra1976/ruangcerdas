@@ -37,12 +37,21 @@ jobs:
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          ssh-keyscan -T 20 -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host deploy-server
+            HostName ${{ secrets.SSH_HOST }}
+            User ${{ secrets.SSH_USER }}
+            Port ${{ secrets.SSH_PORT }}
+            IdentityFile ~/.ssh/id_rsa
+            StrictHostKeyChecking no
+            UserKnownHostsFile=/dev/null
+            BatchMode yes
+            ConnectTimeout 30
+          EOF
 
-          ssh -o BatchMode=yes -o ConnectTimeout=20 \
-            -p "${{ secrets.SSH_PORT }}" \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "echo SSH connection OK"
+          chmod 600 ~/.ssh/config
+
+          ssh deploy-server "echo SSH connection OK"
 
       - name: Create release and shared folders
         run: |

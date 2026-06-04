@@ -37,8 +37,25 @@ jobs:
           set -e
           mkdir -p "$HOME/.ssh"
 
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > "$HOME/.ssh/id_rsa"
+          test -n "${{ secrets.SSH_HOST }}" || { echo "ERROR: SSH_HOST secret is empty."; exit 1; }
+          test -n "${{ secrets.SSH_USER }}" || { echo "ERROR: SSH_USER secret is empty."; exit 1; }
+          test -n "${{ secrets.SSH_PORT }}" || { echo "ERROR: SSH_PORT secret is empty."; exit 1; }
+          test -n "${{ secrets.SSH_PRIVATE_KEY }}" || { echo "ERROR: SSH_PRIVATE_KEY secret is empty."; exit 1; }
+
+          if printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | grep -q '\\n'; then
+            echo "ERROR: SSH_PRIVATE_KEY appears to contain literal \\n sequences."
+            echo "Store the key in GitHub Secrets with real line breaks, not escaped newlines."
+            exit 1
+          fi
+
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > "$HOME/.ssh/id_rsa"
           chmod 600 "$HOME/.ssh/id_rsa"
+
+          if ! ssh-keygen -y -f "$HOME/.ssh/id_rsa" >/dev/null 2>&1; then
+            echo "ERROR: SSH_PRIVATE_KEY is not a valid OpenSSH private key or still requires a passphrase."
+            echo "Use an unencrypted private key in OpenSSH format and ensure the matching public key is in authorized_keys."
+            exit 1
+          fi
 
           cat > "$HOME/.ssh/config" <<EOF
           Host deploy-server
@@ -46,12 +63,21 @@ jobs:
             User ${{ secrets.SSH_USER }}
             Port ${{ secrets.SSH_PORT }}
             IdentityFile $HOME/.ssh/id_rsa
+            IdentitiesOnly yes
             StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
           EOF
+
+          echo "SSH configuration prepared for ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
 
       - name: Test SSH connection
         run: |
-          ssh -vvv -o ConnectTimeout=15 -o BatchMode=yes -F "$HOME/.ssh/config" deploy-server "echo SSH OK"
+          ssh -vvv \
+            -o ConnectTimeout=15 \
+            -o BatchMode=yes \
+            -o PreferredAuthentications=publickey \
+            -F "$HOME/.ssh/config" \
+            deploy-server "echo SSH OK"
 
       - name: Create release and shared folders
         run: |

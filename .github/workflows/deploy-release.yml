@@ -27,28 +27,50 @@ jobs:
           set -e
           npm ci
           npm run build
-          
+
       - name: Set up SSH
         run: |
           set -e
+
           mkdir -p ~/.ssh
+
           printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Create release folder
+          ssh-keyscan -T 20 -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+          ssh -o BatchMode=yes -o ConnectTimeout=20 \
+            -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "echo SSH connection OK"
+
+      - name: Create release and shared folders
         run: |
           set -e
+
           ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
             set -e
+
             mkdir -p $APP_ROOT/releases/$RELEASE_ID
+
             mkdir -p $APP_ROOT/shared/storage/app/public
+            mkdir -p $APP_ROOT/shared/storage/framework
+            mkdir -p $APP_ROOT/shared/storage/framework/cache
+            mkdir -p $APP_ROOT/shared/storage/framework/cache/data
+            mkdir -p $APP_ROOT/shared/storage/framework/sessions
+            mkdir -p $APP_ROOT/shared/storage/framework/views
+            mkdir -p $APP_ROOT/shared/storage/logs
+
             mkdir -p $APP_ROOT/shared/bootstrap/cache
+
+            chmod -R 775 $APP_ROOT/shared/storage
+            chmod -R 775 $APP_ROOT/shared/bootstrap/cache
           "
 
       - name: Upload files to release
         run: |
           set -e
+
           rsync -az --delete \
             -e "ssh -p ${{ secrets.SSH_PORT }}" \
             --exclude='.git/' \
@@ -63,9 +85,10 @@ jobs:
             ./ \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:$APP_ROOT/releases/$RELEASE_ID/"
 
-      - name: Verify Laravel release structure
+      - name: Verify uploaded release
         run: |
           set -e
+
           ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
             set -e
 
@@ -78,31 +101,28 @@ jobs:
             test -d $APP_ROOT/releases/$RELEASE_ID/resources
             test -d $APP_ROOT/releases/$RELEASE_ID/public
 
-            echo 'Laravel release structure OK'
-          "
+            echo 'Checking Vite build manifest...'
+            test -f $APP_ROOT/releases/$RELEASE_ID/public/build/manifest.json
 
-      - name: Verify new PPPK controller exists
-        run: |
-          set -e
-          ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
-            set -e
-
-            echo 'Checking PppkTendikController.php...'
-
-            test -f $APP_ROOT/releases/$RELEASE_ID/app/Http/Controllers/Public/PppkTendikController.php
-
-            echo 'PppkTendikController.php exists in correct location'
+            echo 'Release structure OK'
           "
 
       - name: Install dependencies and prepare release
         run: |
           set -e
+
           ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
             set -e
 
             cd $APP_ROOT/releases/$RELEASE_ID
 
             mkdir -p $APP_ROOT/shared/storage/app/public
+            mkdir -p $APP_ROOT/shared/storage/framework
+            mkdir -p $APP_ROOT/shared/storage/framework/cache
+            mkdir -p $APP_ROOT/shared/storage/framework/cache/data
+            mkdir -p $APP_ROOT/shared/storage/framework/sessions
+            mkdir -p $APP_ROOT/shared/storage/framework/views
+            mkdir -p $APP_ROOT/shared/storage/logs
             mkdir -p $APP_ROOT/shared/bootstrap/cache
 
             rm -rf storage
@@ -120,13 +140,11 @@ jobs:
             if [ -f $APP_ROOT/shared/.env ]; then
               ln -sfn $APP_ROOT/shared/.env .env
             else
-              echo 'ERROR: shared/.env not found'
+              echo 'ERROR: $APP_ROOT/shared/.env not found'
               exit 1
             fi
 
-            if [ -f composer.json ]; then
-              composer install --no-dev --optimize-autoloader --no-interaction
-            fi
+            composer install --no-dev --optimize-autoloader --no-interaction
 
             php artisan optimize:clear
             php artisan config:cache
@@ -137,6 +155,7 @@ jobs:
       - name: Activate release
         run: |
           set -e
+
           ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
             set -e
 
@@ -149,14 +168,20 @@ jobs:
       - name: Verify active release
         run: |
           set -e
+
           ssh -p "${{ secrets.SSH_PORT }}" "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" "
             set -e
 
-            echo 'Checking active current release...'
+            echo 'Checking active release...'
 
             test -f $APP_ROOT/current/artisan
-            test -f $APP_ROOT/current/app/Http/Controllers/Public/PppkTendikController.php
             test -f $APP_ROOT/current/public/index.php
+            test -f $APP_ROOT/current/public/build/manifest.json
+
+            test -d $APP_ROOT/current/storage/framework/sessions
+            test -d $APP_ROOT/current/storage/framework/views
+            test -d $APP_ROOT/current/storage/framework/cache/data
+            test -d $APP_ROOT/current/storage/logs
 
             echo 'Active release OK'
           "

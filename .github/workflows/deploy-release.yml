@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: deploy-release-main
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -51,7 +55,10 @@ jobs:
 
           chmod 600 ~/.ssh/config
 
-          ssh deploy-server "echo SSH connection OK"
+      - name: Test SSH connection
+        run: |
+          set -e
+          ssh deploy-server "echo SSH OK"
 
       - name: Create release and shared folders
         run: |
@@ -110,10 +117,10 @@ jobs:
             test -d $APP_ROOT/releases/$RELEASE_ID/resources
             test -d $APP_ROOT/releases/$RELEASE_ID/public
 
-            echo 'Checking Vite build manifest...'
+            echo 'Checking Vite manifest...'
             test -f $APP_ROOT/releases/$RELEASE_ID/public/build/manifest.json
 
-            echo 'Release structure OK'
+            echo 'Uploaded release OK'
           "
 
       - name: Install dependencies and prepare release

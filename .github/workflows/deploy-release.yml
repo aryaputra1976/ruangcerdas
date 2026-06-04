@@ -36,35 +36,35 @@ jobs:
         run: |
           set -e
 
-          mkdir -p ~/.ssh
+          mkdir -p "$HOME/.ssh"
 
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > "$HOME/.ssh/id_rsa"
+          chmod 600 "$HOME/.ssh/id_rsa"
 
-          cat > ~/.ssh/config <<EOF
+          cat > "$HOME/.ssh/config" <<EOF
           Host deploy-server
             HostName ${{ secrets.SSH_HOST }}
             User ${{ secrets.SSH_USER }}
             Port ${{ secrets.SSH_PORT }}
-            IdentityFile ~/.ssh/id_rsa
+            IdentityFile $HOME/.ssh/id_rsa
             StrictHostKeyChecking no
             UserKnownHostsFile /dev/null
             BatchMode yes
             ConnectTimeout 30
           EOF
 
-          chmod 600 ~/.ssh/config
+          chmod 600 "$HOME/.ssh/config"
 
       - name: Test SSH connection
         run: |
           set -e
-          ssh deploy-server "echo SSH OK"
+          ssh -F "$HOME/.ssh/config" deploy-server "echo SSH OK"
 
       - name: Create release and shared folders
         run: |
           set -e
 
-          ssh deploy-server "
+          ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
             mkdir -p $APP_ROOT/releases/$RELEASE_ID
@@ -88,7 +88,7 @@ jobs:
           set -e
 
           rsync -az --delete \
-            -e "ssh -F ~/.ssh/config" \
+            -e "ssh -F $HOME/.ssh/config" \
             --exclude='.git/' \
             --exclude='.github/' \
             --exclude='.vscode/' \
@@ -105,7 +105,7 @@ jobs:
         run: |
           set -e
 
-          ssh deploy-server "
+          ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
             echo 'Checking Laravel release structure...'
@@ -127,7 +127,7 @@ jobs:
         run: |
           set -e
 
-          ssh deploy-server "
+          ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
             cd $APP_ROOT/releases/$RELEASE_ID
@@ -172,7 +172,7 @@ jobs:
         run: |
           set -e
 
-          ssh deploy-server "
+          ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
             ln -sfn $APP_ROOT/releases/$RELEASE_ID $APP_ROOT/current
@@ -185,7 +185,7 @@ jobs:
         run: |
           set -e
 
-          ssh deploy-server "
+          ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
             echo 'Checking active release...'

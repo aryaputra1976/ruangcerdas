@@ -41,14 +41,16 @@
     ];
 
     $packageItems = [
-        'Ringkasan pengumuman',
+        'Panduan lengkap PPPK Tendik',
+        'Konteks Sekolah Rakyat',
+        'Proses seleksi PPPK Tendik',
+        'Strategi seleksi kompetensi',
+        'Studi kasus peserta',
         'Checklist dokumen',
         'Template surat lamaran',
-        'Template surat pernyataan 10 poin',
-        'Panduan daftar SSCASN',
-        'Jadwal seleksi',
-        'Tips lolos administrasi',
-        'Latihan soal PPPK',
+        'Template surat pernyataan',
+        'Latihan soal & pembahasan',
+        'Form kontrol berkas',
     ];
 
     $faqItems = [
@@ -207,10 +209,10 @@
         <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm md:p-8">
             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
                 <div>
-                    <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Paket Persiapan</p>
-                    <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-950">Paket Persiapan PPPK Tendik Sekolah Rakyat 2026</h2>
+                    <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Paket Digital Edukasi</p>
+                    <h2 class="mt-2 text-3xl font-black tracking-tight text-slate-950">Panduan Lengkap PPPK Tendik Sekolah Rakyat</h2>
                     <p class="mt-4 text-base leading-8 text-slate-600">
-                        Materi bantu untuk merapikan persiapan administrasi dan langkah pendaftaran sebelum Anda masuk ke tahap seleksi.
+                        Paket digital untuk membantu pemula memahami PPPK Tendik Sekolah Rakyat dari awal, mulai dari pengenalan jabatan, proses seleksi, strategi belajar, studi kasus, checklist dokumen, template surat, hingga latihan soal dan pembahasan.
                     </p>
                     <div class="mt-6 grid gap-3 md:grid-cols-2">
                         @foreach ($packageItems as $item)
@@ -225,10 +227,10 @@
                     <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Harga</p>
                     <p class="mt-3 text-4xl font-black text-slate-950">Rp29.000</p>
                     <p class="mt-3 text-sm leading-7 text-slate-600">
-                        Akses materi persiapan untuk membantu dokumen, alur daftar, dan latihan awal.
+                        Harga promo launching untuk akses paket digital PPPK Tendik berisi panduan, template, checklist, studi kasus, dan latihan soal.
                     </p>
                     <a href="{{ $packageProductUrl }}" class="mt-6 inline-flex w-full items-center justify-center rounded-3xl bg-blue-600 px-6 py-4 text-sm font-bold text-white transition hover:bg-blue-700">
-                        Beli Paket Persiapan
+                        Beli eBook Sekarang
                     </a>
                 </div>
             </div>

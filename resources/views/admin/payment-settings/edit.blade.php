@@ -177,7 +177,7 @@
                             @error('qris_image')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">File akan disimpan ke disk public: <code>payment/qris</code>.</div>
+                            <div class="form-text">File akan disimpan di disk <code>public</code> dengan path <code>payment/qris</code> dan diakses publik melalui <code>/storage/payment/qris/...</code>.</div>
                         </div>
 
                         <div class="col-12">

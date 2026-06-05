@@ -48,10 +48,10 @@ jobs:
             exit 1
           fi
 
-          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > "$HOME/.ssh/id_rsa"
-          chmod 600 "$HOME/.ssh/id_rsa"
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' > "$HOME/.ssh/deploy_key"
+          chmod 600 "$HOME/.ssh/deploy_key"
 
-          if ! ssh-keygen -y -f "$HOME/.ssh/id_rsa" >/dev/null 2>&1; then
+          if ! ssh-keygen -y -f "$HOME/.ssh/deploy_key" >/dev/null 2>&1; then
             echo "ERROR: SSH_PRIVATE_KEY is not a valid OpenSSH private key or still requires a passphrase."
             echo "Use an unencrypted private key in OpenSSH format and ensure the matching public key is in authorized_keys."
             exit 1
@@ -62,7 +62,7 @@ jobs:
             HostName ${{ secrets.SSH_HOST }}
             User ${{ secrets.SSH_USER }}
             Port ${{ secrets.SSH_PORT }}
-            IdentityFile $HOME/.ssh/id_rsa
+            IdentityFile $HOME/.ssh/deploy_key
             IdentitiesOnly yes
             StrictHostKeyChecking no
             UserKnownHostsFile /dev/null
@@ -72,7 +72,7 @@ jobs:
 
       - name: Test SSH connection
         run: |
-          ssh -vvv \
+          ssh \
             -o ConnectTimeout=15 \
             -o BatchMode=yes \
             -o PreferredAuthentications=publickey \
@@ -181,6 +181,7 @@ jobs:
 
             composer install --no-dev --optimize-autoloader --no-interaction
 
+            php artisan migrate --force
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache

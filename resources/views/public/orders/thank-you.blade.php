@@ -18,7 +18,12 @@
         ->values();
     $qrisImage = $paymentConfig['qris_image_path'] ?? ($paymentConfig['qris_image'] ?? null);
     $paymentNote = $paymentConfig['payment_note'] ?? 'Transfer sesuai nominal invoice agar verifikasi lebih cepat.';
-    $qrisExists = $qrisImage && file_exists(public_path($qrisImage));
+    $qrisStorageExists = filled($qrisImage) && \Illuminate\Support\Facades\Storage::disk('public')->exists($qrisImage);
+    $qrisPublicExists = filled($qrisImage) && file_exists(public_path($qrisImage));
+    $qrisExists = $qrisStorageExists || $qrisPublicExists;
+    $qrisUrl = $qrisStorageExists
+        ? \Illuminate\Support\Facades\Storage::disk('public')->url($qrisImage)
+        : ($qrisPublicExists ? asset($qrisImage) : null);
     $hasBankInstruction = $bankAccounts->isNotEmpty();
     $hasPaymentInstruction = $hasBankInstruction || $qrisExists;
     $isTryoutOrder = isset($tryoutPackage) && $tryoutPackage;
@@ -316,8 +321,8 @@
                 <div class="rounded-[2rem] border border-emerald-100 bg-emerald-50 p-6 shadow-sm">
                     <h3 class="text-lg font-black text-emerald-950">QRIS</h3>
                     <div class="mt-4 rounded-2xl bg-white p-4 text-center">
-                        @if ($qrisExists)
-                            <img src="{{ asset($qrisImage) }}" alt="QRIS Ruang Cerdas" class="mx-auto w-full max-w-[240px] rounded-2xl border border-slate-200">
+                        @if ($qrisExists && $qrisUrl)
+                            <img src="{{ $qrisUrl }}" alt="QRIS Ruang Cerdas" class="mx-auto w-full max-w-[240px] rounded-2xl border border-slate-200">
                         @else
                             <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-600">QRIS belum tersedia.</div>
                         @endif

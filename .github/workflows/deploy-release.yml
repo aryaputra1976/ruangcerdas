@@ -182,6 +182,7 @@ jobs:
             composer install --no-dev --optimize-autoloader --no-interaction
 
             php artisan migrate --force
+            php artisan db:seed --force
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache

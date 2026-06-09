@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\LandingSetting;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Testimonial;
 use App\Services\PricingService;
@@ -294,21 +295,44 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $hasBlockingOrders = $product->orders()
+            ->whereIn('status', [
+                Order::STATUS_PENDING,
+                Order::STATUS_PAYMENT_UPLOADED,
+            ])
+            ->exists();
+
+        if ($hasBlockingOrders) {
+            return redirect()
+                ->back()
+                ->with('error', 'Produk tidak bisa dihapus karena masih memiliki order pending atau menunggu verifikasi pembayaran.');
+        }
+
+        $hasPaidOrders = $product->orders()
+            ->where('status', Order::STATUS_PAID)
+            ->exists();
+
         $product->update([
             'is_active' => false,
             'published_at' => null,
         ]);
 
+        $productName = $product->name;
+        $product->delete();
+
         ActivityLogger::log(
             'product.deleted',
             $product,
-            'Admin menonaktifkan produk.',
-            ['product_name' => $product->name]
+            'Admin menyembunyikan produk melalui soft delete.',
+            [
+                'product_name' => $productName,
+                'has_paid_orders' => $hasPaidOrders,
+            ]
         );
 
         return redirect()
             ->route('admin.products.index')
-            ->with('success', 'Produk berhasil dinonaktifkan.');
+            ->with('success', 'Produk berhasil disembunyikan dengan aman.');
     }
 
     public function downloadFile(Product $product)

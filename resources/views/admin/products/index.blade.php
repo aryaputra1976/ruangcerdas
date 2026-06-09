@@ -152,7 +152,7 @@
                             <th style="width: 170px;">Pembeli Pertama</th>
                             <th style="width: 150px;">Status</th>
                             <th style="width: 130px;">File ZIP</th>
-                            <th style="width: 110px;" class="text-end">Aksi</th>
+                            <th style="width: 190px;" class="text-end">Aksi</th>
                         </tr>
                     </thead>
 
@@ -362,6 +362,21 @@
                                             <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
                                             <span>Edit</span>
                                         </a>
+
+                                        @if (auth()->check() && auth()->user()->role === 'admin')
+                                            <form method="POST"
+                                                  action="{{ route('admin.products.destroy', $product) }}"
+                                                  onsubmit="return confirm('Produk ini akan disembunyikan dari admin dan website, bukan dihapus permanen. Lanjutkan?')"
+                                                  class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                    <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+                                                    <span>Hapus</span>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>

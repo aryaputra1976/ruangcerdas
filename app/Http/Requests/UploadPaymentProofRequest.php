@@ -17,7 +17,7 @@ class UploadPaymentProofRequest extends FormRequest
             'payment_proof' => [
                 'required',
                 'file',
-                'mimes:jpg,jpeg,png,pdf',
+                'mimetypes:image/jpeg,image/png,application/pdf',
                 'max:4096',
             ],
             'payment_note' => [
@@ -33,7 +33,7 @@ class UploadPaymentProofRequest extends FormRequest
         return [
             'payment_proof.required' => 'Bukti pembayaran wajib diupload.',
             'payment_proof.file' => 'File bukti pembayaran tidak valid.',
-            'payment_proof.mimes' => 'Bukti pembayaran harus berupa JPG, JPEG, PNG, atau PDF.',
+            'payment_proof.mimetypes' => 'Bukti pembayaran harus berupa JPG, JPEG, PNG, atau PDF.',
             'payment_proof.max' => 'Ukuran bukti pembayaran maksimal 4 MB.',
             'payment_note.max' => 'Catatan pembayaran maksimal 1000 karakter.',
         ];

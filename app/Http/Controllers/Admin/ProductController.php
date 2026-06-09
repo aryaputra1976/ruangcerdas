@@ -377,7 +377,12 @@ class ProductController extends Controller
             'first_buyer_quota' => ['nullable', 'integer', 'min:0'],
 
             'cover_image' => ['nullable', 'image', 'max:2048'],
-            'digital_file' => ['nullable', 'file', 'mimes:zip,rar,7z,pdf,doc,docx,xls,xlsx,ppt,pptx,txt', 'max:102400'],
+            'digital_file' => [
+                'nullable',
+                'file',
+                'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,application/x-zip-compressed',
+                'max:102400',
+            ],
         ]);
 
         $validator->after(function (Validator $validator) use ($request, $product) {

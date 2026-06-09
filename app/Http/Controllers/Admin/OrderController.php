@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class OrderController extends Controller
@@ -106,7 +107,27 @@ class OrderController extends Controller
                 continue;
             }
 
-            return response()->file($realAbsolutePath);
+            $mimeType = mime_content_type($realAbsolutePath) ?: 'application/octet-stream';
+            $safeFilename = basename($realAbsolutePath);
+
+            if ($mimeType === 'application/pdf') {
+                return response()->download(
+                    $realAbsolutePath,
+                    $safeFilename,
+                    [
+                        'Content-Type' => 'application/pdf',
+                        'X-Content-Type-Options' => 'nosniff',
+                        'Content-Security-Policy' => "default-src 'none'; sandbox",
+                    ],
+                    ResponseHeaderBag::DISPOSITION_ATTACHMENT
+                );
+            }
+
+            return response()->file($realAbsolutePath, [
+                'Content-Type' => $mimeType,
+                'X-Content-Type-Options' => 'nosniff',
+                'Content-Security-Policy' => "default-src 'none'; img-src 'self' data:; style-src 'none'; sandbox",
+            ]);
         }
 
         abort(404);

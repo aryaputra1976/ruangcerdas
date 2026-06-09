@@ -68,7 +68,12 @@ class OrderController extends Controller
 
         $file = $request->file('payment_proof');
 
-        $extension = $file->getClientOriginalExtension();
+        $extension = match ($file->getMimeType()) {
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'application/pdf' => 'pdf',
+            default => $file->getClientOriginalExtension(),
+        };
 
         $filename = Str::slug($order->invoice_number)
             . '-'

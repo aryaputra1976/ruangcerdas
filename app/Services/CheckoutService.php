@@ -49,10 +49,6 @@ class CheckoutService
                     'download_count' => 0,
                 ]);
 
-                if ($coupon) {
-                    $coupon->increment('used_count');
-                }
-
                 return $order;
                 });
             } catch (QueryException $exception) {

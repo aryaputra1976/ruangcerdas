@@ -10,6 +10,7 @@ use App\Services\TryoutAccessService;
 use App\Support\ActivityLogger;
 use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -117,48 +118,75 @@ class OrderController extends Controller
 
         $fromStatus = $order->status;
         $hadDownloadToken = filled($order->download_token);
+        $couponUsageIncremented = false;
 
-        $order->update([
-            'status' => Order::STATUS_PAID,
-            'paid_at' => now(),
-            'approved_at' => now(),
-            'approved_by' => $request->user()->id,
-            'download_token' => $order->download_token ?: Str::random(64),
-            'download_expires_at' => now()->addDays(config('ruangcerdas.download.expire_days', 7)),
-            'rejected_at' => null,
-            'rejection_reason' => null,
-        ]);
+        $order = DB::transaction(function () use ($request, $order, $tryoutAccessService, $hadDownloadToken, $fromStatus, &$couponUsageIncremented) {
+            $order->update([
+                'status' => Order::STATUS_PAID,
+                'paid_at' => now(),
+                'approved_at' => now(),
+                'approved_by' => $request->user()->id,
+                'download_token' => $order->download_token ?: Str::random(64),
+                'download_expires_at' => now()->addDays(config('ruangcerdas.download.expire_days', 7)),
+                'rejected_at' => null,
+                'rejection_reason' => null,
+            ]);
 
-        $tryoutAccess = $tryoutAccessService->ensureAccessFromPaidOrder($order->fresh('product'));
+            if ($order->coupon_id) {
+                $order->coupon()->increment('used_count');
+                $couponUsageIncremented = true;
+            }
 
-        OrderAuditLogger::log(
-            $order,
-            'order.approved',
-            'Admin menyetujui pembayaran order.',
-            [
-                'invoice_number' => $order->invoice_number,
-                'admin_id' => $request->user()->id,
-            ],
-            $fromStatus,
-            $order->status
-        );
+            $order = $order->fresh(['product', 'coupon']);
 
-        if (! $hadDownloadToken && filled($order->download_token)) {
+            $tryoutAccessService->ensureAccessFromPaidOrder($order);
+
             OrderAuditLogger::log(
                 $order,
-                'download_link.generated',
-                'Sistem membuat token download setelah order paid.',
+                'order.approved',
+                'Admin menyetujui pembayaran order.',
                 [
                     'invoice_number' => $order->invoice_number,
+                    'admin_id' => $request->user()->id,
+                    'coupon_usage_incremented' => $couponUsageIncremented,
                 ],
-                null,
-                null
+                $fromStatus,
+                $order->status
             );
-        }
+
+            if ($couponUsageIncremented) {
+                OrderAuditLogger::log(
+                    $order,
+                    'coupon.redeemed',
+                    'Sistem mencatat penggunaan kupon saat order menjadi paid.',
+                    [
+                        'invoice_number' => $order->invoice_number,
+                        'coupon_code' => $order->coupon_code,
+                    ],
+                    null,
+                    null
+                );
+            }
+
+            if (! $hadDownloadToken && filled($order->download_token)) {
+                OrderAuditLogger::log(
+                    $order,
+                    'download_link.generated',
+                    'Sistem membuat token download setelah order paid.',
+                    [
+                        'invoice_number' => $order->invoice_number,
+                    ],
+                    null,
+                    null
+                );
+            }
+
+            return $order;
+        });
 
         $successMessage = 'Pembayaran berhasil di-approve. Link download sudah aktif.';
 
-        if ($tryoutAccess) {
+        if ($order->product?->product_type === 'tryout') {
             $successMessage = 'Pembayaran berhasil di-approve. Akses tryout premium sudah aktif untuk email pembeli.';
         }
 
@@ -179,8 +207,23 @@ class OrderController extends Controller
             'order.approved',
             $order,
             'Admin menyetujui pembayaran order.',
-            ['invoice_number' => $order->invoice_number]
+            [
+                'invoice_number' => $order->invoice_number,
+                'coupon_usage_incremented' => $couponUsageIncremented,
+            ]
         );
+
+        if ($couponUsageIncremented) {
+            ActivityLogger::log(
+                'coupon.redeemed',
+                $order,
+                'Sistem mencatat penggunaan kupon saat order menjadi paid.',
+                [
+                    'invoice_number' => $order->invoice_number,
+                    'coupon_code' => $order->coupon_code,
+                ]
+            );
+        }
 
         return redirect()
             ->route('admin.orders.show', $order)

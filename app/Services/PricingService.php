@@ -71,11 +71,16 @@ class PricingService
     private function paidOrdersCount(Product $product): int
     {
         return $product->orders()
-            ->whereIn('status', [
-                Order::STATUS_PENDING,
-                Order::STATUS_PAYMENT_UPLOADED,
-                Order::STATUS_PAID,
-            ])
+            ->where(function ($query) {
+                $query->whereIn('status', [
+                    Order::STATUS_PAID,
+                    Order::STATUS_PAYMENT_UPLOADED,
+                ])->orWhere(function ($pendingQuery) {
+                    $pendingQuery
+                        ->where('status', Order::STATUS_PENDING)
+                        ->where('created_at', '>=', now()->subDay());
+                });
+            })
             ->count();
     }
 }

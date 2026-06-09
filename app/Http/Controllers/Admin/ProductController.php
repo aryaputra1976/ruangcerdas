@@ -20,69 +20,12 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query()
-            ->with('category')
-            ->withCount([
-                'reviews as visible_reviews_count' => fn ($query) => $query->where('is_visible', true),
-            ])
-            ->withAvg([
-                'reviews as visible_reviews_avg' => fn ($query) => $query->where('is_visible', true),
-            ], 'rating')
-            ->latest();
+        return $this->renderProductList($request);
+    }
 
-        if ($request->filled('q')) {
-            $q = $request->q;
-
-            $query->where(function ($sub) use ($q) {
-                $sub->where('name', 'like', "%{$q}%")
-                    ->orWhere('slug', 'like', "%{$q}%");
-            });
-        }
-
-        if ($request->filled('category_id')) {
-            $query->where('category_id', $request->category_id);
-        }
-
-        if ($request->filled('product_type')) {
-            $query->where('product_type', $request->product_type);
-        }
-
-        $fileStatus = $request->query('file_status');
-        $perPage = 10;
-
-        if (in_array($fileStatus, ['missing', 'ready'], true)) {
-            $allProducts = $query->get();
-
-            $filtered = $allProducts->filter(function (Product $product) use ($fileStatus) {
-                $isMissing = $product->isMissingPrivateFile();
-
-                return $fileStatus === 'missing' ? $isMissing : ! $isMissing;
-            })->values();
-
-            $currentPage = LengthAwarePaginator::resolveCurrentPage();
-            $currentItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-            $products = new LengthAwarePaginator(
-                $currentItems,
-                $filtered->count(),
-                $perPage,
-                $currentPage,
-                [
-                    'path' => LengthAwarePaginator::resolveCurrentPath(),
-                    'query' => $request->query(),
-                ]
-            );
-        } else {
-            $products = $query->paginate($perPage)->withQueryString();
-        }
-
-        $categories = Category::query()
-            ->orderBy('name')
-            ->get();
-
-        $productTypeOptions = Product::productTypeLabels();
-
-        return view('admin.products.index', compact('products', 'categories', 'productTypeOptions'));
+    public function archive(Request $request)
+    {
+        return $this->renderProductList($request, true);
     }
 
     public function create()
@@ -293,6 +236,59 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil diperbarui.');
     }
 
+    public function restore(int $product)
+    {
+        $product = Product::withTrashed()->findOrFail($product);
+
+        abort_if(! $product->trashed(), 404);
+
+        $productName = $product->name;
+
+        $product->restore();
+        $product->update([
+            'is_active' => false,
+            'published_at' => null,
+        ]);
+
+        ActivityLogger::log(
+            'product.restored',
+            $product,
+            'Admin mengembalikan produk dari arsip.',
+            ['product_name' => $productName]
+        );
+
+        return redirect()
+            ->route('admin.products.archive')
+            ->with('success', 'Produk berhasil dikembalikan ke daftar admin dan dinonaktifkan untuk review.');
+    }
+
+    public function forceDelete(int $product)
+    {
+        $product = Product::withTrashed()->findOrFail($product);
+
+        abort_if(! $product->trashed(), 404);
+
+        if ($product->orders()->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Produk arsip tidak bisa dihapus permanen karena masih memiliki riwayat order.');
+        }
+
+        $productName = $product->name;
+        $product->forceDelete();
+
+        ActivityLogger::log(
+            'product.force_deleted',
+            null,
+            'Admin menghapus permanen produk arsip.',
+            ['product_name' => $productName]
+        );
+
+        return redirect()
+            ->route('admin.products.archive')
+            ->with('success', 'Produk berhasil dihapus permanen.');
+    }
+
     public function destroy(Product $product)
     {
         $hasBlockingOrders = $product->orders()
@@ -380,6 +376,79 @@ class ProductController extends Controller
         return redirect()
             ->back()
             ->with('success', 'File produk berhasil dihapus.');
+    }
+
+    private function renderProductList(Request $request, bool $archived = false)
+    {
+        $query = Product::query()
+            ->with('category')
+            ->withCount([
+                'reviews as visible_reviews_count' => fn ($query) => $query->where('is_visible', true),
+            ])
+            ->withAvg([
+                'reviews as visible_reviews_avg' => fn ($query) => $query->where('is_visible', true),
+            ], 'rating')
+            ->when($archived, fn ($builder) => $builder->onlyTrashed())
+            ->latest();
+
+        if ($request->filled('q')) {
+            $q = $request->q;
+
+            $query->where(function ($sub) use ($q) {
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('slug', 'like', "%{$q}%");
+            });
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('product_type')) {
+            $query->where('product_type', $request->product_type);
+        }
+
+        $fileStatus = $request->query('file_status');
+        $perPage = 10;
+
+        if (in_array($fileStatus, ['missing', 'ready'], true)) {
+            $allProducts = $query->get();
+
+            $filtered = $allProducts->filter(function (Product $product) use ($fileStatus) {
+                $isMissing = $product->isMissingPrivateFile();
+
+                return $fileStatus === 'missing' ? $isMissing : ! $isMissing;
+            })->values();
+
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+            $products = new LengthAwarePaginator(
+                $currentItems,
+                $filtered->count(),
+                $perPage,
+                $currentPage,
+                [
+                    'path' => LengthAwarePaginator::resolveCurrentPath(),
+                    'query' => $request->query(),
+                ]
+            );
+        } else {
+            $products = $query->paginate($perPage)->withQueryString();
+        }
+
+        $categories = Category::query()
+            ->orderBy('name')
+            ->get();
+
+        $productTypeOptions = Product::productTypeLabels();
+
+        return view('admin.products.index', [
+            'products' => $products,
+            'categories' => $categories,
+            'productTypeOptions' => $productTypeOptions,
+            'isArchive' => $archived,
+        ]);
     }
 
     private function validateProduct(Request $request, ?Product $product = null): array

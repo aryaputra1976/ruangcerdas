@@ -62,6 +62,9 @@ Route::prefix('admin')
         Route::resource('/question-categories', QuestionCategoryController::class);
         Route::resource('/questions', QuestionController::class);
 
+        Route::get('/products/archive', [ProductController::class, 'archive'])->name('products.archive');
+        Route::patch('/products/{product}/restore', [ProductController::class, 'restore'])->name('products.restore');
+        Route::delete('/products/{product}/force-delete', [ProductController::class, 'forceDelete'])->name('products.force-delete');
         Route::resource('/products', ProductController::class);
         Route::get('/products/{product}/preview', [ProductController::class, 'preview'])
             ->name('products.preview');

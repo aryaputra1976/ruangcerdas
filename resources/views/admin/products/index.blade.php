@@ -2,7 +2,10 @@
 
 @php
     $title = 'Produk Digital';
-    $subtitle = 'Kelola produk digital, harga, status aktif, publikasi, dan file ZIP private.';
+    $isArchive = (bool) ($isArchive ?? false);
+    $subtitle = $isArchive
+        ? 'Kelola produk yang sudah diarsipkan dan hanya tampil untuk admin.'
+        : 'Kelola produk digital, harga, status aktif, publikasi, dan file ZIP private.';
 
     $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
 
@@ -20,21 +23,37 @@
                 </h5>
 
                 <p class="text-muted mb-0 fs-13">
-                    Semua produk digital yang dijual di Ruang Cerdas.
+                    {{ $isArchive ? 'Semua produk yang sudah diarsipkan dari admin dan website.' : 'Semua produk digital yang dijual di Ruang Cerdas.' }}
                 </p>
             </div>
 
-            <a href="{{ route('admin.products.create') }}"
-               class="btn btn-sm btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
-                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-                <span>Tambah Produk</span>
-            </a>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a href="{{ route('admin.products.index') }}"
+                   class="btn btn-sm {{ $isArchive ? 'bg-secondary-subtle text-secondary' : 'btn-primary' }} rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                    <i data-feather="grid" style="width: 14px; height: 14px;"></i>
+                    <span>Produk Aktif</span>
+                </a>
+
+                <a href="{{ route('admin.products.archive') }}"
+                   class="btn btn-sm {{ $isArchive ? 'btn-primary' : 'bg-secondary-subtle text-secondary' }} rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                    <i data-feather="archive" style="width: 14px; height: 14px;"></i>
+                    <span>Arsip Produk</span>
+                </a>
+
+                @unless ($isArchive)
+                    <a href="{{ route('admin.products.create') }}"
+                       class="btn btn-sm btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                        <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                        <span>Tambah Produk</span>
+                    </a>
+                @endunless
+            </div>
         </div>
     </div>
 
     <div class="card-body">
 
-        <form method="GET" action="{{ route('admin.products.index') }}" class="row g-2 mb-4">
+        <form method="GET" action="{{ $isArchive ? route('admin.products.archive') : route('admin.products.index') }}" class="row g-2 mb-4">
             <div class="col-lg-5 col-md-6">
                 <div class="position-relative">
                     <input type="text"
@@ -82,13 +101,13 @@
                 </button>
 
                 @if ($hasFilter)
-                    <a href="{{ route('admin.products.index') }}"
+                    <a href="{{ $isArchive ? route('admin.products.archive') : route('admin.products.index') }}"
                        class="btn bg-danger-subtle text-danger rounded-pill px-3 d-flex d-sm-inline-flex align-items-center justify-content-center justify-content-sm-start gap-1 flex-shrink-0">
                         <i data-feather="x" style="width: 14px; height: 14px;"></i>
                         <span>Reset</span>
                     </a>
                 @else
-                    <a href="{{ route('admin.products.index') }}"
+                    <a href="{{ $isArchive ? route('admin.products.archive') : route('admin.products.index') }}"
                        class="btn bg-secondary-subtle text-secondary rounded-pill px-3 d-flex d-sm-inline-flex align-items-center justify-content-center justify-content-sm-start gap-1 flex-shrink-0">
                         <i data-feather="refresh-cw" style="width: 14px; height: 14px;"></i>
                         <span>Refresh</span>
@@ -339,43 +358,70 @@
 
                                 <td class="text-end">
                                     <div class="d-flex justify-content-end gap-1 flex-wrap">
-                                        <a href="{{ route('admin.products.preview', $product) }}"
-                                           class="btn btn-sm bg-info-subtle text-info rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                            <i data-feather="eye" style="width: 14px; height: 14px;"></i>
-                                            <span>Preview</span>
-                                        </a>
-
-                                        <a href="{{ route('admin.products.faqs.index', $product) }}"
-                                           class="btn btn-sm bg-warning-subtle text-warning rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                            <i data-feather="help-circle" style="width: 14px; height: 14px;"></i>
-                                            <span>FAQ</span>
-                                        </a>
-
-                                        <a href="{{ route('admin.products.reviews.index', $product) }}"
-                                           class="btn btn-sm bg-success-subtle text-success rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                            <i data-feather="message-square" style="width: 14px; height: 14px;"></i>
-                                            <span>Review</span>
-                                        </a>
-
-                                        <a href="{{ route('admin.products.edit', $product) }}"
-                                           class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                            <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
-                                            <span>Edit</span>
-                                        </a>
-
-                                        @if (auth()->check() && auth()->user()->role === 'admin')
+                                        @if ($isArchive)
                                             <form method="POST"
-                                                  action="{{ route('admin.products.destroy', $product) }}"
-                                                  onsubmit="return confirm('Produk ini akan disembunyikan dari admin dan website, bukan dihapus permanen. Lanjutkan?')"
+                                                  action="{{ route('admin.products.restore', $product->id) }}"
+                                                  class="d-inline">
+                                                @csrf
+                                                @method('PATCH')
+                                                <button type="submit"
+                                                        class="btn btn-sm bg-success-subtle text-success rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                    <i data-feather="rotate-ccw" style="width: 14px; height: 14px;"></i>
+                                                    <span>Restore</span>
+                                                </button>
+                                            </form>
+
+                                            <form method="POST"
+                                                  action="{{ route('admin.products.force-delete', $product->id) }}"
+                                                  onsubmit="return confirm('Produk arsip ini akan dihapus permanen dari database. Lanjutkan?')"
                                                   class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit"
                                                         class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                                    <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
-                                                    <span>Hapus</span>
+                                                    <i data-feather="x-octagon" style="width: 14px; height: 14px;"></i>
+                                                    <span>Hapus Permanen</span>
                                                 </button>
                                             </form>
+                                        @else
+                                            <a href="{{ route('admin.products.preview', $product) }}"
+                                               class="btn btn-sm bg-info-subtle text-info rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                                <span>Preview</span>
+                                            </a>
+
+                                            <a href="{{ route('admin.products.faqs.index', $product) }}"
+                                               class="btn btn-sm bg-warning-subtle text-warning rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                <i data-feather="help-circle" style="width: 14px; height: 14px;"></i>
+                                                <span>FAQ</span>
+                                            </a>
+
+                                            <a href="{{ route('admin.products.reviews.index', $product) }}"
+                                               class="btn btn-sm bg-success-subtle text-success rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                <i data-feather="message-square" style="width: 14px; height: 14px;"></i>
+                                                <span>Review</span>
+                                            </a>
+
+                                            <a href="{{ route('admin.products.edit', $product) }}"
+                                               class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                <i data-feather="edit-2" style="width: 14px; height: 14px;"></i>
+                                                <span>Edit</span>
+                                            </a>
+
+                                            @if (auth()->check() && auth()->user()->role === 'admin')
+                                                <form method="POST"
+                                                      action="{{ route('admin.products.destroy', $product) }}"
+                                                      onsubmit="return confirm('Produk ini akan disembunyikan dari admin dan website, bukan dihapus permanen. Lanjutkan?')"
+                                                      class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                        <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+                                                        <span>Hapus</span>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
@@ -412,16 +458,18 @@
 
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                     @if ($hasFilter)
-                        <a href="{{ route('admin.products.index') }}"
+                        <a href="{{ $isArchive ? route('admin.products.archive') : route('admin.products.index') }}"
                            class="btn bg-secondary-subtle text-secondary rounded-pill px-4">
                             Reset Filter
                         </a>
                     @endif
 
-                    <a href="{{ route('admin.products.create') }}"
-                       class="btn btn-primary rounded-pill px-4">
-                        Tambah Produk
-                    </a>
+                    @unless ($isArchive)
+                        <a href="{{ route('admin.products.create') }}"
+                           class="btn btn-primary rounded-pill px-4">
+                            Tambah Produk
+                        </a>
+                    @endunless
                 </div>
             </div>
         @endif

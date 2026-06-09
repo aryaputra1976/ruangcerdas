@@ -35,7 +35,7 @@ class PppkTendikProductSeeder extends Seeder
 
         Storage::disk('private')->put($digitalFilePath, $placeholderContent);
 
-        Product::query()->updateOrCreate(
+        Product::withTrashed()->updateOrCreate(
             ['slug' => $slug],
             [
                 'category_id' => $category->id,
@@ -75,6 +75,7 @@ class PppkTendikProductSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'published_at' => now(),
+                'deleted_at' => null,
             ]
         );
     }

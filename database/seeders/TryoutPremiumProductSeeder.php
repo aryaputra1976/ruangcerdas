@@ -54,7 +54,7 @@ class TryoutPremiumProductSeeder extends Seeder
                 "Produk ini membuka akses tryout premium RuangCerdas.\nSilakan kembali ke halaman tryout dan mulai paket yang sudah dibeli."
             );
 
-            Product::query()->updateOrCreate(
+            Product::withTrashed()->updateOrCreate(
                 ['slug' => $product['slug']],
                 [
                     'category_id' => $category->id,
@@ -78,6 +78,7 @@ class TryoutPremiumProductSeeder extends Seeder
                     'is_featured' => false,
                     'is_active' => true,
                     'published_at' => now(),
+                    'deleted_at' => null,
                 ]
             );
         }

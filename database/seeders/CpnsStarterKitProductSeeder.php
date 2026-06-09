@@ -20,7 +20,7 @@ class CpnsStarterKitProductSeeder extends Seeder
             ]
         );
 
-        Product::updateOrCreate(
+        Product::withTrashed()->updateOrCreate(
             ['slug' => 'cpns-pppk-starter-kit'],
             [
                 'category_id' => $category->id,
@@ -57,6 +57,7 @@ class CpnsStarterKitProductSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => false,
                 'published_at' => null,
+                'deleted_at' => null,
             ]
         );
     }

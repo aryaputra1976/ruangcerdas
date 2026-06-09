@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
 {
@@ -13,7 +12,7 @@ class ProductSeeder extends Seeder
     {
         $category = Category::where('slug', 'template-kantor')->first();
 
-        Product::updateOrCreate(
+        Product::withTrashed()->updateOrCreate(
             ['slug' => 'kantor-cerdas-ai-kit'],
             [
                 'category_id' => $category?->id,
@@ -47,6 +46,7 @@ class ProductSeeder extends Seeder
                 'is_featured' => true,
                 'is_active' => true,
                 'published_at' => now(),
+                'deleted_at' => null,
             ]
         );
     }

@@ -41,6 +41,13 @@
             'icon' => 'x-circle',
             'class' => 'danger',
         ],
+        [
+            'key' => 'expired',
+            'label' => 'Expired',
+            'count' => $counts['expired'] ?? 0,
+            'icon' => 'slash',
+            'class' => 'secondary',
+        ],
     ];
 @endphp
 
@@ -135,6 +142,7 @@
                     <option value="payment_uploaded" @selected($status === 'payment_uploaded')>Menunggu Verifikasi</option>
                     <option value="paid" @selected($status === 'paid')>Paid</option>
                     <option value="rejected" @selected($status === 'rejected')>Rejected</option>
+                    <option value="expired" @selected($status === 'expired')>Expired</option>
                 </select>
             </div>
             <div class="col-lg-2 col-md-6">
@@ -178,7 +186,7 @@
                             <th style="width: 130px;">Total</th>
                             <th style="width: 165px;">Status</th>
                             <th style="width: 145px;">Tanggal</th>
-                            <th style="width: 115px;" class="text-end">Aksi</th>
+                            <th style="width: 210px;" class="text-end">Aksi</th>
                         </tr>
                     </thead>
 
@@ -276,11 +284,28 @@
                                 </td>
 
                                 <td class="text-end">
-                                    <a href="{{ route('admin.orders.show', $order) }}"
-                                       class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
-                                        <i data-feather="eye" style="width: 14px; height: 14px;"></i>
-                                        <span>Detail</span>
-                                    </a>
+                                    <div class="d-inline-flex align-items-center justify-content-end gap-2 flex-wrap">
+                                        @if (in_array($order->status, ['expired', 'rejected'], true))
+                                            <form method="POST"
+                                                  action="{{ route('admin.orders.destroy', $order) }}"
+                                                  onsubmit="return confirm('Order ini akan disembunyikan dari daftar, bukan dihapus permanen. Lanjutkan?')"
+                                                  class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="btn btn-sm bg-danger-subtle text-danger rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                    <i data-feather="trash-2" style="width: 14px; height: 14px;"></i>
+                                                    <span>Delete</span>
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        <a href="{{ route('admin.orders.show', $order) }}"
+                                           class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                            <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                            <span>Detail</span>
+                                        </a>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach

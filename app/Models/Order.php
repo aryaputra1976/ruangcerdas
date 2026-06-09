@@ -5,9 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Order extends Model
 {
+    use SoftDeletes;
+
     public const STATUS_PENDING = 'pending';
     public const STATUS_PAYMENT_UPLOADED = 'payment_uploaded';
     public const STATUS_PAID = 'paid';
@@ -52,6 +55,7 @@ class Order extends Model
         'rejected_at' => 'datetime',
         'download_expires_at' => 'datetime',
         'download_count' => 'integer',
+        'deleted_at' => 'datetime',
     ];
 
     public function product(): BelongsTo
@@ -97,5 +101,35 @@ class Order extends Model
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === self::STATUS_REJECTED;
+    }
+
+    public function isExpired(): bool
+    {
+        return $this->status === self::STATUS_EXPIRED;
+    }
+
+    public function shouldBeExpiredBeforeDelete(): bool
+    {
+        return $this->isPending()
+            && $this->created_at !== null
+            && $this->created_at->lte(now()->subDay());
+    }
+
+    public function isProtectedFromAdminDeletion(): bool
+    {
+        return in_array($this->status, [
+            self::STATUS_PAID,
+            self::STATUS_PAYMENT_UPLOADED,
+        ], true);
+    }
+
+    public function canBeSoftDeletedByAdmin(): bool
+    {
+        return $this->isExpired() || $this->isRejected();
     }
 }

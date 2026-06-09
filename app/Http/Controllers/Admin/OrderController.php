@@ -54,6 +54,7 @@ class OrderController extends Controller
             'payment_uploaded' => Order::where('status', Order::STATUS_PAYMENT_UPLOADED)->count(),
             'paid' => Order::where('status', Order::STATUS_PAID)->count(),
             'rejected' => Order::where('status', Order::STATUS_REJECTED)->count(),
+            'expired' => Order::where('status', Order::STATUS_EXPIRED)->count(),
         ];
 
         return view('admin.orders.index', compact('orders', 'counts', 'q', 'status', 'from', 'to'));
@@ -225,6 +226,86 @@ class OrderController extends Controller
         return redirect()
             ->route('admin.orders.show', $order)
             ->with('success', 'Order berhasil ditolak.');
+    }
+
+    public function destroy(Request $request, Order $order)
+    {
+        if ($order->isProtectedFromAdminDeletion()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Order paid atau menunggu verifikasi pembayaran tidak dapat dihapus.');
+        }
+
+        if ($order->isPending()) {
+            if (! $order->shouldBeExpiredBeforeDelete()) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Order pending yang belum berumur 24 jam tidak dapat dihapus.');
+            }
+
+            $fromStatus = $order->status;
+
+            $order->update([
+                'status' => Order::STATUS_EXPIRED,
+            ]);
+
+            OrderAuditLogger::log(
+                $order,
+                'order.expired',
+                'Admin menandai order pending lama sebagai expired sebelum penghapusan.',
+                [
+                    'invoice_number' => $order->invoice_number,
+                    'admin_id' => $request->user()->id,
+                ],
+                $fromStatus,
+                $order->status
+            );
+
+            ActivityLogger::log(
+                'order.expired',
+                $order,
+                'Admin menandai order pending lama sebagai expired sebelum penghapusan.',
+                ['invoice_number' => $order->invoice_number]
+            );
+
+            return redirect()
+                ->route('admin.orders.show', $order)
+                ->with('success', 'Order pending lama diubah menjadi expired terlebih dahulu. Tinjau kembali lalu hapus jika masih diperlukan.');
+        }
+
+        if (! $order->canBeSoftDeletedByAdmin()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Status order ini tidak dapat dihapus.');
+        }
+
+        $statusBeforeDelete = $order->status;
+        $invoiceNumber = $order->invoice_number;
+
+        $order->delete();
+
+        OrderAuditLogger::log(
+            $order,
+            'order.deleted',
+            'Admin menyembunyikan order dari daftar admin melalui soft delete.',
+            [
+                'invoice_number' => $invoiceNumber,
+                'admin_id' => $request->user()->id,
+            ],
+            $statusBeforeDelete,
+            $statusBeforeDelete
+        );
+
+        ActivityLogger::log(
+            'order.deleted',
+            $order,
+            'Admin menyembunyikan order dari daftar admin melalui soft delete.',
+            ['invoice_number' => $invoiceNumber]
+        );
+
+        return redirect()
+            ->route('admin.orders.index')
+            ->with('success', 'Order berhasil disembunyikan dari daftar admin.');
     }
 
     public function resendDownloadLink(Request $request, Order $order)

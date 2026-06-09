@@ -35,6 +35,7 @@ Route::prefix('admin')
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/approve', [OrderController::class, 'approve'])->name('orders.approve');
         Route::patch('/orders/{order}/reject', [OrderController::class, 'reject'])->name('orders.reject');
+        Route::delete('/orders/{order}', [OrderController::class, 'destroy'])->name('orders.destroy');
         Route::post('/orders/{order}/resend-download-link', [OrderController::class, 'resendDownloadLink'])
             ->name('orders.resend-download-link');
         Route::post('/orders/{order}/notes', [OrderController::class, 'storeNote'])->name('orders.notes.store');

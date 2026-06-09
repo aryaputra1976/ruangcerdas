@@ -6,6 +6,13 @@
         ? $coverUrl
         : asset('hando/assets/images/rc/rc_ico.png');
 
+    $returnPolicy = [
+        '@type' => 'MerchantReturnPolicy',
+        'applicableCountry' => 'ID',
+        'returnPolicyCategory' => 'https://schema.org/MerchantReturnNotPermitted',
+        'merchantReturnDays' => 0,
+    ];
+
     $schema = [
         '@context' => 'https://schema.org',
         '@type' => 'Product',
@@ -58,14 +65,7 @@
                     ],
                 ],
             ],
-            'hasMerchantReturnPolicy' => [
-                '@type' => 'MerchantReturnPolicy',
-                'applicableCountry' => 'ID',
-                'returnPolicyCategory' => 'https://schema.org/MerchantReturnNotPermitted',
-                'merchantReturnDays' => 0,
-                'returnFees' => 'https://schema.org/FreeReturn',
-                'returnMethod' => 'https://schema.org/ReturnByMail',
-            ],
+            'hasMerchantReturnPolicy' => $returnPolicy,
         ],
     ];
 

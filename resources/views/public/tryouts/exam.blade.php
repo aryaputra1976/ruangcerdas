@@ -1,6 +1,6 @@
 ﻿@extends('layouts.public')
 
-@section('title', 'Ujian ' . (->package?->tryout_type_label ?? 'Tryout') . ' - Ruang Cerdas')
+@section('title', 'Ujian ' . ($tryoutSession->package?->tryout_type_label ?? 'Tryout') . ' - Ruang Cerdas')
 @section('meta_description', 'Halaman ujian tryout Ruang Cerdas.')
 @section('robots', 'noindex,nofollow')
 

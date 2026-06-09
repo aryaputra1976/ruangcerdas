@@ -12,15 +12,7 @@ class EnsureUserIsAdmin
     {
         $user = $request->user();
 
-        if (! $user) {
-            abort(403);
-        }
-
-        if (isset($user->role) && $user->role !== 'admin') {
-            abort(403);
-        }
-
-        if (isset($user->is_active) && ! $user->is_active) {
+        if (! $user || $user->role !== 'admin' || $user->is_active === false) {
             abort(403);
         }
 

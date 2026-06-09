@@ -13,7 +13,10 @@
             <h5 class="card-title mb-1">Daftar Soal</h5>
             <p class="text-muted mb-0 fs-13">Pastikan setiap soal memiliki 5 opsi A-E sesuai aturan scoring section.</p>
         </div>
-        <a href="{{ route('admin.questions.create') }}" class="btn btn-sm btn-primary rounded-pill px-3">Tambah Soal</a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('admin.questions.import') }}" class="btn btn-sm bg-info-subtle text-info rounded-pill px-3">Import Soal</a>
+            <a href="{{ route('admin.questions.create') }}" class="btn btn-sm btn-primary rounded-pill px-3">Tambah Soal</a>
+        </div>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('admin.questions.index') }}" class="row g-2 mb-4">
@@ -123,7 +126,10 @@
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">{{ $hasFilter ? 'Soal tidak ditemukan' : 'Belum ada bank soal' }}</h5>
                 <p class="text-muted mb-3">Tambahkan soal untuk mulai membangun bank soal.</p>
-                <a href="{{ route('admin.questions.create') }}" class="btn btn-primary rounded-pill px-4">Tambah Soal</a>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a href="{{ route('admin.questions.import') }}" class="btn bg-info-subtle text-info rounded-pill px-4">Import Soal</a>
+                    <a href="{{ route('admin.questions.create') }}" class="btn btn-primary rounded-pill px-4">Tambah Soal</a>
+                </div>
             </div>
         @endif
     </div>

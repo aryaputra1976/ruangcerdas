@@ -7,6 +7,171 @@
 
 @section('content')
 
+@php
+    $visitCards = [
+        ['label' => 'Kunjungan Hari Ini', 'value' => number_format((int) ($visitSummary['today_views'] ?? 0), 0, ',', '.'), 'icon' => 'activity', 'class' => 'primary'],
+        ['label' => 'Pengunjung Unik Hari Ini', 'value' => number_format((int) ($visitSummary['today_visitors'] ?? 0), 0, ',', '.'), 'icon' => 'users', 'class' => 'success'],
+        ['label' => 'Kunjungan ' . ($visitSummary['period_label'] ?? '7 Hari Terakhir'), 'value' => number_format((int) ($visitSummary['period_views'] ?? 0), 0, ',', '.'), 'icon' => 'bar-chart-2', 'class' => 'info'],
+        ['label' => 'Pengunjung Unik ' . ($visitSummary['period_label'] ?? '7 Hari Terakhir'), 'value' => number_format((int) ($visitSummary['period_visitors'] ?? 0), 0, ',', '.'), 'icon' => 'trending-up', 'class' => 'warning'],
+    ];
+    $periodOptions = [
+        'today' => 'Hari Ini',
+        '7d' => '7 Hari',
+        '30d' => '30 Hari',
+    ];
+@endphp
+
+<div class="row g-3 mb-3">
+    @foreach ($visitCards as $card)
+        <div class="col-xl-3 col-md-6">
+            <div class="card rc-dashboard-card h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="p-2 border border-{{ $card['class'] }} border-opacity-10 bg-{{ $card['class'] }}-subtle rounded-3">
+                            <div class="bg-{{ $card['class'] }} rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                                <i data-feather="{{ $card['icon'] }}" class="text-white" style="width: 17px; height: 17px;"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-muted fs-13 mb-1">{{ $card['label'] }}</p>
+                            <h4 class="mb-0 text-dark">{{ $card['value'] }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-xl-7">
+        <div class="card h-100">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                    <div>
+                        <h5 class="card-title mb-1">Ringkasan Pengunjung Website</h5>
+                        <p class="text-muted mb-0 fs-13">
+                            Data ini berasal dari tracking internal Laravel pada halaman publik berbentuk HTML. Angka bisa berbeda dengan GA4 karena metode pengukuran berbeda.
+                        </p>
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @foreach ($periodOptions as $periodKey => $periodLabel)
+                            <a href="{{ route('admin.landing-settings.edit', ['period' => $periodKey]) }}"
+                               class="btn btn-sm {{ ($visitSummary['period'] ?? '7d') === $periodKey ? 'btn-primary' : 'bg-light border' }} rounded-pill px-3">
+                                {{ $periodLabel }}
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (collect($visitSummary['daily_views'] ?? [])->isNotEmpty())
+                    <div class="row g-2 mb-4">
+                        @foreach ($visitSummary['daily_views'] as $daily)
+                            @php
+                                $barHeight = max(10, (int) round(((int) $daily['total_views'] / max(1, (int) ($visitSummary['max_daily_views'] ?? 1))) * 110));
+                            @endphp
+                            <div class="col">
+                                <div class="border rounded-3 p-2 h-100 d-flex flex-column justify-content-end align-items-center bg-light-subtle">
+                                    <div class="fw-semibold text-dark fs-13 mb-2">{{ number_format((int) $daily['total_views'], 0, ',', '.') }}</div>
+                                    <div class="bg-primary rounded-top w-100" style="height: {{ $barHeight }}px; min-width: 18px;"></div>
+                                    <div class="text-muted fs-12 mt-2">{{ $daily['label'] }}</div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="table-responsive table-card">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead class="table-light text-muted">
+                                <tr>
+                                    <th>Tanggal</th>
+                                    <th class="text-end">Kunjungan</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($visitSummary['daily_views'] as $daily)
+                                    <tr>
+                                        <td>{{ \Illuminate\Support\Carbon::parse($daily['date'])->translatedFormat('d M Y') }}</td>
+                                        <td class="text-end fw-semibold">{{ number_format((int) $daily['total_views'], 0, ',', '.') }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-center py-4">
+                        <i data-feather="inbox" class="text-muted mb-2" style="width: 40px; height: 40px;"></i>
+                        <p class="text-muted mb-0">Belum ada kunjungan publik yang tercatat.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-5">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-1">Halaman Paling Sering Dibuka</h5>
+                <p class="text-muted mb-0 fs-13">Top 5 halaman publik untuk periode yang sedang dipilih.</p>
+            </div>
+            <div class="card-body">
+                @if (collect($visitSummary['top_pages'] ?? [])->isNotEmpty())
+                    <ul class="list-group list-group-flush list-group-no-gutters">
+                        @foreach ($visitSummary['top_pages'] as $page)
+                            <li class="list-group-item px-0">
+                                <div class="d-flex justify-content-between gap-3">
+                                    <span class="text-dark fw-medium">{{ $page->path }}</span>
+                                    <span class="badge bg-primary rounded-pill">{{ number_format((int) $page->total_views, 0, ',', '.') }}</span>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <div class="text-center py-4">
+                        <i data-feather="file-text" class="text-muted mb-2" style="width: 40px; height: 40px;"></i>
+                        <p class="text-muted mb-0">Belum ada halaman yang bisa diringkas.</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header">
+        <h5 class="card-title mb-1">Sumber Kunjungan</h5>
+        <p class="text-muted mb-0 fs-13">Domain referer yang paling sering mengirim pengunjung ke website pada periode ini.</p>
+    </div>
+    <div class="card-body">
+        @if (collect($visitSummary['top_referrers'] ?? [])->isNotEmpty())
+            <div class="table-responsive table-card">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light text-muted">
+                        <tr>
+                            <th>Sumber</th>
+                            <th class="text-end">Kunjungan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($visitSummary['top_referrers'] as $referrer)
+                            <tr>
+                                <td class="fw-medium text-dark">{{ $referrer->source }}</td>
+                                <td class="text-end fw-semibold">{{ number_format((int) $referrer->total_visits, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-4">
+                <i data-feather="share-2" class="text-muted mb-2" style="width: 40px; height: 40px;"></i>
+                <p class="text-muted mb-0">Belum ada referer yang tercatat untuk periode ini.</p>
+            </div>
+        @endif
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <h5 class="card-title mb-1">Pengaturan Konten Landing</h5>

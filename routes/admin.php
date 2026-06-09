@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\LeadSubscriberController;
 use App\Http\Controllers\Admin\QuestionCategoryController;
 use App\Http\Controllers\Admin\QuestionController;
 use App\Http\Controllers\Admin\TryoutPackageController;
+use App\Http\Controllers\Admin\TryoutReportController;
+use App\Http\Controllers\Admin\TryoutSessionController;
 
 Route::prefix('admin')
     ->name('admin.')
@@ -58,8 +60,21 @@ Route::prefix('admin')
         Route::resource('/articles', ArticleController::class)->except(['show']);
         Route::resource('/lead-magnets', LeadMagnetController::class)->except(['show']);
         Route::get('/lead-subscribers', [LeadSubscriberController::class, 'index'])->name('lead-subscribers.index');
+        Route::get('/tryout-packages/import', [TryoutPackageController::class, 'importForm'])->name('tryout-packages.import');
+        Route::get('/tryout-packages/import/template', [TryoutPackageController::class, 'downloadImportTemplate'])->name('tryout-packages.import.template');
+        Route::post('/tryout-packages/import', [TryoutPackageController::class, 'import'])->name('tryout-packages.import.store');
         Route::resource('/tryout-packages', TryoutPackageController::class);
+        Route::get('/tryout-reports', [TryoutReportController::class, 'index'])->name('tryout-reports.index');
+        Route::get('/tryout-sessions', [TryoutSessionController::class, 'index'])->name('tryout-sessions.index');
+        Route::get('/tryout-sessions/export', [TryoutSessionController::class, 'export'])->name('tryout-sessions.export');
+        Route::get('/tryout-sessions/{tryoutSession}', [TryoutSessionController::class, 'show'])->name('tryout-sessions.show');
+        Route::get('/question-categories/import', [QuestionCategoryController::class, 'importForm'])->name('question-categories.import');
+        Route::get('/question-categories/import/template', [QuestionCategoryController::class, 'downloadImportTemplate'])->name('question-categories.import.template');
+        Route::post('/question-categories/import', [QuestionCategoryController::class, 'import'])->name('question-categories.import.store');
         Route::resource('/question-categories', QuestionCategoryController::class);
+        Route::get('/questions/import', [QuestionController::class, 'importForm'])->name('questions.import');
+        Route::get('/questions/import/template', [QuestionController::class, 'downloadImportTemplate'])->name('questions.import.template');
+        Route::post('/questions/import', [QuestionController::class, 'import'])->name('questions.import.store');
         Route::resource('/questions', QuestionController::class);
 
         Route::get('/products/archive', [ProductController::class, 'archive'])->name('products.archive');

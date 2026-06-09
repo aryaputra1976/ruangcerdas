@@ -192,12 +192,24 @@
                         <span class="menu-arrow"></span>
                     </a>
 
-                    <div class="collapse {{ request()->routeIs('admin.tryout-packages.*') || request()->routeIs('admin.question-categories.*') || request()->routeIs('admin.questions.*') ? 'show' : '' }}"
+                    <div class="collapse {{ request()->routeIs('admin.tryout-packages.*') || request()->routeIs('admin.tryout-reports.*') || request()->routeIs('admin.tryout-sessions.*') || request()->routeIs('admin.question-categories.*') || request()->routeIs('admin.questions.*') ? 'show' : '' }}"
                         id="sidebarTryout">
                         <ul class="nav-second-level">
                             <li>
                                 <a href="{{ route('admin.tryout-packages.index') }}" class="tp-link">
                                     Paket Tryout
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.tryout-reports.index') }}" class="tp-link">
+                                    Laporan Tryout
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{ route('admin.tryout-sessions.index') }}" class="tp-link">
+                                    Sesi Tryout
                                 </a>
                             </li>
 

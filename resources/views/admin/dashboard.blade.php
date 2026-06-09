@@ -42,6 +42,20 @@
             'color' => 'success',
             'url' => route('admin.products.create'),
         ],
+        [
+            'label' => 'Paket Tryout',
+            'description' => 'Kelola paket, harga, dan komposisi tryout.',
+            'icon' => 'edit-3',
+            'color' => 'primary',
+            'url' => route('admin.tryout-packages.index'),
+        ],
+        [
+            'label' => 'Sesi Tryout',
+            'description' => 'Pantau peserta, progres, dan hasil tryout.',
+            'icon' => 'bar-chart-2',
+            'color' => 'info',
+            'url' => route('admin.tryout-sessions.index'),
+        ],
     ];
 @endphp
 
@@ -260,6 +274,149 @@
                     <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
                         <div>
                             <h5 class="card-title mb-1">
+                                Ringkasan Tryout
+                            </h5>
+
+                            <p class="text-muted mb-0 fs-13">
+                                Snapshot paket dan sesi tryout supaya monitoring admin tidak berhenti di sisi penjualan saja.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('admin.tryout-sessions.index') }}"
+                           class="btn btn-sm btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                            <i data-feather="activity" style="width: 14px; height: 14px;"></i>
+                            <span>Lihat Sesi Tryout</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 h-100">
+                                <p class="text-muted fs-13 mb-1">Paket Tryout Aktif</p>
+                                <h5 class="mb-1 text-dark">
+                                    {{ number_format((int) $stat('active_tryout_packages'), 0, ',', '.') }}
+                                </h5>
+                                <div class="fs-13 text-muted">
+                                    Dari total {{ number_format((int) $stat('total_tryout_packages'), 0, ',', '.') }} paket tryout.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 h-100">
+                                <p class="text-muted fs-13 mb-1">Sesi Tryout Berjalan</p>
+                                <h5 class="mb-1 text-dark">
+                                    {{ number_format((int) $stat('ongoing_tryout_sessions'), 0, ',', '.') }}
+                                </h5>
+                                <div class="fs-13 text-muted">
+                                    Peserta yang masih aktif mengerjakan sesi tryout.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="border rounded-3 p-3 h-100">
+                                <p class="text-muted fs-13 mb-1">Sesi Tryout Selesai</p>
+                                <h5 class="mb-1 text-dark">
+                                    {{ number_format((int) $stat('finished_tryout_sessions'), 0, ',', '.') }}
+                                </h5>
+                                <div class="fs-13 text-muted">
+                                    Dari total {{ number_format((int) $stat('total_tryout_sessions'), 0, ',', '.') }} sesi tryout.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <h5 class="card-title mb-0">
+                            5 Paket Tryout Paling Aktif
+                        </h5>
+
+                        @if (($topTryoutPackages ?? collect())->isNotEmpty())
+                            <span class="badge bg-primary rounded-pill">
+                                {{ $topTryoutPackages->count() }}
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    @if (($topTryoutPackages ?? collect())->isNotEmpty())
+                        <ul class="list-group list-group-flush list-group-no-gutters">
+                            @foreach ($topTryoutPackages as $package)
+                                <li class="list-group-item px-0">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center"
+                                                 style="width: 38px; height: 38px;">
+                                                <i data-feather="activity" style="width: 18px; height: 18px;"></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex-grow-1 ms-3">
+                                            <div class="d-flex justify-content-between gap-2">
+                                                <div>
+                                                    <h6 class="mb-1 text-dark fs-15">
+                                                        {{ $package->title }}
+                                                    </h6>
+
+                                                    <div class="fs-13 text-muted">
+                                                        {{ $package->tryout_type_label }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="text-end">
+                                                    <div class="fw-semibold text-dark fs-14">
+                                                        {{ number_format((int) $package->sessions_count, 0, ',', '.') }} sesi
+                                                    </div>
+
+                                                    <a href="{{ route('admin.tryout-packages.edit', $package) }}"
+                                                       class="fs-13 text-primary fw-semibold">
+                                                        Lihat Paket
+                                                    </a>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-2 fs-13 text-muted">
+                                                Selesai {{ number_format((int) $package->finished_sessions_count, 0, ',', '.') }}
+                                                · Rata-rata skor {{ number_format((float) ($package->finished_sessions_avg_score ?? 0), 1, ',', '.') }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <div class="text-center py-5">
+                            <div class="mb-2">
+                                <i data-feather="activity" class="text-muted" style="width: 40px; height: 40px;"></i>
+                            </div>
+
+                            <h6 class="text-muted mb-0">
+                                Belum ada data paket tryout yang aktif dipakai peserta.
+                            </h6>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                        <div>
+                            <h5 class="card-title mb-1">
                                 5 Order Terbaru
                             </h5>
 
@@ -423,6 +580,115 @@
     </div>
 
     <div class="row">
+        <div class="col-xl-8">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between gap-3 flex-wrap">
+                        <div>
+                            <h5 class="card-title mb-1">
+                                5 Sesi Tryout Terbaru
+                            </h5>
+
+                            <p class="text-muted mb-0 fs-13">
+                                Pantau peserta yang baru mulai atau baru menyelesaikan tryout.
+                            </p>
+                        </div>
+
+                        <a href="{{ route('admin.tryout-sessions.index') }}"
+                           class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                            <i data-feather="bar-chart-2" style="width: 14px; height: 14px;"></i>
+                            <span>Kelola Sesi</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    @if (($latestTryoutSessions ?? collect())->isNotEmpty())
+                        <div class="table-responsive table-card">
+                            <table class="table table-hover table-centered align-middle table-nowrap mb-0">
+                                <thead class="table-light text-muted">
+                                    <tr>
+                                        <th>Pembeli</th>
+                                        <th>Paket</th>
+                                        <th style="width: 145px;">Status</th>
+                                        <th style="width: 100px;">Skor</th>
+                                        <th style="width: 100px;">Soal</th>
+                                        <th style="width: 120px;" class="text-end">Aksi</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @foreach ($latestTryoutSessions as $session)
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium text-dark">
+                                                    {{ $session->participant_name ?: 'Peserta Tanpa Nama' }}
+                                                </div>
+
+                                                <div class="text-muted fs-13 text-break" style="max-width: 190px;">
+                                                    {{ $session->participant_email ?: '-' }}
+                                                </div>
+                                            </td>
+
+                                            <td>
+                                                <span class="d-inline-block text-wrap" style="max-width: 180px;">
+                                                    {{ $session->package?->title ?? '-' }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                @php
+                                                    $tryoutStatusClass = match ($session->status) {
+                                                        \App\Models\TryoutSession::STATUS_FINISHED => 'success',
+                                                        \App\Models\TryoutSession::STATUS_ONGOING => 'warning',
+                                                        default => 'secondary',
+                                                    };
+                                                    $tryoutStatusLabel = match ($session->status) {
+                                                        \App\Models\TryoutSession::STATUS_FINISHED => 'Selesai',
+                                                        \App\Models\TryoutSession::STATUS_ONGOING => 'Berjalan',
+                                                        default => 'Draft',
+                                                    };
+                                                @endphp
+                                                <span class="badge bg-{{ $tryoutStatusClass }}-subtle text-{{ $tryoutStatusClass }} rounded-pill">
+                                                    {{ $tryoutStatusLabel }}
+                                                </span>
+                                            </td>
+
+                                            <td class="fw-semibold">
+                                                {{ number_format((int) $session->total_score, 0, ',', '.') }}
+                                            </td>
+
+                                            <td class="fw-semibold">
+                                                {{ number_format((int) $session->answers_count, 0, ',', '.') }}
+                                            </td>
+
+                                            <td class="text-end">
+                                                <a href="{{ route('admin.tryout-sessions.show', $session) }}"
+                                                   class="btn btn-sm bg-primary-subtle text-primary rounded-pill px-3 d-inline-flex align-items-center gap-1 rc-action-btn">
+                                                    <i data-feather="eye" style="width: 14px; height: 14px;"></i>
+                                                    <span>Detail</span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="text-center py-5">
+                            <div class="mb-2">
+                                <i data-feather="inbox" class="text-muted" style="width: 40px; height: 40px;"></i>
+                            </div>
+
+                            <h6 class="text-muted mb-0">
+                                Belum ada sesi tryout terbaru.
+                            </h6>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+
         <div class="col-xl-8">
             <div class="card">
                 <div class="card-header">

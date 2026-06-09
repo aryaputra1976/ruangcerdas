@@ -13,7 +13,10 @@
             <h5 class="card-title mb-1">Daftar Kategori Soal</h5>
             <p class="text-muted mb-0 fs-13">Kelompokkan bank soal berdasarkan jenis tryout dan section.</p>
         </div>
-        <a href="{{ route('admin.question-categories.create') }}" class="btn btn-sm btn-primary rounded-pill px-3">Tambah Kategori</a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('admin.question-categories.import') }}" class="btn btn-sm bg-info-subtle text-info rounded-pill px-3">Import Kategori</a>
+            <a href="{{ route('admin.question-categories.create') }}" class="btn btn-sm btn-primary rounded-pill px-3">Tambah Kategori</a>
+        </div>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('admin.question-categories.index') }}" class="row g-2 mb-4">
@@ -98,7 +101,10 @@
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">{{ $hasFilter ? 'Kategori soal tidak ditemukan' : 'Belum ada kategori soal' }}</h5>
                 <p class="text-muted mb-3">Buat kategori soal untuk memudahkan pengelolaan bank soal.</p>
-                <a href="{{ route('admin.question-categories.create') }}" class="btn btn-primary rounded-pill px-4">Tambah Kategori</a>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a href="{{ route('admin.question-categories.import') }}" class="btn bg-info-subtle text-info rounded-pill px-4">Import Kategori</a>
+                    <a href="{{ route('admin.question-categories.create') }}" class="btn btn-primary rounded-pill px-4">Tambah Kategori</a>
+                </div>
             </div>
         @endif
     </div>

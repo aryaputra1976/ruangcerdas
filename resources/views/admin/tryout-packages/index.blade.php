@@ -48,10 +48,16 @@
             <h5 class="card-title mb-1">Daftar Paket Tryout</h5>
             <p class="text-muted mb-0 fs-13">Atur paket, harga, durasi, dan komposisi soal tryout.</p>
         </div>
-        <a href="{{ route('admin.tryout-packages.create') }}" class="btn btn-sm btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
-            <i data-feather="plus" style="width: 14px; height: 14px;"></i>
-            <span>Tambah Paket</span>
-        </a>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{{ route('admin.tryout-packages.import') }}" class="btn btn-sm bg-success-subtle text-success rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                <i data-feather="upload" style="width: 14px; height: 14px;"></i>
+                <span>Import Paket</span>
+            </a>
+            <a href="{{ route('admin.tryout-packages.create') }}" class="btn btn-sm btn-primary rounded-pill px-3 d-inline-flex align-items-center gap-1">
+                <i data-feather="plus" style="width: 14px; height: 14px;"></i>
+                <span>Tambah Paket</span>
+            </a>
+        </div>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('admin.tryout-packages.index') }}" class="row g-2 mb-4">
@@ -88,6 +94,7 @@
                             <th>Harga</th>
                             <th>Durasi</th>
                             <th>Komposisi</th>
+                            <th>Stok Soal</th>
                             <th>Status</th>
                             <th class="text-end">Aksi</th>
                         </tr>
@@ -103,6 +110,17 @@
                                 <td>{{ $package->price > 0 ? 'Rp ' . number_format($package->price, 0, ',', '.') : 'Gratis' }}</td>
                                 <td>{{ $package->duration_minutes }} menit</td>
                                 <td class="fs-13 text-muted">{{ collect($package->sectionSummaries())->map(fn ($section) => $section['label'] . ' ' . $section['count'])->implode(' · ') }}</td>
+                                <td style="min-width: 240px;">
+                                    @php($stockStatus = $packageStockStatuses[$package->id] ?? ['enough' => true, 'sections' => []])
+                                    <div class="mb-2">
+                                        <span class="badge {{ $stockStatus['enough'] ? 'bg-success-subtle text-success' : 'bg-warning-subtle text-warning' }} rounded-pill">
+                                            {{ $stockStatus['enough'] ? 'Stok Aman' : 'Stok Kurang' }}
+                                        </span>
+                                    </div>
+                                    <div class="fs-13 text-muted">
+                                        {{ collect($stockStatus['sections'])->map(fn ($section) => $section['label'] . ' ' . $section['available'] . '/' . $section['required'])->implode(' · ') }}
+                                    </div>
+                                </td>
                                 <td>
                                     <span class="badge {{ $package->is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} fw-semibold rounded-pill">
                                         {{ $package->is_active ? 'Aktif' : 'Nonaktif' }}

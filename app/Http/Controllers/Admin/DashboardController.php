@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\DownloadLog;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\TryoutPackage;
+use App\Models\TryoutSession;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -54,6 +56,11 @@ class DashboardController extends Controller
 
             'downloads' => Order::sum('download_count'),
             'download_logs' => class_exists(DownloadLog::class) ? DownloadLog::count() : 0,
+            'total_tryout_packages' => TryoutPackage::count(),
+            'active_tryout_packages' => TryoutPackage::where('is_active', true)->count(),
+            'total_tryout_sessions' => TryoutSession::count(),
+            'ongoing_tryout_sessions' => TryoutSession::where('status', TryoutSession::STATUS_ONGOING)->count(),
+            'finished_tryout_sessions' => TryoutSession::where('status', TryoutSession::STATUS_FINISHED)->count(),
         ];
 
         $latestOrders = Order::query()
@@ -83,11 +90,33 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $latestTryoutSessions = TryoutSession::query()
+            ->with('package')
+            ->withCount('answers')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $topTryoutPackages = TryoutPackage::query()
+            ->withCount('sessions')
+            ->withCount([
+                'sessions as finished_sessions_count' => fn ($query) => $query->where('status', TryoutSession::STATUS_FINISHED),
+            ])
+            ->withAvg([
+                'sessions as finished_sessions_avg_score' => fn ($query) => $query->where('status', TryoutSession::STATUS_FINISHED),
+            ], 'total_score')
+            ->orderByDesc('sessions_count')
+            ->orderByDesc('finished_sessions_count')
+            ->take(5)
+            ->get();
+
         return view('admin.dashboard', compact(
             'stats',
             'latestOrders',
             'waitingOrders',
-            'topProducts'
+            'topProducts',
+            'latestTryoutSessions',
+            'topTryoutPackages'
         ));
     }
 }

@@ -1,9 +1,12 @@
 ﻿
 @php
     $isEdit = isset($tryoutPackage);
-    $isActive = old('is_active', $tryoutPackage->is_active ?? true);
-    $selectedType = old('tryout_type', $tryoutPackage->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
-    $existingSectionCounts = collect($tryoutPackage->sectionSummaries() ?? [])->mapWithKeys(fn ($section) => [$section['key'] => $section['count']])->all();
+    $package = $tryoutPackage ?? null;
+    $isActive = old('is_active', $package?->is_active ?? true);
+    $selectedType = old('tryout_type', $package?->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
+    $existingSectionCounts = collect($package?->sectionSummaries() ?? [])
+        ->mapWithKeys(fn ($section) => [$section['key'] => $section['count']])
+        ->all();
 @endphp
 
 <div class="row">
@@ -11,7 +14,7 @@
         <div class="row g-3">
             <div class="col-md-12">
                 <label class="form-label">Judul Paket <span class="text-danger">*</span></label>
-                <input type="text" name="title" value="{{ old('title', $tryoutPackage->title ?? '') }}" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Tryout CPNS Intensif 2026" required autofocus>
+                <input type="text" name="title" value="{{ old('title', $package?->title ?? '') }}" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Tryout CPNS Intensif 2026" required autofocus>
                 @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">
@@ -25,22 +28,22 @@
             </div>
             <div class="col-md-6">
                 <label class="form-label">Slug</label>
-                <input type="text" name="slug" value="{{ old('slug', $tryoutPackage->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
+                <input type="text" name="slug" value="{{ old('slug', $package?->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
                 @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-12">
                 <label class="form-label">Deskripsi</label>
-                <textarea name="description" rows="5" class="form-control @error('description') is-invalid @enderror" placeholder="Deskripsi singkat paket tryout">{{ old('description', $tryoutPackage->description ?? '') }}</textarea>
+                <textarea name="description" rows="5" class="form-control @error('description') is-invalid @enderror" placeholder="Deskripsi singkat paket tryout">{{ old('description', $package?->description ?? '') }}</textarea>
                 @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">
                 <label class="form-label">Harga <span class="text-danger">*</span></label>
-                <input type="number" name="price" value="{{ old('price', $tryoutPackage->price ?? 0) }}" class="form-control @error('price') is-invalid @enderror" min="0" required>
+                <input type="number" name="price" value="{{ old('price', $package?->price ?? 0) }}" class="form-control @error('price') is-invalid @enderror" min="0" required>
                 @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">
                 <label class="form-label">Durasi (menit) <span class="text-danger">*</span></label>
-                <input type="number" name="duration_minutes" value="{{ old('duration_minutes', $tryoutPackage->duration_minutes ?? 100) }}" class="form-control @error('duration_minutes') is-invalid @enderror" min="1" required>
+                <input type="number" name="duration_minutes" value="{{ old('duration_minutes', $package?->duration_minutes ?? 100) }}" class="form-control @error('duration_minutes') is-invalid @enderror" min="1" required>
                 @error('duration_minutes')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-12">

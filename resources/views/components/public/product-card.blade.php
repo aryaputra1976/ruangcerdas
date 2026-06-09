@@ -17,8 +17,16 @@
     $coverUrl = $product->cover_image
         ? asset('storage/' . $product->cover_image)
         : null;
-    $categoryName = strtolower((string) ($product->category->name ?? ''));
-    $isTryoutCategory = str_contains($categoryName, 'tryout');
+    $productType = (string) ($product->product_type ?? '');
+    $productTypeLabel = \App\Models\Product::productTypeLabels()[$productType] ?? null;
+    $productTypeBadgeClass = match ($productType) {
+        'tryout' => 'bg-indigo-50 text-indigo-700',
+        'ebook' => 'bg-emerald-50 text-emerald-700',
+        'template' => 'bg-amber-50 text-amber-700',
+        'source_code' => 'bg-fuchsia-50 text-fuchsia-700',
+        'bundle' => 'bg-sky-50 text-sky-700',
+        default => 'bg-slate-100 text-slate-700',
+    };
     $supportNumber = preg_replace('/\D+/', '', (string) $supportWhatsapp);
     if (str_starts_with($supportNumber, '0')) {
         $supportNumber = '62' . substr($supportNumber, 1);
@@ -64,9 +72,9 @@
                     {{ $product->category->name }}
                 </span>
             @endif
-            @if ($isTryoutCategory)
-                <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
-                    Coming Soon
+            @if ($productTypeLabel)
+                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $productTypeBadgeClass }}">
+                    {{ $productTypeLabel }}
                 </span>
             @endif
             <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">

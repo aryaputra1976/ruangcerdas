@@ -39,6 +39,8 @@ class PppkTendikProductSeeder extends Seeder
             ['slug' => $slug],
             [
                 'category_id' => $category->id,
+                'product_type' => 'ebook',
+                'category' => 'pppk-tendik',
                 'name' => 'Panduan Lengkap PPPK Tendik Sekolah Rakyat',
                 'short_description' => 'Paket digital untuk membantu pemula memahami PPPK Tendik Sekolah Rakyat dari awal hingga siap belajar dan menyiapkan berkas.',
                 'description' => 'Paket digital untuk membantu pemula memahami PPPK Tendik Sekolah Rakyat dari awal, mulai dari pengenalan jabatan, proses seleksi, strategi belajar, studi kasus, checklist dokumen, template surat, hingga latihan soal dan pembahasan. Paket ini bukan produk resmi pemerintah, melainkan materi bantu belajar dan persiapan dari Ruang Cerdas.',

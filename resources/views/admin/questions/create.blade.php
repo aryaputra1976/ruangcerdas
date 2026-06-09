@@ -1,8 +1,8 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $title = 'Tambah Soal';
-    $subtitle = 'Tambahkan soal baru ke bank soal tryout CPNS.';
+    $subtitle = 'Tambahkan soal baru ke bank soal tryout.';
 @endphp
 
 @section('content')
@@ -22,3 +22,4 @@
     </div>
 </div>
 @endsection
+

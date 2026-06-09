@@ -1,6 +1,9 @@
+﻿
 @php
     $isEdit = isset($tryoutPackage);
     $isActive = old('is_active', $tryoutPackage->is_active ?? true);
+    $selectedType = old('tryout_type', $tryoutPackage->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
+    $existingSectionCounts = collect($tryoutPackage->sectionSummaries() ?? [])->mapWithKeys(fn ($section) => [$section['key'] => $section['count']])->all();
 @endphp
 
 <div class="row">
@@ -11,13 +14,19 @@
                 <input type="text" name="title" value="{{ old('title', $tryoutPackage->title ?? '') }}" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Tryout CPNS Intensif 2026" required autofocus>
                 @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-12">
+            <div class="col-md-6">
+                <label class="form-label">Jenis Tryout <span class="text-danger">*</span></label>
+                <select name="tryout_type" class="form-select @error('tryout_type') is-invalid @enderror" required>
+                    @foreach ($tryoutTypes as $type => $label)
+                        <option value="{{ $type }}" @selected($selectedType === $type)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('tryout_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-6">
                 <label class="form-label">Slug</label>
-                <div class="input-group">
-                    <span class="input-group-text">/tryout-cpns/</span>
-                    <input type="text" name="slug" value="{{ old('slug', $tryoutPackage->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
-                </div>
-                @error('slug')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                <input type="text" name="slug" value="{{ old('slug', $tryoutPackage->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
+                @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-12">
                 <label class="form-label">Deskripsi</label>
@@ -34,20 +43,27 @@
                 <input type="number" name="duration_minutes" value="{{ old('duration_minutes', $tryoutPackage->duration_minutes ?? 100) }}" class="form-control @error('duration_minutes') is-invalid @enderror" min="1" required>
                 @error('duration_minutes')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Jumlah TWK <span class="text-danger">*</span></label>
-                <input type="number" name="twk_count" value="{{ old('twk_count', $tryoutPackage->twk_count ?? 30) }}" class="form-control @error('twk_count') is-invalid @enderror" min="0" required>
-                @error('twk_count')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Jumlah TIU <span class="text-danger">*</span></label>
-                <input type="number" name="tiu_count" value="{{ old('tiu_count', $tryoutPackage->tiu_count ?? 35) }}" class="form-control @error('tiu_count') is-invalid @enderror" min="0" required>
-                @error('tiu_count')<div class="invalid-feedback">{{ $message }}</div>@enderror
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Jumlah TKP <span class="text-danger">*</span></label>
-                <input type="number" name="tkp_count" value="{{ old('tkp_count', $tryoutPackage->tkp_count ?? 45) }}" class="form-control @error('tkp_count') is-invalid @enderror" min="0" required>
-                @error('tkp_count')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            <div class="col-md-12">
+                <label class="form-label">Komposisi Soal <span class="text-danger">*</span></label>
+                @error('section_counts')<div class="text-danger small mb-2">{{ $message }}</div>@enderror
+                <div class="row g-3">
+                    @foreach ($sectionsByType as $type => $sections)
+                        <div class="col-12">
+                            <div class="border rounded-3 p-3 {{ $selectedType === $type ? 'border-primary' : '' }}">
+                                <div class="fw-semibold text-dark mb-2">{{ $tryoutTypes[$type] }}</div>
+                                <div class="row g-3">
+                                    @foreach ($sections as $section)
+                                        <div class="col-md-6">
+                                            <label class="form-label">{{ $section['label'] }}</label>
+                                            <input type="number" min="0" name="section_counts[{{ $type }}][{{ $section['key'] }}]" value="{{ old('section_counts.' . $type . '.' . $section['key'], $selectedType === $type ? ($existingSectionCounts[$section['key']] ?? 0) : 0) }}" class="form-control">
+                                            <div class="form-text">{{ $section['scoring_mode'] === 'weighted' ? 'Skor bertingkat.' : 'Jawaban tunggal.' }}</div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </div>
@@ -60,7 +76,7 @@
                     <label class="form-check-label fw-semibold" for="is_active">Paket Aktif</label>
                 </div>
                 <div class="alert alert-info mb-0">
-                    Paket aktif akan tampil di halaman public Tryout CPNS.
+                    Paket aktif akan tampil di halaman kategori tryout sesuai jenisnya.
                 </div>
             </div>
         </div>

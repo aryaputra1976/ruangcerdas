@@ -1,7 +1,7 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 
-@section('title', 'Mulai Tryout CPNS - Ruang Cerdas')
-@section('meta_description', 'Isi data peserta untuk mulai tryout CPNS Ruang Cerdas.')
+@section('title', 'Mulai ' . $tryoutPackage->tryout_type_label . ' - Ruang Cerdas')
+@section('meta_description', 'Isi data peserta untuk mulai ' . $tryoutPackage->tryout_type_label . ' Ruang Cerdas.')
 @section('robots', 'noindex,nofollow')
 
 @section('content')
@@ -27,7 +27,7 @@
                             <span class="font-semibold">
                                 {{ $recentPackageSession->isFinished() ? 'Selesai' : 'Belum selesai' }}
                             </span>
-                            � mulai {{ $recentPackageSession->started_at?->format('d M Y H:i') ?? '-' }}
+                            · mulai {{ $recentPackageSession->started_at?->format('d M Y H:i') ?? '-' }}
                         </div>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <a href="{{ $recentPackageSession->isFinished() ? route('public.tryout-sessions.result', $recentPackageSession) : route('public.tryout-sessions.exam', $recentPackageSession) }}"
@@ -48,7 +48,7 @@
                     </div>
                 @endif
 
-                <form method="POST" action="{{ route('public.tryouts.begin', $tryoutPackage) }}" class="mt-8 space-y-5">
+                <form method="POST" action="{{ route('public.tryouts.packages.begin', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="mt-8 space-y-5">
                     @csrf
                     <div>
                         <label for="participant_name" class="mb-2 block text-sm font-semibold text-slate-700">Nama Peserta</label>
@@ -88,7 +88,7 @@
                             Mulai Sekarang
                         </button>
                         @if (! $tryoutPackage->is_free)
-                            <a href="{{ route('public.tryouts.buy', $tryoutPackage) }}" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700">
+                            <a href="{{ route('public.tryouts.packages.buy', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700">
                                 Beli Paket
                             </a>
                         @endif
@@ -108,18 +108,12 @@
                             <span class="text-slate-600">Durasi</span>
                             <span class="font-black text-slate-950">{{ $tryoutPackage->duration_minutes }} menit</span>
                         </div>
-                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
-                            <span class="text-slate-600">TWK</span>
-                            <span class="font-black text-slate-950">{{ $tryoutPackage->twk_count }} soal</span>
-                        </div>
-                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
-                            <span class="text-slate-600">TIU</span>
-                            <span class="font-black text-slate-950">{{ $tryoutPackage->tiu_count }} soal</span>
-                        </div>
-                        <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
-                            <span class="text-slate-600">TKP</span>
-                            <span class="font-black text-slate-950">{{ $tryoutPackage->tkp_count }} soal</span>
-                        </div>
+                        @foreach ($tryoutPackage->sectionSummaries() as $section)
+                            <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
+                                <span class="text-slate-600">{{ $section['label'] }}</span>
+                                <span class="font-black text-slate-950">{{ $section['count'] }} soal</span>
+                            </div>
+                        @endforeach
                         @if (! $tryoutPackage->is_free)
                             <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                                 <span class="text-slate-600">Percobaan</span>
@@ -137,7 +131,7 @@
                     <h2 class="text-xl font-black text-slate-950">Catatan</h2>
                     <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-600">
                         <li>- Paket harus aktif untuk bisa dimulai.</li>
-                        <li>- Soal diambil acak dari bank soal aktif sesuai section.</li>
+                        <li>- Soal diambil acak dari bank soal aktif sesuai section paket.</li>
                         <li>- Saat waktu habis, jawaban akan otomatis disubmit.</li>
                         <li>- Jika sesi sebelumnya belum selesai di browser ini, sistem akan mencoba melanjutkan sesi yang sama.</li>
                         @if (! $tryoutPackage->is_free)

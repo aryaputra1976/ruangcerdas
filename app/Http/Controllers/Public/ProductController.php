@@ -17,8 +17,14 @@ class ProductController extends Controller
 {
     public function index(Request $request, PricingService $pricingService)
     {
+        $typeOptions = Product::productTypeLabels();
+        $activeType = $request->filled('type') && array_key_exists($request->query('type'), $typeOptions)
+            ? $request->query('type')
+            : null;
+
         $publicVisibleProducts = Product::query()
             ->with('category')
+            ->ofProductType($activeType)
             ->visibleToPublic()
             ->latest('published_at')
             ->get()
@@ -27,6 +33,7 @@ class ProductController extends Controller
 
         $query = Product::query()
             ->with('category')
+            ->ofProductType($activeType)
             ->visibleToPublic()
             ->latest('published_at');
 
@@ -81,7 +88,7 @@ class ProductController extends Controller
         $landingSetting = LandingSetting::query()->first();
         $supportWhatsapp = $landingSetting?->support_whatsapp;
 
-        return view('public.products.index', compact('products', 'categories', 'landingSetting', 'supportWhatsapp'));
+        return view('public.products.index', compact('products', 'categories', 'landingSetting', 'supportWhatsapp', 'typeOptions', 'activeType'));
     }
 
     public function show(Product $product, PricingService $pricingService)

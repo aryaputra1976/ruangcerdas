@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\QuestionCategory;
+use App\Support\TryoutBlueprint;
 use Illuminate\Database\Seeder;
 
 class QuestionCategorySeeder extends Seeder
@@ -13,19 +14,22 @@ class QuestionCategorySeeder extends Seeder
             [
                 'slug' => 'twk-default',
                 'name' => 'TWK Default',
-                'section' => 'TWK',
+                'tryout_type' => TryoutBlueprint::TYPE_CPNS,
+                'section' => 'twk',
                 'description' => 'Kategori default untuk soal Tes Wawasan Kebangsaan.',
             ],
             [
                 'slug' => 'tiu-default',
                 'name' => 'TIU Default',
-                'section' => 'TIU',
+                'tryout_type' => TryoutBlueprint::TYPE_CPNS,
+                'section' => 'tiu',
                 'description' => 'Kategori default untuk soal Tes Intelegensi Umum.',
             ],
             [
                 'slug' => 'tkp-default',
                 'name' => 'TKP Default',
-                'section' => 'TKP',
+                'tryout_type' => TryoutBlueprint::TYPE_CPNS,
+                'section' => 'tkp',
                 'description' => 'Kategori default untuk soal Tes Karakteristik Pribadi.',
             ],
         ];
@@ -35,6 +39,7 @@ class QuestionCategorySeeder extends Seeder
                 ['slug' => $category['slug']],
                 [
                     'name' => $category['name'],
+                    'tryout_type' => $category['tryout_type'],
                     'section' => $category['section'],
                     'description' => $category['description'],
                     'is_active' => true,

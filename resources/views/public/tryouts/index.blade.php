@@ -1,8 +1,8 @@
 @extends('layouts.public')
 
-@section('title', 'Tryout CPNS - Ruang Cerdas')
-@section('meta_description', 'Daftar paket tryout CPNS online Ruang Cerdas untuk latihan TWK, TIU, dan TKP.')
-@section('canonical', route('public.tryouts.index'))
+@section('title', $pageHeading . ' - Ruang Cerdas')
+@section('meta_description', $pageMetaDescription)
+@section('canonical', route($pageRouteName))
 
 @section('content')
 <section class="relative overflow-hidden bg-slate-950 py-16 text-white">
@@ -12,42 +12,38 @@
         <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
             <div>
                 <p class="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-100">
-                    Tryout CPNS
+                    {{ $pageTitle }}
                 </p>
-                <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">Pilih Paket Tryout CPNS Online</h1>
+                <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">{{ $pageHeading }}</h1>
                 <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
-                    Fondasi latihan TWK, TIU, dan TKP dari Ruang Cerdas. Pilih paket aktif yang paling sesuai untuk target belajarmu.
+                    {{ $pageDescription }}
                 </p>
                 <div class="mt-8 flex flex-wrap gap-3">
                     <a href="#paket-tryout" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700">
                         Lihat Paket
                     </a>
-                    <a href="{{ route('public.tryout-sessions.history') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
+                    <a href="{{ $pageHistoryUrl }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
                         Riwayat Tryout
                     </a>
-                    <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
-                        Kembali ke Beranda
+                    <a href="{{ $pageBackUrl }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
+                        Kembali
                     </a>
                 </div>
             </div>
 
             <div class="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-                <div class="grid gap-4 sm:grid-cols-3">
-                    <div class="rounded-3xl bg-white p-5 text-slate-950">
-                        <div class="text-3xl font-black text-blue-600">TWK</div>
-                        <p class="mt-4 text-sm font-bold text-slate-500">Wawasan</p>
-                    </div>
-                    <div class="rounded-3xl bg-white p-5 text-slate-950">
-                        <div class="text-3xl font-black text-blue-600">TIU</div>
-                        <p class="mt-4 text-sm font-bold text-slate-500">Intelegensi</p>
-                    </div>
-                    <div class="rounded-3xl bg-white p-5 text-slate-950">
-                        <div class="text-3xl font-black text-blue-600">TKP</div>
-                        <p class="mt-4 text-sm font-bold text-slate-500">Karakteristik</p>
-                    </div>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    @foreach (($packages->first()?->sectionSummaries() ?? []) as $section)
+                        <div class="rounded-3xl bg-white p-5 text-slate-950">
+                            <div class="text-xl font-black text-blue-600">{{ $section['label'] }}</div>
+                            <p class="mt-4 text-sm font-bold text-slate-500">
+                                {{ $section['scoring_mode'] === 'weighted' ? 'Skor bertingkat' : 'Jawaban tunggal' }}
+                            </p>
+                        </div>
+                    @endforeach
                 </div>
                 <div class="mt-4 rounded-3xl bg-white/10 p-5 text-sm leading-7 text-slate-200">
-                    Tryout gratis tetap bisa langsung dicoba, sedangkan paket premium memberi soal lebih lengkap, pembahasan, dan percobaan lebih banyak.
+                    Paket gratis tetap bisa langsung dicoba, sedangkan paket premium memberi soal lebih lengkap, pembahasan, dan percobaan lebih banyak.
                 </div>
             </div>
         </div>
@@ -59,7 +55,7 @@
         <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Paket Aktif</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Daftar Paket Tryout</h2>
+                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $pageHeading }}</h2>
                 <p class="mt-3 max-w-2xl text-slate-600">Pilih paket gratis untuk pemanasan, atau lanjut ke premium jika ingin simulasi yang lebih lengkap dan terarah.</p>
             </div>
             <div class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm">
@@ -86,13 +82,9 @@
             <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($packages as $package)
                     @php
-                        $packageState = $packageStates[$package->id] ?? ['canStart' => $package->is_free, 'hasAccess' => false, 'buyUrl' => route('public.tryouts.buy', $package)];
+                        $packageState = $packageStates[$package->id] ?? ['canStart' => $package->is_free, 'hasAccess' => false, 'buyUrl' => '#', 'startUrl' => '#'];
                         $isPremium = ! $package->is_free;
-                        $defaultDescription = $package->is_free
-                            ? 'Coba simulasi dasar sebelum membeli paket lengkap.'
-                            : ($package->slug === 'tryout-premium-mini'
-                                ? 'Latihan lebih banyak dengan pembahasan singkat.'
-                                : 'Simulasi SKD lebih serius dengan komposisi soal lengkap.');
+                        $defaultDescription = $package->is_free ? 'Coba simulasi dasar sebelum membeli paket lengkap.' : 'Simulasi yang lebih serius dengan komposisi soal lengkap.';
                     @endphp
                     <article class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
                         <div class="flex items-start justify-between gap-4">
@@ -121,18 +113,12 @@
                         </div>
 
                         <div class="mt-4 space-y-3">
-                            <div class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm">
-                                <span class="font-semibold text-slate-600">TWK</span>
-                                <span class="font-black text-slate-950">{{ $package->twk_count }} soal</span>
-                            </div>
-                            <div class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm">
-                                <span class="font-semibold text-slate-600">TIU</span>
-                                <span class="font-black text-slate-950">{{ $package->tiu_count }} soal</span>
-                            </div>
-                            <div class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm">
-                                <span class="font-semibold text-slate-600">TKP</span>
-                                <span class="font-black text-slate-950">{{ $package->tkp_count }} soal</span>
-                            </div>
+                            @foreach ($package->sectionSummaries() as $section)
+                                <div class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm">
+                                    <span class="font-semibold text-slate-600">{{ $section['label'] }}</span>
+                                    <span class="font-black text-slate-950">{{ $section['count'] }} soal</span>
+                                </div>
+                            @endforeach
                         </div>
 
                         @if ($isPremium)
@@ -154,7 +140,7 @@
 
                         <div class="mt-6">
                             @if ($packageState['canStart'])
-                                <a href="{{ route('public.tryouts.start', $package) }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
+                                <a href="{{ $packageState['startUrl'] }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
                                     Mulai Tryout
                                 </a>
                             @else

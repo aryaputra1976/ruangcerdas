@@ -6,7 +6,7 @@
 
 @section('content')
 @php
-    $hasFilter = request()->filled('q') || request()->filled('category');
+    $hasFilter = request()->filled('q') || request()->filled('category') || request()->filled('type');
     $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
     $presetCategories = [
         'cpns-pppk' => 'CPNS & PPPK',
@@ -23,6 +23,7 @@
     $activeCategoryLabel = request('category')
         ? ($categoryLabelMap[request('category')] ?? $presetCategories[request('category')] ?? request('category'))
         : null;
+    $activeTypeLabel = $activeType ? ($typeOptions[$activeType] ?? $activeType) : null;
 @endphp
 
 <section class="relative overflow-hidden bg-slate-950 py-16 text-white">
@@ -90,24 +91,42 @@
         <div class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
             <div class="mb-4 flex flex-wrap gap-2">
                 @foreach ($presetCategories as $slug => $label)
-                    <a href="{{ route('products.index', array_filter(['category' => $slug, 'q' => request('q')])) }}"
+                    <a href="{{ route('products.index', array_filter(['category' => $slug, 'q' => request('q'), 'type' => $activeType])) }}"
                        class="rounded-full border px-3 py-1 text-xs font-bold transition {{ request('category') === $slug ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:text-blue-700' }}">
                         {{ $label }}
                     </a>
                 @endforeach
             </div>
 
+            <div class="mb-4 flex flex-wrap gap-2">
+                @foreach ($typeOptions as $typeKey => $typeLabel)
+                    <a href="{{ route('products.index', array_filter(['type' => $typeKey, 'q' => request('q'), 'category' => request('category')])) }}"
+                       class="rounded-full border px-3 py-1 text-xs font-bold transition {{ $activeType === $typeKey ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700' }}">
+                        {{ $typeLabel }}
+                    </a>
+                @endforeach
+            </div>
+
             <form method="GET" action="{{ route('products.index') }}" class="grid gap-4 lg:grid-cols-12">
-                <div class="lg:col-span-6">
+                <div class="lg:col-span-5">
                     <label for="q" class="mb-2 block text-sm font-bold text-slate-700">Cari Produk</label>
                     <input id="q" type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama, deskripsi, atau isi produk..." class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
                 </div>
-                <div class="lg:col-span-4">
+                <div class="lg:col-span-3">
                     <label for="category" class="mb-2 block text-sm font-bold text-slate-700">Kategori</label>
                     <select id="category" name="category" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
                         <option value="">Semua Kategori</option>
                         @foreach ($categoryOptions as $slug => $label)
                             <option value="{{ $slug }}" @selected(request('category') === $slug)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="lg:col-span-2">
+                    <label for="type" class="mb-2 block text-sm font-bold text-slate-700">Jenis Produk</label>
+                    <select id="type" name="type" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
+                        <option value="">Semua Jenis</option>
+                        @foreach ($typeOptions as $typeKey => $typeLabel)
+                            <option value="{{ $typeKey }}" @selected($activeType === $typeKey)>{{ $typeLabel }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -127,6 +146,9 @@
                         @endif
                         @if (request('category'))
                             <span class="ml-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Kategori: {{ $activeCategoryLabel }}</span>
+                        @endif
+                        @if ($activeType)
+                            <span class="ml-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Jenis: {{ $activeTypeLabel }}</span>
                         @endif
                     </div>
                     <a href="{{ route('products.index') }}" class="text-sm font-bold text-red-600 hover:text-red-700">Reset filter</a>

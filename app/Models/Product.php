@@ -15,6 +15,8 @@ class Product extends Model
 
     protected $fillable = [
         'category_id',
+        'product_type',
+        'category',
         'name',
         'slug',
         'short_description',
@@ -47,6 +49,29 @@ class Product extends Model
         'file_uploaded_at' => 'datetime',
         'published_at' => 'datetime',
     ];
+
+    public const PRODUCT_TYPE_LABELS = [
+        'tryout' => 'Tryout',
+        'ebook' => 'eBook',
+        'template' => 'Template',
+        'source_code' => 'Source Code',
+        'bundle' => 'Bundle',
+    ];
+
+    public function getAttribute($key)
+    {
+        if ($key === 'category') {
+            if ($this->relationLoaded('category')) {
+                return $this->relations['category'];
+            }
+
+            if ($this->getAttributeFromArray('category_id')) {
+                return $this->getRelationValue('category') ?? $this->getAttributeFromArray('category');
+            }
+        }
+
+        return parent::getAttribute($key);
+    }
 
     public function category(): BelongsTo
     {
@@ -101,6 +126,20 @@ class Product extends Model
             ->active()
             ->published()
             ->whereNotNull('digital_file_path');
+    }
+
+    public function scopeOfProductType(Builder $query, ?string $type): Builder
+    {
+        if (blank($type) || ! array_key_exists($type, self::PRODUCT_TYPE_LABELS)) {
+            return $query;
+        }
+
+        return $query->where('product_type', $type);
+    }
+
+    public static function productTypeLabels(): array
+    {
+        return self::PRODUCT_TYPE_LABELS;
     }
 
     public function getPublicPriceAttribute(): int

@@ -1,7 +1,8 @@
-@php
+﻿@php
     $isEdit = isset($question);
     $questionOptions = $question->options ?? collect();
     $isActive = old('is_active', $question->is_active ?? true);
+    $selectedType = old('tryout_type', $question->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
     $defaultOptions = [];
 
     foreach ($optionLabels as $label) {
@@ -13,28 +14,41 @@
         ];
     }
 
-    $currentSection = old('section', $question->section ?? 'TWK');
+    $currentSection = old('section', $question->section ?? 'twk');
 @endphp
 
 <div class="row">
     <div class="col-xl-8">
         <div class="row g-3">
             <div class="col-md-4">
+                <label class="form-label">Jenis Tryout <span class="text-danger">*</span></label>
+                <select name="tryout_type" class="form-select @error('tryout_type') is-invalid @enderror" required>
+                    @foreach ($tryoutTypes as $type => $label)
+                        <option value="{{ $type }}" @selected($selectedType === $type)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('tryout_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-4">
                 <label class="form-label">Section <span class="text-danger">*</span></label>
                 <select name="section" class="form-select @error('section') is-invalid @enderror" required>
-                    @foreach (['TWK', 'TIU', 'TKP'] as $section)
-                        <option value="{{ $section }}" @selected($currentSection === $section)>{{ $section }}</option>
+                    @foreach ($sectionsByType as $type => $sections)
+                        <optgroup label="{{ $tryoutTypes[$type] }}">
+                            @foreach ($sections as $sectionKey => $sectionLabel)
+                                <option value="{{ $sectionKey }}" @selected($currentSection === $sectionKey)>{{ $sectionLabel }}</option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </select>
                 @error('section')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-8">
+            <div class="col-md-4">
                 <label class="form-label">Kategori Soal</label>
                 <select name="question_category_id" class="form-select @error('question_category_id') is-invalid @enderror">
                     <option value="">Tanpa kategori</option>
                     @foreach ($categories as $category)
                         <option value="{{ $category->id }}" @selected((string) old('question_category_id', $question->question_category_id ?? '') === (string) $category->id)>
-                            {{ $category->section }} - {{ $category->name }}
+                            {{ $tryoutTypes[$category->tryout_type] ?? $category->tryout_type }} - {{ $category->section_label }} - {{ $category->name }}
                         </option>
                     @endforeach
                 </select>
@@ -64,7 +78,7 @@
         <div class="card border mt-4">
             <div class="card-header">
                 <h5 class="card-title mb-1">Opsi Jawaban A-E</h5>
-                <p class="text-muted fs-13 mb-0">TWK/TIU wajib satu jawaban benar. TKP gunakan skor 1-5 untuk setiap opsi.</p>
+                <p class="text-muted fs-13 mb-0">Section objective wajib satu jawaban benar. Section weighted gunakan skor 1-5 untuk setiap opsi.</p>
             </div>
             <div class="card-body">
                 @error('options')
@@ -116,7 +130,7 @@
                 </div>
                 <div class="alert alert-info mb-0">
                     <div class="fw-semibold mb-1">Aturan cepat</div>
-                    <div class="fs-13">TWK/TIU: 1 jawaban benar, skor otomatis 5/0. TKP: isi skor masing-masing opsi 1-5.</div>
+                    <div class="fs-13">Objective: 1 jawaban benar, skor otomatis 5/0. Weighted: isi skor masing-masing opsi 1-5.</div>
                 </div>
             </div>
         </div>

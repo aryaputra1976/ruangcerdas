@@ -51,12 +51,26 @@ Route::get('/gratis/{leadMagnet:slug}', [LeadMagnetController::class, 'show'])->
 Route::post('/gratis/{leadMagnet:slug}/download', [LeadMagnetController::class, 'download'])
     ->middleware('throttle:20,1')
     ->name('lead-magnets.download');
+Route::get('/tryout', [TryoutController::class, 'hub'])->name('public.tryouts.hub');
+Route::get('/tryout/pppk', [TryoutController::class, 'pppk'])->name('public.tryouts.pppk');
+Route::get('/tryout/pppk-tendik', [TryoutController::class, 'pppkTendik'])->name('public.tryouts.pppk-tendik');
 Route::get('/tryout-cpns', [TryoutController::class, 'index'])->name('public.tryouts.index');
-Route::get('/tryout-cpns/{tryoutPackage:slug}/beli', [TryoutController::class, 'buy'])->name('public.tryouts.buy');
-Route::get('/tryout-cpns/{tryoutPackage:slug}/mulai', [TryoutController::class, 'start'])->name('public.tryouts.start');
-Route::post('/tryout-cpns/{tryoutPackage:slug}/mulai', [TryoutSessionController::class, 'begin'])
+Route::get('/tryout-cpns/{tryoutPackage:slug}/beli', function (\App\Models\TryoutPackage $tryoutPackage) {
+    return app(\App\Http\Controllers\Public\TryoutController::class)->buy('cpns', $tryoutPackage);
+})->name('public.tryouts.buy');
+Route::get('/tryout-cpns/{tryoutPackage:slug}/mulai', function (\Illuminate\Http\Request $request, \App\Models\TryoutPackage $tryoutPackage, \App\Services\TryoutAccessService $tryoutAccessService) {
+    return app(\App\Http\Controllers\Public\TryoutController::class)->start($request, 'cpns', $tryoutPackage, $tryoutAccessService);
+})->name('public.tryouts.start');
+Route::post('/tryout-cpns/{tryoutPackage:slug}/mulai', function (\Illuminate\Http\Request $request, \App\Models\TryoutPackage $tryoutPackage, \App\Services\TryoutAccessService $tryoutAccessService) {
+    return app(\App\Http\Controllers\Public\TryoutSessionController::class)->begin($request, 'cpns', $tryoutPackage, $tryoutAccessService);
+})
     ->middleware('throttle:20,1')
     ->name('public.tryouts.begin');
+Route::get('/tryout/{tryoutType}/{tryoutPackage:slug}/beli', [TryoutController::class, 'buy'])->name('public.tryouts.packages.buy');
+Route::get('/tryout/{tryoutType}/{tryoutPackage:slug}/mulai', [TryoutController::class, 'start'])->name('public.tryouts.packages.start');
+Route::post('/tryout/{tryoutType}/{tryoutPackage:slug}/mulai', [TryoutSessionController::class, 'begin'])
+    ->middleware('throttle:20,1')
+    ->name('public.tryouts.packages.begin');
 Route::get('/tryout-session/{tryoutSession}/ujian', [TryoutSessionController::class, 'exam'])->name('public.tryout-sessions.exam');
 Route::post('/tryout-session/{tryoutSession}/jawaban', [TryoutSessionController::class, 'save'])
     ->middleware('throttle:60,1')
@@ -64,6 +78,7 @@ Route::post('/tryout-session/{tryoutSession}/jawaban', [TryoutSessionController:
 Route::post('/tryout-session/{tryoutSession}/submit', [TryoutSessionController::class, 'submit'])
     ->middleware('throttle:30,1')
     ->name('public.tryout-sessions.submit');
-Route::get('/tryout-cpns/riwayat', [TryoutSessionController::class, 'history'])->name('public.tryout-sessions.history');
+Route::get('/tryout/riwayat', [TryoutSessionController::class, 'history'])->name('public.tryout-sessions.history');
+Route::get('/tryout-cpns/riwayat', [TryoutSessionController::class, 'history']);
 Route::get('/tryout-session/{tryoutSession}/hasil', [TryoutSessionController::class, 'result'])->name('public.tryout-sessions.result');
 Route::get('/tryout-session/{tryoutSession}/pembahasan', [TryoutSessionController::class, 'review'])->name('public.tryout-sessions.review');

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Question;
 use App\Models\QuestionCategory;
+use App\Support\TryoutBlueprint;
 use Illuminate\Database\Seeder;
 
 class TryoutFreeQuestionSeeder extends Seeder
@@ -14,7 +15,8 @@ class TryoutFreeQuestionSeeder extends Seeder
             ['slug' => 'twk-default'],
             [
                 'name' => 'TWK Default',
-                'section' => 'TWK',
+                'tryout_type' => TryoutBlueprint::TYPE_CPNS,
+                'section' => 'twk',
                 'description' => 'Kategori default untuk soal Tes Wawasan Kebangsaan.',
                 'is_active' => true,
             ]
@@ -24,7 +26,8 @@ class TryoutFreeQuestionSeeder extends Seeder
             ['slug' => 'tiu-default'],
             [
                 'name' => 'TIU Default',
-                'section' => 'TIU',
+                'tryout_type' => TryoutBlueprint::TYPE_CPNS,
+                'section' => 'tiu',
                 'description' => 'Kategori default untuk soal Tes Intelegensi Umum.',
                 'is_active' => true,
             ]
@@ -34,30 +37,32 @@ class TryoutFreeQuestionSeeder extends Seeder
             ['slug' => 'tkp-default'],
             [
                 'name' => 'TKP Default',
-                'section' => 'TKP',
+                'tryout_type' => TryoutBlueprint::TYPE_CPNS,
+                'section' => 'tkp',
                 'description' => 'Kategori default untuk soal Tes Karakteristik Pribadi.',
                 'is_active' => true,
             ]
         );
 
         foreach ($this->twkQuestions() as $item) {
-            $this->seedQuestion($twkCategory->id, 'TWK', $item);
+            $this->seedQuestion($twkCategory->id, TryoutBlueprint::TYPE_CPNS, 'twk', $item);
         }
 
         foreach ($this->tiuQuestions() as $item) {
-            $this->seedQuestion($tiuCategory->id, 'TIU', $item);
+            $this->seedQuestion($tiuCategory->id, TryoutBlueprint::TYPE_CPNS, 'tiu', $item);
         }
 
         foreach ($this->tkpQuestions() as $item) {
-            $this->seedQuestion($tkpCategory->id, 'TKP', $item);
+            $this->seedQuestion($tkpCategory->id, TryoutBlueprint::TYPE_CPNS, 'tkp', $item);
         }
     }
 
-    private function seedQuestion(int $categoryId, string $section, array $item): void
+    private function seedQuestion(int $categoryId, string $tryoutType, string $section, array $item): void
     {
         $question = Question::query()->updateOrCreate(
             [
                 'question_category_id' => $categoryId,
+                'tryout_type' => $tryoutType,
                 'section' => $section,
                 'question_text' => $item['question_text'],
             ],

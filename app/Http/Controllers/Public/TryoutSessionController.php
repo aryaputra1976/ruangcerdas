@@ -8,6 +8,7 @@ use App\Models\TryoutAnswer;
 use App\Models\TryoutAccess;
 use App\Models\TryoutPackage;
 use App\Models\TryoutSession;
+use App\Support\TryoutBlueprint;
 use App\Services\TryoutAccessService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,8 +21,9 @@ class TryoutSessionController extends Controller
 {
     private const HISTORY_SESSION_KEY = 'public_tryout_session_ids';
 
-    public function begin(Request $request, TryoutPackage $tryoutPackage, TryoutAccessService $tryoutAccessService): RedirectResponse
+    public function begin(Request $request, string $tryoutType, TryoutPackage $tryoutPackage, TryoutAccessService $tryoutAccessService): RedirectResponse
     {
+        $this->ensurePackageTypeMatchesRoute($tryoutPackage, $tryoutType);
         abort_unless($tryoutPackage->is_active, 404);
 
         $validated = $request->validate([
@@ -58,8 +60,14 @@ class TryoutSessionController extends Controller
             );
 
             if (! $tryoutAccess) {
-                return redirect()
-                    ->route('public.tryouts.buy', $tryoutPackage)
+                $redirectRoute = $tryoutPackage->routeSegment() === 'cpns'
+                    ? route('public.tryouts.buy', $tryoutPackage)
+                    : route('public.tryouts.packages.buy', [
+                        'tryoutType' => $tryoutPackage->routeSegment(),
+                        'tryoutPackage' => $tryoutPackage,
+                    ]);
+
+                return redirect($redirectRoute)
                     ->with('error', 'Silakan beli paket tryout untuk membuka akses.');
             }
         }
@@ -277,40 +285,24 @@ class TryoutSessionController extends Controller
             'answers.option',
         ]);
 
-        $twkCorrect = $tryoutSession->answers
-            ->filter(fn (TryoutAnswer $answer) => $answer->question?->section === 'TWK')
-            ->filter(fn (TryoutAnswer $answer) => $answer->score === 5)
-            ->count();
+        $sectionScores = $this->buildSectionScores($tryoutSession);
+        $sectionResults = $this->buildSectionResults($tryoutSession, $sectionScores);
+        $thresholds = $tryoutSession->package?->sectionThresholds() ?? [];
+        $totalThreshold = $tryoutSession->package?->totalThreshold();
+        $hasThresholds = collect($thresholds)->filter(fn ($value) => $value !== null)->isNotEmpty();
+        $sectionsPassed = collect($sectionResults)
+            ->filter(fn (array $section) => $section['threshold'] !== null)
+            ->every(fn (array $section) => $section['score'] >= $section['threshold']);
+        $totalPassed = $totalThreshold === null ? true : $tryoutSession->total_score >= $totalThreshold;
+        $isPassed = $hasThresholds ? ($sectionsPassed && $totalPassed) : null;
 
-        $tiuCorrect = $tryoutSession->answers
-            ->filter(fn (TryoutAnswer $answer) => $answer->question?->section === 'TIU')
-            ->filter(fn (TryoutAnswer $answer) => $answer->score === 5)
-            ->count();
-
-        $twkCount = $tryoutSession->answers->filter(fn (TryoutAnswer $answer) => $answer->question?->section === 'TWK')->count();
-        $tiuCount = $tryoutSession->answers->filter(fn (TryoutAnswer $answer) => $answer->question?->section === 'TIU')->count();
-
-        $thresholds = [
-            'twk' => 65,
-            'tiu' => 80,
-            'tkp' => 166,
-            'total' => 311,
-        ];
-
-        $isPassed = $tryoutSession->twk_score >= $thresholds['twk']
-            && $tryoutSession->tiu_score >= $thresholds['tiu']
-            && $tryoutSession->tkp_score >= $thresholds['tkp']
-            && $tryoutSession->total_score >= $thresholds['total'];
-
-        return view('public.tryouts.result', compact(
-            'tryoutSession',
-            'thresholds',
-            'isPassed',
-            'twkCorrect',
-            'tiuCorrect',
-            'twkCount',
-            'tiuCount',
-        ));
+        return view('public.tryouts.result', [
+            'tryoutSession' => $tryoutSession,
+            'sectionResults' => $sectionResults,
+            'thresholds' => $thresholds,
+            'totalThreshold' => $totalThreshold,
+            'isPassed' => $isPassed,
+        ]);
     }
 
     public function review(Request $request, TryoutSession $tryoutSession): View|RedirectResponse
@@ -386,22 +378,20 @@ class TryoutSessionController extends Controller
 
     private function pickQuestionsForPackage(TryoutPackage $tryoutPackage): array
     {
-        $requirements = [
-            'TWK' => $tryoutPackage->twk_count,
-            'TIU' => $tryoutPackage->tiu_count,
-            'TKP' => $tryoutPackage->tkp_count,
-        ];
-
         $selectedQuestions = collect();
 
-        foreach ($requirements as $section => $count) {
+        foreach ($tryoutPackage->sectionSummaries() as $sectionSummary) {
+            $section = $sectionSummary['key'];
+            $count = $sectionSummary['count'];
+
             if ($count < 1) {
                 continue;
             }
 
             $questions = Question::query()
                 ->active()
-                ->where('section', $section)
+                ->where('tryout_type', $tryoutPackage->tryout_type)
+                ->whereIn('section', [$section, strtoupper($section)])
                 ->has('options', '>=', 5)
                 ->inRandomOrder()
                 ->limit($count)
@@ -409,7 +399,7 @@ class TryoutSessionController extends Controller
 
             if ($questions->count() < $count) {
                 return [
-                    'error' => "Soal aktif section {$section} belum cukup. Dibutuhkan {$count} soal, tersedia {$questions->count()} soal.",
+                    'error' => "Soal aktif section " . TryoutBlueprint::sectionLabel($tryoutPackage->tryout_type, $section) . " belum cukup. Dibutuhkan {$count} soal, tersedia {$questions->count()} soal.",
                     'questions' => collect(),
                 ];
             }
@@ -455,29 +445,17 @@ class TryoutSessionController extends Controller
             return;
         }
 
-        $tryoutSession->loadMissing('answers.question');
-
-        $scores = [
-            'TWK' => 0,
-            'TIU' => 0,
-            'TKP' => 0,
-        ];
-
-        foreach ($tryoutSession->answers as $answer) {
-            $section = $answer->question?->section;
-
-            if ($section && array_key_exists($section, $scores)) {
-                $scores[$section] += (int) $answer->score;
-            }
-        }
+        $tryoutSession->loadMissing(['package', 'answers.question']);
+        $scores = $this->buildSectionScores($tryoutSession);
 
         $tryoutSession->update([
             'finished_at' => now(),
             'status' => TryoutSession::STATUS_FINISHED,
-            'twk_score' => $scores['TWK'],
-            'tiu_score' => $scores['TIU'],
-            'tkp_score' => $scores['TKP'],
-            'total_score' => $scores['TWK'] + $scores['TIU'] + $scores['TKP'],
+            'twk_score' => (int) ($scores['twk'] ?? 0),
+            'tiu_score' => (int) ($scores['tiu'] ?? 0),
+            'tkp_score' => (int) ($scores['tkp'] ?? 0),
+            'section_scores' => $scores,
+            'total_score' => (int) collect($scores)->sum(),
         ]);
     }
 
@@ -496,7 +474,55 @@ class TryoutSessionController extends Controller
         }
 
         return redirect()
-            ->route('public.tryouts.index')
+            ->route($tryoutSession->package->listingRouteName())
             ->with('error', 'Akses sesi tryout premium ini tidak ditemukan di browser kamu.');
+    }
+
+    private function ensurePackageTypeMatchesRoute(TryoutPackage $tryoutPackage, string $routeSegment): void
+    {
+        abort_unless($tryoutPackage->routeSegment() === $routeSegment, 404);
+    }
+
+    private function buildSectionScores(TryoutSession $tryoutSession): array
+    {
+        $tryoutSession->loadMissing(['package', 'answers.question']);
+
+        $scores = collect($tryoutSession->package?->sectionSummaries() ?? [])
+            ->mapWithKeys(fn (array $section) => [$section['key'] => 0])
+            ->all();
+
+        foreach ($tryoutSession->answers as $answer) {
+            $section = strtolower((string) $answer->question?->section);
+
+            if ($section) {
+                $scores[$section] = (int) ($scores[$section] ?? 0) + (int) $answer->score;
+            }
+        }
+
+        return $scores;
+    }
+
+    private function buildSectionResults(TryoutSession $tryoutSession, array $sectionScores): array
+    {
+        return collect($tryoutSession->package?->sectionSummaries() ?? [])
+            ->map(function (array $section) use ($tryoutSession, $sectionScores) {
+                $answers = $tryoutSession->answers->filter(fn (TryoutAnswer $answer) => strtolower((string) $answer->question?->section) === $section['key']);
+                $correctCount = $section['scoring_mode'] === 'weighted'
+                    ? null
+                    : $answers->filter(fn (TryoutAnswer $answer) => $answer->score === 5)->count();
+
+                return [
+                    'key' => $section['key'],
+                    'label' => $section['label'],
+                    'score' => (int) ($sectionScores[$section['key']] ?? 0),
+                    'threshold' => $section['threshold'],
+                    'question_count' => $answers->count(),
+                    'correct_count' => $correctCount,
+                    'incorrect_count' => $correctCount === null ? null : max($answers->count() - $correctCount, 0),
+                    'scoring_mode' => $section['scoring_mode'],
+                ];
+            })
+            ->values()
+            ->all();
     }
 }

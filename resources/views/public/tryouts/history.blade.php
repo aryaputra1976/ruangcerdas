@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'Riwayat Tryout CPNS - Ruang Cerdas')
-@section('meta_description', 'Riwayat sesi tryout CPNS pada browser ini.')
+@section('title', 'Riwayat Tryout - Ruang Cerdas')
+@section('meta_description', 'Riwayat sesi tryout pada browser ini.')
 @section('robots', 'noindex,nofollow')
 
 @section('content')
@@ -13,8 +13,8 @@
                 <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Sesi Tryout di Browser Ini</h1>
                 <p class="mt-3 max-w-2xl text-slate-600">Riwayat ini tersimpan di browser yang sama, tanpa login. Kamu bisa lanjutkan sesi yang belum selesai atau lihat hasil sesi yang sudah selesai.</p>
             </div>
-            <a href="{{ route('public.tryouts.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
-                Kembali ke Paket
+            <a href="{{ route('public.tryouts.hub') }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
+                Kembali ke Kategori
             </a>
         </div>
 
@@ -29,7 +29,7 @@
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                                        {{ $session->package?->title ?? 'Tryout CPNS' }}
+                                        {{ $session->package?->title ?? 'Tryout' }}
                                     </span>
                                     <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $isFinished ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
                                         {{ $isFinished ? 'Selesai' : 'Belum Selesai' }}
@@ -81,7 +81,7 @@
                 <h2 class="mt-5 text-2xl font-black text-slate-950">Belum ada riwayat tryout</h2>
                 <p class="mx-auto mt-3 max-w-md text-slate-600">Riwayat sesi akan muncul setelah kamu memulai tryout di browser ini.</p>
                 <div class="mt-6">
-                    <a href="{{ route('public.tryouts.index') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                    <a href="{{ route('public.tryouts.hub') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
                         Mulai Tryout
                     </a>
                 </div>

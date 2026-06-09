@@ -1,5 +1,6 @@
 @php
     $isEdit = isset($product);
+    $internalCategory = old('category', $isEdit ? $product->getRawOriginal('category') : '');
 
     $normalPrice = old('normal_price', $product->normal_price ?? 0);
     $salePrice = old('sale_price', $product->sale_price ?? '');
@@ -89,6 +90,52 @@
 
                         <div class="form-text">
                             Pilih kategori agar katalog lebih mudah difilter.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            Jenis Produk
+                        </label>
+
+                        <select name="product_type"
+                                class="form-select @error('product_type') is-invalid @enderror">
+                            <option value="">Pilih Jenis Produk</option>
+
+                            @foreach (($productTypeOptions ?? []) as $typeKey => $typeLabel)
+                                <option value="{{ $typeKey }}"
+                                    @selected(old('product_type', $product->product_type ?? '') === $typeKey)>
+                                    {{ $typeLabel }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        @error('product_type')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+
+                        <div class="form-text">
+                            Gunakan untuk mengelompokkan produk seperti tryout, eBook, template, source code, atau bundle. Jika dikosongkan, sistem akan mencoba mengisi otomatis dari nama, slug, atau kategori.
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            Kategori Produk Internal
+                        </label>
+
+                        <input type="text"
+                               name="category"
+                               value="{{ $internalCategory }}"
+                               class="form-control @error('category') is-invalid @enderror"
+                               placeholder="Contoh: pppk-tendik">
+
+                        @error('category')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+
+                        <div class="form-text">
+                            Opsional untuk struktur internal produk, misalnya <code>cpns</code>, <code>pppk</code>, atau <code>pppk-tendik</code>. Jika dikosongkan, sistem akan mencoba mengenali nilai yang paling cocok.
                         </div>
                     </div>
 

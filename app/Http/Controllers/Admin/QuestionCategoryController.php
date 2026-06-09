@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\QuestionCategory;
+use App\Support\TryoutBlueprint;
 use App\Support\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -35,6 +36,10 @@ class QuestionCategoryController extends Controller
             $query->where('is_active', $request->status === 'active');
         }
 
+        if ($request->filled('tryout_type')) {
+            $query->where('tryout_type', $request->tryout_type);
+        }
+
         $categories = $query->paginate(10)->withQueryString();
         $counts = [
             'all' => QuestionCategory::count(),
@@ -42,12 +47,24 @@ class QuestionCategoryController extends Controller
             'inactive' => QuestionCategory::where('is_active', false)->count(),
         ];
 
-        return view('admin.question-categories.index', compact('categories', 'counts'));
+        return view('admin.question-categories.index', [
+            'categories' => $categories,
+            'counts' => $counts,
+            'tryoutTypes' => TryoutBlueprint::typeOptions(),
+            'sectionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+        ]);
     }
 
     public function create()
     {
-        return view('admin.question-categories.create');
+        return view('admin.question-categories.create', [
+            'tryoutTypes' => TryoutBlueprint::typeOptions(),
+            'sectionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+        ]);
     }
 
     public function store(Request $request)
@@ -76,7 +93,13 @@ class QuestionCategoryController extends Controller
     {
         $questionCategory->loadCount('questions');
 
-        return view('admin.question-categories.edit', compact('questionCategory'));
+        return view('admin.question-categories.edit', [
+            'questionCategory' => $questionCategory,
+            'tryoutTypes' => TryoutBlueprint::typeOptions(),
+            'sectionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+        ]);
     }
 
     public function update(Request $request, QuestionCategory $questionCategory)
@@ -120,7 +143,12 @@ class QuestionCategoryController extends Controller
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('question_categories', 'slug')->ignore($questionCategory?->id)],
-            'section' => ['required', Rule::in(['TWK', 'TIU', 'TKP'])],
+            'tryout_type' => ['required', Rule::in(array_keys(TryoutBlueprint::typeOptions()))],
+            'section' => ['required', 'string', 'max:100', function (string $attribute, mixed $value, \Closure $fail) use ($request) {
+                if (! TryoutBlueprint::isValidSection($request->input('tryout_type'), (string) $value)) {
+                    $fail('Section tidak sesuai dengan jenis tryout yang dipilih.');
+                }
+            }],
             'description' => ['nullable', 'string'],
         ]);
     }

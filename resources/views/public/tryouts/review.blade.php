@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'Pembahasan Tryout CPNS - Ruang Cerdas')
-@section('meta_description', 'Pembahasan hasil tryout CPNS Ruang Cerdas.')
+@section('title', 'Pembahasan ' . ($tryoutSession->package?->tryout_type_label ?? 'Tryout') . ' - Ruang Cerdas')
+@section('meta_description', 'Pembahasan hasil tryout Ruang Cerdas.')
 @section('robots', 'noindex,nofollow')
 
 @section('content')
@@ -10,7 +10,7 @@
         <div class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Pembahasan</p>
             <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">{{ $tryoutSession->participant_name }}</h1>
-            <p class="mt-2 text-slate-600">{{ $tryoutSession->package?->title ?? 'Tryout CPNS' }}</p>
+            <p class="mt-2 text-slate-600">{{ $tryoutSession->package?->title ?? 'Tryout' }}</p>
             <div class="mt-5">
                 <a href="{{ route('public.tryout-sessions.result', $tryoutSession) }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
                     Kembali ke Hasil
@@ -23,12 +23,13 @@
                 @php
                     $question = $answer->question;
                     $selectedOptionId = (int) $answer->question_option_id;
+                    $isWeighted = $question?->usesWeightedScoring() ?? false;
                 @endphp
                 <article class="rounded-[2rem] border border-slate-200 bg-white p-5 shadow-sm md:p-6">
                     <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                         <div>
                             <div class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                                Soal {{ $index + 1 }} · {{ $question?->section }}
+                                Soal {{ $index + 1 }} · {{ $question?->section_label }}
                             </div>
                             <h2 class="mt-4 text-lg font-bold leading-8 text-slate-950">{!! nl2br(e($question?->question_text)) !!}</h2>
                         </div>
@@ -42,7 +43,6 @@
                             @php
                                 $isSelected = $selectedOptionId === (int) $option->id;
                                 $isCorrect = (bool) $option->is_correct;
-                                $isTkp = $question?->section === 'TKP';
                             @endphp
                             <div class="rounded-2xl border px-4 py-4 {{ $isSelected ? 'border-blue-300 bg-blue-50' : 'border-slate-200 bg-white' }}">
                                 <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
@@ -54,10 +54,10 @@
                                         @if ($isSelected)
                                             <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">Jawaban Peserta</span>
                                         @endif
-                                        @if (! $isTkp && $isCorrect)
+                                        @if (! $isWeighted && $isCorrect)
                                             <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Jawaban Benar</span>
                                         @endif
-                                        @if ($isTkp)
+                                        @if ($isWeighted)
                                             <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Skor {{ $option->score }}</span>
                                         @endif
                                     </div>

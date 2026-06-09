@@ -24,6 +24,8 @@ class CpnsStarterKitProductSeeder extends Seeder
             ['slug' => 'cpns-pppk-starter-kit'],
             [
                 'category_id' => $category->id,
+                'product_type' => 'ebook',
+                'category' => 'cpns',
                 'name' => 'CPNS/PPPK Starter Kit',
                 'short_description' => 'Panduan praktis untuk pemula agar lebih siap memahami alur seleksi, menyusun dokumen, dan belajar dengan jadwal yang lebih terarah.',
                 'description' => 'CPNS/PPPK Starter Kit dirancang untuk membantu pemula memulai persiapan seleksi secara lebih terstruktur, mulai dari memahami alur pendaftaran, menyiapkan dokumen, hingga membangun ritme belajar harian.',

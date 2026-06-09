@@ -1,9 +1,9 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $title = 'Kategori Soal';
-    $subtitle = 'Kelola kategori soal untuk bank soal tryout CPNS.';
-    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('section');
+    $subtitle = 'Kelola kategori soal untuk bank soal tryout.';
+    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('section') || request()->filled('tryout_type');
 @endphp
 
 @section('content')
@@ -11,29 +11,41 @@
     <div class="card-header d-flex align-items-center justify-content-between gap-3 flex-wrap">
         <div>
             <h5 class="card-title mb-1">Daftar Kategori Soal</h5>
-            <p class="text-muted mb-0 fs-13">Kelompokkan bank soal berdasarkan section CPNS.</p>
+            <p class="text-muted mb-0 fs-13">Kelompokkan bank soal berdasarkan jenis tryout dan section.</p>
         </div>
         <a href="{{ route('admin.question-categories.create') }}" class="btn btn-sm btn-primary rounded-pill px-3">Tambah Kategori</a>
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('admin.question-categories.index') }}" class="row g-2 mb-4">
-            <div class="col-lg-4"><input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari nama atau slug kategori..."></div>
+            <div class="col-lg-3"><input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari nama atau slug kategori..."></div>
             <div class="col-lg-3">
-                <select name="section" class="form-select">
-                    <option value="">Semua Section</option>
-                    @foreach (['TWK', 'TIU', 'TKP'] as $section)
-                        <option value="{{ $section }}" @selected(request('section') === $section)>{{ $section }}</option>
+                <select name="tryout_type" class="form-select">
+                    <option value="">Semua Jenis</option>
+                    @foreach ($tryoutTypes as $type => $label)
+                        <option value="{{ $type }}" @selected(request('tryout_type') === $type)>{{ $label }}</option>
                     @endforeach
                 </select>
             </div>
             <div class="col-lg-3">
+                <select name="section" class="form-select">
+                    <option value="">Semua Section</option>
+                    @foreach ($sectionsByType as $type => $sections)
+                        <optgroup label="{{ $tryoutTypes[$type] }}">
+                            @foreach ($sections as $sectionKey => $sectionLabel)
+                                <option value="{{ $sectionKey }}" @selected(request('section') === $sectionKey)>{{ $sectionLabel }}</option>
+                            @endforeach
+                        </optgroup>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
                     <option value="active" @selected(request('status') === 'active')>Aktif</option>
                     <option value="inactive" @selected(request('status') === 'inactive')>Nonaktif</option>
                 </select>
             </div>
-            <div class="col-lg-2"><button type="submit" class="btn btn-primary rounded-pill w-100">Filter</button></div>
+            <div class="col-lg-1"><button type="submit" class="btn btn-primary rounded-pill w-100">Filter</button></div>
         </form>
 
         @if ($categories->count())
@@ -42,6 +54,7 @@
                     <thead class="text-muted table-light">
                         <tr>
                             <th>Kategori</th>
+                            <th>Jenis</th>
                             <th>Section</th>
                             <th>Jumlah Soal</th>
                             <th>Status</th>
@@ -55,7 +68,8 @@
                                     <div class="fw-semibold text-dark">{{ $category->name }}</div>
                                     <div class="text-muted fs-13">{{ $category->slug }}</div>
                                 </td>
-                                <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $category->section }}</span></td>
+                                <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $tryoutTypes[$category->tryout_type] ?? $category->tryout_type }}</span></td>
+                                <td><span class="badge bg-info-subtle text-info rounded-pill">{{ $category->section_label }}</span></td>
                                 <td>{{ $category->questions_count }}</td>
                                 <td>
                                     <span class="badge {{ $category->is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} rounded-pill">

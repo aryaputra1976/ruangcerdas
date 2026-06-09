@@ -6,7 +6,7 @@
 
     $totalProducts = method_exists($products, 'total') ? $products->total() : $products->count();
 
-    $hasFilter = request()->filled('q') || request()->filled('category_id') || request()->filled('file_status');
+    $hasFilter = request()->filled('q') || request()->filled('category_id') || request()->filled('product_type') || request()->filled('file_status');
 @endphp
 
 @section('content')
@@ -53,6 +53,15 @@
                         <option value="{{ $category->id }}" @selected(request('category_id') == $category->id)>
                             {{ $category->name }}
                         </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <select name="product_type" class="form-select">
+                    <option value="">Semua Jenis</option>
+                    @foreach (($productTypeOptions ?? []) as $typeKey => $typeLabel)
+                        <option value="{{ $typeKey }}" @selected(request('product_type') === $typeKey)>{{ $typeLabel }}</option>
                     @endforeach
                 </select>
             </div>
@@ -116,6 +125,12 @@
                         </span>
                     @endif
 
+                    @if (request('product_type'))
+                        <span class="badge bg-primary-subtle text-primary rounded-pill">
+                            Jenis: {{ ($productTypeOptions[request('product_type')] ?? request('product_type')) }}
+                        </span>
+                    @endif
+
                     @if (request('file_status'))
                         <span class="badge bg-warning-subtle text-warning rounded-pill">
                             File: {{ request('file_status') === 'missing' ? 'Belum ada' : 'Siap' }}
@@ -132,6 +147,7 @@
                         <tr>
                             <th>Produk</th>
                             <th style="width: 150px;">Kategori</th>
+                            <th style="width: 130px;">Jenis</th>
                             <th style="width: 155px;">Harga</th>
                             <th style="width: 170px;">Pembeli Pertama</th>
                             <th style="width: 150px;">Status</th>
@@ -150,6 +166,15 @@
                                 $visibilityReason = $product->is_active
                                     ? ($product->isMissingPrivateFile() ? 'File belum ada' : ($isPublished ? null : 'Belum publish'))
                                     : 'Nonaktif';
+                                $productTypeLabel = ($productTypeOptions[$product->product_type] ?? null);
+                                $productTypeBadgeClass = match ($product->product_type) {
+                                    'tryout' => 'bg-primary-subtle text-primary',
+                                    'ebook' => 'bg-success-subtle text-success',
+                                    'template' => 'bg-warning-subtle text-warning',
+                                    'source_code' => 'bg-info-subtle text-info',
+                                    'bundle' => 'bg-secondary-subtle text-secondary',
+                                    default => 'bg-light text-muted',
+                                };
                             @endphp
 
                             <tr>
@@ -209,6 +234,16 @@
                                     @if ($product->category)
                                         <span class="badge bg-info-subtle text-info fw-semibold rounded-pill">
                                             {{ $product->category->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($productTypeLabel)
+                                        <span class="badge {{ $productTypeBadgeClass }} fw-semibold rounded-pill">
+                                            {{ $productTypeLabel }}
                                         </span>
                                     @else
                                         <span class="text-muted">-</span>

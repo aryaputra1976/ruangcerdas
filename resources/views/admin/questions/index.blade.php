@@ -1,9 +1,9 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $title = 'Bank Soal';
-    $subtitle = 'Kelola bank soal tryout CPNS beserta opsi jawabannya.';
-    $hasFilter = request()->filled('q') || request()->filled('section') || request()->filled('difficulty') || request()->filled('status') || request()->filled('question_category_id');
+    $subtitle = 'Kelola bank soal tryout beserta opsi jawabannya.';
+    $hasFilter = request()->filled('q') || request()->filled('section') || request()->filled('difficulty') || request()->filled('status') || request()->filled('question_category_id') || request()->filled('tryout_type');
 @endphp
 
 @section('content')
@@ -17,12 +17,24 @@
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('admin.questions.index') }}" class="row g-2 mb-4">
-            <div class="col-lg-4"><input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari teks soal atau pembahasan..."></div>
+            <div class="col-lg-3"><input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari teks soal atau pembahasan..."></div>
+            <div class="col-lg-2">
+                <select name="tryout_type" class="form-select">
+                    <option value="">Semua Jenis</option>
+                    @foreach ($tryoutTypes as $type => $label)
+                        <option value="{{ $type }}" @selected(request('tryout_type') === $type)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
             <div class="col-lg-2">
                 <select name="section" class="form-select">
                     <option value="">Semua Section</option>
-                    @foreach (['TWK', 'TIU', 'TKP'] as $section)
-                        <option value="{{ $section }}" @selected(request('section') === $section)>{{ $section }}</option>
+                    @foreach ($sectionsByType as $type => $sections)
+                        <optgroup label="{{ $tryoutTypes[$type] }}">
+                            @foreach ($sections as $sectionKey => $sectionLabel)
+                                <option value="{{ $sectionKey }}" @selected(request('section') === $sectionKey)>{{ $sectionLabel }}</option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </select>
             </div>
@@ -34,11 +46,11 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-lg-2">
+            <div class="col-lg-3">
                 <select name="question_category_id" class="form-select">
                     <option value="">Semua Kategori</option>
                     @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" @selected((string) request('question_category_id') === (string) $category->id)>{{ $category->section }} - {{ $category->name }}</option>
+                        <option value="{{ $category->id }}" @selected((string) request('question_category_id') === (string) $category->id)>{{ $tryoutTypes[$category->tryout_type] ?? $category->tryout_type }} - {{ $category->section_label }} - {{ $category->name }}</option>
                     @endforeach
                 </select>
             </div>
@@ -63,6 +75,7 @@
                     <thead class="table-light text-muted">
                         <tr>
                             <th>Soal</th>
+                            <th>Jenis</th>
                             <th>Section</th>
                             <th>Kategori</th>
                             <th>Level</th>
@@ -80,7 +93,8 @@
                                         <div class="text-muted fs-13 mt-1">{{ \Illuminate\Support\Str::limit(strip_tags($question->explanation), 90) }}</div>
                                     @endif
                                 </td>
-                                <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $question->section }}</span></td>
+                                <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $tryoutTypes[$question->tryout_type] ?? $question->tryout_type }}</span></td>
+                                <td><span class="badge bg-info-subtle text-info rounded-pill">{{ $question->section_label }}</span></td>
                                 <td>{{ $question->category?->name ?? '-' }}</td>
                                 <td>{{ ucfirst($question->difficulty) }}</td>
                                 <td>{{ $question->options->count() }} opsi</td>
@@ -108,7 +122,7 @@
         @else
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">{{ $hasFilter ? 'Soal tidak ditemukan' : 'Belum ada bank soal' }}</h5>
-                <p class="text-muted mb-3">Tambahkan soal TWK, TIU, atau TKP untuk mulai membangun bank soal.</p>
+                <p class="text-muted mb-3">Tambahkan soal untuk mulai membangun bank soal.</p>
                 <a href="{{ route('admin.questions.create') }}" class="btn btn-primary rounded-pill px-4">Tambah Soal</a>
             </div>
         @endif

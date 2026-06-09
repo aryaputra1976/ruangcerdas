@@ -1,7 +1,7 @@
-@extends('layouts.public')
+﻿@extends('layouts.public')
 
-@section('title', 'Ujian Tryout CPNS - Ruang Cerdas')
-@section('meta_description', 'Halaman ujian tryout CPNS Ruang Cerdas.')
+@section('title', 'Ujian ' . (->package?->tryout_type_label ?? 'Tryout') . ' - Ruang Cerdas')
+@section('meta_description', 'Halaman ujian tryout Ruang Cerdas.')
 @section('robots', 'noindex,nofollow')
 
 @section('content')
@@ -94,7 +94,7 @@
                         <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                             <div class="min-w-0 flex-1">
                                 <div class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                                    Soal {{ $index + 1 }} • {{ $question?->section }}
+                                    Soal {{ $index + 1 }} â€¢ {{ $question?->section }}
                                 </div>
 
                                 <h2 class="mt-3 text-lg font-bold leading-7 text-slate-950">

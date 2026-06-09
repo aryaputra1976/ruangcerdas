@@ -1,9 +1,9 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $title = 'Paket Tryout';
-    $subtitle = 'Kelola paket tryout CPNS yang tampil di halaman public.';
-    $hasFilter = request()->filled('q') || request()->filled('status');
+    $subtitle = 'Kelola paket tryout yang tampil di halaman public.';
+    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('tryout_type');
     $statusCards = [
         ['key' => null, 'label' => 'Semua Paket', 'count' => $counts['all'] ?? 0, 'icon' => 'package', 'class' => 'primary'],
         ['key' => 'active', 'label' => 'Aktif', 'count' => $counts['active'] ?? 0, 'icon' => 'check-circle', 'class' => 'success'],
@@ -55,10 +55,18 @@
     </div>
     <div class="card-body">
         <form method="GET" action="{{ route('admin.tryout-packages.index') }}" class="row g-2 mb-4">
-            <div class="col-lg-7">
+            <div class="col-lg-5">
                 <input type="text" name="q" value="{{ request('q') }}" class="form-control" placeholder="Cari judul, slug, atau deskripsi paket...">
             </div>
             <div class="col-lg-3">
+                <select name="tryout_type" class="form-select">
+                    <option value="">Semua Jenis</option>
+                    @foreach ($tryoutTypes as $type => $label)
+                        <option value="{{ $type }}" @selected(request('tryout_type') === $type)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
                     <option value="active" @selected(request('status') === 'active')>Aktif</option>
@@ -76,6 +84,7 @@
                     <thead class="text-muted table-light">
                         <tr>
                             <th>Paket</th>
+                            <th>Jenis</th>
                             <th>Harga</th>
                             <th>Durasi</th>
                             <th>Komposisi</th>
@@ -90,9 +99,10 @@
                                     <div class="fw-semibold text-dark">{{ $package->title }}</div>
                                     <div class="text-muted fs-13">{{ $package->slug }}</div>
                                 </td>
+                                <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $package->tryout_type_label }}</span></td>
                                 <td>{{ $package->price > 0 ? 'Rp ' . number_format($package->price, 0, ',', '.') : 'Gratis' }}</td>
                                 <td>{{ $package->duration_minutes }} menit</td>
-                                <td class="fs-13 text-muted">TWK {{ $package->twk_count }} · TIU {{ $package->tiu_count }} · TKP {{ $package->tkp_count }}</td>
+                                <td class="fs-13 text-muted">{{ collect($package->sectionSummaries())->map(fn ($section) => $section['label'] . ' ' . $section['count'])->implode(' · ') }}</td>
                                 <td>
                                     <span class="badge {{ $package->is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} fw-semibold rounded-pill">
                                         {{ $package->is_active ? 'Aktif' : 'Nonaktif' }}

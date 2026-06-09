@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\TryoutBlueprint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,7 @@ class TryoutPackage extends Model
     protected $fillable = [
         'title',
         'slug',
+        'tryout_type',
         'description',
         'price',
         'is_free',
@@ -21,6 +23,8 @@ class TryoutPackage extends Model
         'twk_count',
         'tiu_count',
         'tkp_count',
+        'section_composition',
+        'section_thresholds',
         'access_days',
         'attempt_limit',
         'has_explanation',
@@ -34,6 +38,8 @@ class TryoutPackage extends Model
         'twk_count' => 'integer',
         'tiu_count' => 'integer',
         'tkp_count' => 'integer',
+        'section_composition' => 'array',
+        'section_thresholds' => 'array',
         'access_days' => 'integer',
         'attempt_limit' => 'integer',
         'has_explanation' => 'boolean',
@@ -55,6 +61,11 @@ class TryoutPackage extends Model
         return $query->where('is_active', true);
     }
 
+    public function scopeOfTryoutType(Builder $query, ?string $type): Builder
+    {
+        return $query->where('tryout_type', TryoutBlueprint::normalizeType($type));
+    }
+
     public function checkoutProduct()
     {
         if ($this->is_free) {
@@ -66,6 +77,78 @@ class TryoutPackage extends Model
 
     public function getTotalQuestionsAttribute(): int
     {
-        return (int) $this->twk_count + (int) $this->tiu_count + (int) $this->tkp_count;
+        return collect($this->sectionSummaries())->sum('count');
+    }
+
+    public function getTryoutTypeLabelAttribute(): string
+    {
+        return TryoutBlueprint::typeLabel($this->tryout_type);
+    }
+
+    public function routeSegment(): string
+    {
+        return TryoutBlueprint::routeSegment($this->tryout_type);
+    }
+
+    public function listingRouteName(): string
+    {
+        return match (TryoutBlueprint::normalizeType($this->tryout_type)) {
+            TryoutBlueprint::TYPE_PPPK => 'public.tryouts.pppk',
+            TryoutBlueprint::TYPE_PPPK_TENDIK => 'public.tryouts.pppk-tendik',
+            default => 'public.tryouts.index',
+        };
+    }
+
+    public function sectionSummaries(): array
+    {
+        $sections = collect($this->section_composition);
+
+        if ($sections->isEmpty()) {
+            $sections = collect([
+                ['key' => 'twk', 'label' => 'TWK', 'count' => (int) $this->twk_count, 'scoring_mode' => 'single_correct'],
+                ['key' => 'tiu', 'label' => 'TIU', 'count' => (int) $this->tiu_count, 'scoring_mode' => 'single_correct'],
+                ['key' => 'tkp', 'label' => 'TKP', 'count' => (int) $this->tkp_count, 'scoring_mode' => 'weighted'],
+            ]);
+        }
+
+        $thresholds = $this->sectionThresholds();
+
+        return $sections
+            ->map(function (array $section) use ($thresholds) {
+                $key = (string) ($section['key'] ?? '');
+
+                return [
+                    'key' => $key,
+                    'label' => $section['label'] ?? TryoutBlueprint::sectionLabel($this->tryout_type, $key),
+                    'count' => (int) ($section['count'] ?? 0),
+                    'scoring_mode' => $section['scoring_mode'] ?? TryoutBlueprint::scoringMode($this->tryout_type, $key),
+                    'threshold' => $thresholds[$key] ?? null,
+                ];
+            })
+            ->filter(fn (array $section) => $section['count'] > 0)
+            ->values()
+            ->all();
+    }
+
+    public function sectionKeys(): array
+    {
+        return collect($this->sectionSummaries())->pluck('key')->all();
+    }
+
+    public function sectionThresholds(): array
+    {
+        return $this->section_thresholds ?: TryoutBlueprint::defaultThresholds($this->tryout_type);
+    }
+
+    public function totalThreshold(): ?int
+    {
+        $thresholds = $this->sectionThresholds();
+
+        return isset($thresholds['total']) ? (int) $thresholds['total'] : null;
+    }
+
+    public function setTryoutTypeAttribute($value): void
+    {
+        $this->attributes['tryout_type'] = TryoutBlueprint::normalizeType($value);
     }
 }

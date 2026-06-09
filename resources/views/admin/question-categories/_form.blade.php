@@ -1,6 +1,7 @@
-@php
+﻿@php
     $isEdit = isset($questionCategory);
     $isActive = old('is_active', $questionCategory->is_active ?? true);
+    $selectedType = old('tryout_type', $questionCategory->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
 @endphp
 
 <div class="row">
@@ -13,18 +14,28 @@
             </div>
             <div class="col-md-12">
                 <label class="form-label">Slug</label>
-                <div class="input-group">
-                    <span class="input-group-text">/kategori-soal/</span>
-                    <input type="text" name="slug" value="{{ old('slug', $questionCategory->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
-                </div>
-                @error('slug')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                <input type="text" name="slug" value="{{ old('slug', $questionCategory->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
+                @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Jenis Tryout <span class="text-danger">*</span></label>
+                <select name="tryout_type" class="form-select @error('tryout_type') is-invalid @enderror" required>
+                    @foreach ($tryoutTypes as $type => $label)
+                        <option value="{{ $type }}" @selected($selectedType === $type)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                @error('tryout_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">
                 <label class="form-label">Section <span class="text-danger">*</span></label>
                 <select name="section" class="form-select @error('section') is-invalid @enderror" required>
                     <option value="">Pilih section</option>
-                    @foreach (['TWK', 'TIU', 'TKP'] as $section)
-                        <option value="{{ $section }}" @selected(old('section', $questionCategory->section ?? '') === $section)>{{ $section }}</option>
+                    @foreach ($sectionsByType as $type => $sections)
+                        <optgroup label="{{ $tryoutTypes[$type] }}">
+                            @foreach ($sections as $sectionKey => $sectionLabel)
+                                <option value="{{ $sectionKey }}" @selected(old('section', $questionCategory->section ?? '') === $sectionKey)>{{ $sectionLabel }}</option>
+                            @endforeach
+                        </optgroup>
                     @endforeach
                 </select>
                 @error('section')<div class="invalid-feedback">{{ $message }}</div>@enderror

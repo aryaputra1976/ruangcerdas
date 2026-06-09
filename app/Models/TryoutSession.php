@@ -24,6 +24,7 @@ class TryoutSession extends Model
         'twk_score',
         'tiu_score',
         'tkp_score',
+        'section_scores',
         'total_score',
     ];
 
@@ -34,6 +35,7 @@ class TryoutSession extends Model
         'twk_score' => 'integer',
         'tiu_score' => 'integer',
         'tkp_score' => 'integer',
+        'section_scores' => 'array',
         'total_score' => 'integer',
     ];
 
@@ -69,5 +71,10 @@ class TryoutSession extends Model
         $endsAt = $this->endsAt();
 
         return $endsAt !== null && now()->greaterThanOrEqualTo($endsAt);
+    }
+
+    public function scoreForSection(string $section): int
+    {
+        return (int) data_get($this->section_scores ?? [], $section, 0);
     }
 }

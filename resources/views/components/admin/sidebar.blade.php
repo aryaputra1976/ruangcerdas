@@ -1,4 +1,4 @@
-<div class="app-sidebar-menu">
+﻿<div class="app-sidebar-menu">
     <div class="h-100" data-simplebar>
 
         <div id="sidebar-menu">
@@ -183,12 +183,12 @@
                     </div>
                 </li>
 
-                <li class="menu-title mt-2">Tryout CPNS</li>
+                <li class="menu-title mt-2">Tryout</li>
 
                 <li>
                     <a href="#sidebarTryout" data-bs-toggle="collapse">
                         <i data-feather="edit-3"></i>
-                        <span> Tryout CPNS </span>
+                        <span> Tryout </span>
                         <span class="menu-arrow"></span>
                     </a>
 
@@ -233,3 +233,4 @@
 
     </div>
 </div>
+

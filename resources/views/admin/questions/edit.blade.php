@@ -1,8 +1,8 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $title = 'Edit Soal';
-    $subtitle = $question->section . ' • ' . \Illuminate\Support\Str::limit(strip_tags($question->question_text), 60);
+    $subtitle = ($question->section_label ?? $question->section) . ' - ' . \Illuminate\Support\Str::limit(strip_tags($question->question_text), 60);
 @endphp
 
 @section('content')

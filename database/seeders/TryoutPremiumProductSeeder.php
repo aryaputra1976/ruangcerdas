@@ -58,6 +58,8 @@ class TryoutPremiumProductSeeder extends Seeder
                 ['slug' => $product['slug']],
                 [
                     'category_id' => $category->id,
+                    'product_type' => 'tryout',
+                    'category' => 'cpns',
                     'name' => $product['name'],
                     'short_description' => $product['short_description'],
                     'description' => $product['description'],

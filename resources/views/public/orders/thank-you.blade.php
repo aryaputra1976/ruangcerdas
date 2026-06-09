@@ -225,16 +225,16 @@
                         <div class="mt-5 rounded-2xl border border-blue-100 bg-blue-50 p-5">
                             <h3 class="text-lg font-black text-blue-950">Cara membuka tryout premium</h3>
                             <ul class="mt-3 space-y-2 text-sm leading-6 text-blue-900">
-                                <li>- Buka halaman Tryout CPNS setelah pembayaran disetujui.</li>
+                                <li>- Buka halaman {{ $tryoutPackage->tryout_type_label }} setelah pembayaran disetujui.</li>
                                 <li>- Pilih paket <span class="font-bold">{{ $tryoutPackage->title }}</span>.</li>
                                 <li>- Klik <span class="font-bold">Mulai Tryout</span>.</li>
                                 <li>- Gunakan email pembelian: <span class="font-bold">{{ $order->buyer_email }}</span>.</li>
                             </ul>
                             <div class="mt-4 flex flex-col gap-3 sm:flex-row">
-                                <a href="{{ route('public.tryouts.index') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                                <a href="{{ route($tryoutPackage->listingRouteName()) }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
                                     Buka Halaman Tryout
                                 </a>
-                                <a href="{{ route('public.tryouts.start', $tryoutPackage) }}" class="inline-flex items-center justify-center rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-50">
+                                <a href="{{ route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="inline-flex items-center justify-center rounded-2xl border border-blue-200 bg-white px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-50">
                                     Mulai Paket Ini
                                 </a>
                             </div>

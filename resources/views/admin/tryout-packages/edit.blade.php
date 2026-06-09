@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+﻿@extends('layouts.admin')
 
 @php
     $title = 'Edit Paket Tryout';
@@ -12,7 +12,7 @@
             <div class="card-header d-flex align-items-center justify-content-between gap-3 flex-wrap">
                 <div>
                     <h5 class="card-title mb-1">Form Edit Paket</h5>
-                    <p class="text-muted mb-0 fs-13">Perbarui detail paket tryout CPNS.</p>
+                    <p class="text-muted mb-0 fs-13">Perbarui detail paket tryout beserta struktur section-nya.</p>
                 </div>
                 <a href="{{ route('admin.tryout-packages.index') }}" class="btn btn-sm bg-secondary-subtle text-secondary rounded-pill px-3">Kembali</a>
             </div>
@@ -35,6 +35,7 @@
                     <span class="badge {{ $tryoutPackage->is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} rounded-pill">
                         {{ $tryoutPackage->is_active ? 'Aktif' : 'Nonaktif' }}
                     </span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill">{{ $tryoutPackage->tryout_type_label }}</span>
                     <span class="badge bg-info-subtle text-info rounded-pill">{{ $tryoutPackage->sessions_count ?? 0 }} sesi</span>
                 </div>
                 <div class="border rounded-3 p-3 mb-3">
@@ -43,7 +44,7 @@
                 </div>
                 <div class="border rounded-3 p-3">
                     <div class="text-muted fs-13 mb-1">Komposisi</div>
-                    <div class="fw-semibold text-dark">TWK {{ $tryoutPackage->twk_count }} · TIU {{ $tryoutPackage->tiu_count }} · TKP {{ $tryoutPackage->tkp_count }}</div>
+                    <div class="fw-semibold text-dark">{{ collect($tryoutPackage->sectionSummaries())->map(fn ($section) => $section['label'] . ' ' . $section['count'])->implode(' · ') }}</div>
                 </div>
             </div>
         </div>

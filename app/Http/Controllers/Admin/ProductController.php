@@ -42,6 +42,10 @@ class ProductController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
+        if ($request->filled('product_type')) {
+            $query->where('product_type', $request->product_type);
+        }
+
         $fileStatus = $request->query('file_status');
         $perPage = 10;
 
@@ -75,7 +79,9 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.products.index', compact('products', 'categories'));
+        $productTypeOptions = Product::productTypeLabels();
+
+        return view('admin.products.index', compact('products', 'categories', 'productTypeOptions'));
     }
 
     public function create()
@@ -84,7 +90,9 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.products.create', compact('categories'));
+        $productTypeOptions = Product::productTypeLabels();
+
+        return view('admin.products.create', compact('categories', 'productTypeOptions'));
     }
 
     public function store(Request $request)
@@ -92,6 +100,7 @@ class ProductController extends Controller
         $validated = $this->validateProduct($request);
 
         $validated['slug'] = $this->makeUniqueSlug($validated['slug'] ?: $validated['name']);
+        $validated = $this->applyInferredProductMetadata($validated);
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
@@ -164,7 +173,9 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('admin.products.edit', compact('product', 'categories'));
+        $productTypeOptions = Product::productTypeLabels();
+
+        return view('admin.products.edit', compact('product', 'categories', 'productTypeOptions'));
     }
 
     public function preview(Product $product, PricingService $pricingService)
@@ -223,6 +234,7 @@ class ProductController extends Controller
             $validated['slug'] ?: $validated['name'],
             $product->id
         );
+        $validated = $this->applyInferredProductMetadata($validated);
 
         $validated['is_featured'] = $request->boolean('is_featured');
         $validated['is_active'] = $request->boolean('is_active');
@@ -350,6 +362,8 @@ class ProductController extends Controller
     {
         $validator = validator($request->all(), [
             'category_id' => ['nullable', 'exists:categories,id'],
+            'product_type' => ['nullable', 'in:' . implode(',', array_keys(Product::productTypeLabels()))],
+            'category' => ['nullable', 'string', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255'],
             'short_description' => ['nullable', 'string', 'max:255'],
@@ -415,5 +429,42 @@ class ProductController extends Controller
         }
 
         return $slug;
+    }
+
+    private function applyInferredProductMetadata(array $validated): array
+    {
+        $slugSource = (string) ($validated['slug'] ?? '');
+        $nameSource = strtolower((string) ($validated['name'] ?? ''));
+        $categoryName = '';
+
+        if (! empty($validated['category_id'])) {
+            $categoryName = strtolower((string) Category::query()->whereKey($validated['category_id'])->value('name'));
+        }
+
+        $combinedSource = strtolower(trim($slugSource . ' ' . $nameSource . ' ' . $categoryName));
+
+        if (blank($validated['product_type'] ?? null)) {
+            $validated['product_type'] = match (true) {
+                str_contains($combinedSource, 'tryout') => 'tryout',
+                str_contains($combinedSource, 'template') => 'template',
+                str_contains($combinedSource, 'source-code'),
+                str_contains($combinedSource, 'source code'),
+                str_contains($combinedSource, 'aplikasi') => 'source_code',
+                str_contains($combinedSource, 'bundle') => 'bundle',
+                default => 'ebook',
+            };
+        }
+
+        if (blank($validated['category'] ?? null)) {
+            $validated['category'] = match (true) {
+                str_contains($combinedSource, 'pppk-tendik'),
+                str_contains($combinedSource, 'tendik') => 'pppk-tendik',
+                str_contains($combinedSource, 'pppk') => 'pppk',
+                str_contains($combinedSource, 'cpns') => 'cpns',
+                default => null,
+            };
+        }
+
+        return $validated;
     }
 }

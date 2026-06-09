@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Mail\OrderPaidDownloadLinkMail;
+use App\Mail\OrderPaidMail;
 use App\Models\Order;
 use App\Models\OrderNote;
+use App\Services\OrderBuyerMailService;
 use App\Services\TryoutAccessService;
 use App\Support\ActivityLogger;
 use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -133,7 +132,12 @@ class OrderController extends Controller
         abort(404);
     }
 
-    public function approve(Request $request, Order $order, TryoutAccessService $tryoutAccessService)
+    public function approve(
+        Request $request,
+        Order $order,
+        TryoutAccessService $tryoutAccessService,
+        OrderBuyerMailService $orderBuyerMailService
+    )
     {
         abort_if($order->isPaid(), 422, 'Order sudah paid.');
 
@@ -211,18 +215,7 @@ class OrderController extends Controller
             $successMessage = 'Pembayaran berhasil di-approve. Akses tryout premium sudah aktif untuk email pembeli.';
         }
 
-        try {
-            Mail::to($order->buyer_email)->send(new OrderPaidDownloadLinkMail($order->fresh('product')));
-        } catch (\Throwable $exception) {
-            Log::warning('Gagal mengirim email download link setelah approve order.', [
-                'order_id' => $order->id,
-                'invoice_number' => $order->invoice_number,
-                'buyer_email' => $order->buyer_email,
-                'error' => $exception->getMessage(),
-            ]);
-
-            $successMessage = 'Pembayaran berhasil di-approve, tetapi email download gagal dikirim. Silakan cek konfigurasi mail.';
-        }
+        $orderBuyerMailService->sendOrderPaid($order->fresh('product'));
 
         ActivityLogger::log(
             'order.approved',
@@ -251,7 +244,7 @@ class OrderController extends Controller
             ->with('success', $successMessage);
     }
 
-    public function reject(Request $request, Order $order)
+    public function reject(Request $request, Order $order, OrderBuyerMailService $orderBuyerMailService)
     {
         $request->validate([
             'rejection_reason' => ['required', 'string', 'max:1000'],
@@ -286,6 +279,8 @@ class OrderController extends Controller
             'Admin menolak pembayaran order.',
             ['invoice_number' => $order->invoice_number]
         );
+
+        $orderBuyerMailService->sendOrderRejected($order->fresh('product'));
 
         return redirect()
             ->route('admin.orders.show', $order)
@@ -397,7 +392,7 @@ class OrderController extends Controller
         }
 
         try {
-            Mail::to($order->buyer_email)->send(new OrderPaidDownloadLinkMail($order->fresh('product')));
+            Mail::to($order->buyer_email)->send(new OrderPaidMail($order->fresh('product')));
         } catch (\Throwable $exception) {
             Log::warning('Gagal mengirim ulang email link download.', [
                 'order_id' => $order->id,

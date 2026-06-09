@@ -5,6 +5,7 @@ use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\ProductController;
 use App\Http\Controllers\Public\CheckoutController;
 use App\Http\Controllers\Public\OrderController;
+use App\Http\Controllers\Public\OrderLookupController;
 use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\SitemapController;
 use App\Http\Controllers\Public\RobotsController;
@@ -32,6 +33,10 @@ Route::get('/order/{invoice}/upload-payment', [OrderController::class, 'paymentF
 Route::post('/order/{invoice}/upload-payment', [OrderController::class, 'uploadPayment'])
     ->middleware('throttle:10,1')
     ->name('orders.payment.upload');
+Route::get('/cek-order', [OrderLookupController::class, 'index'])->name('public.orders.lookup');
+Route::post('/cek-order', [OrderLookupController::class, 'submit'])
+    ->middleware('throttle:15,1')
+    ->name('public.orders.lookup.submit');
 
 Route::get('/order/{invoice}/download/{token}', [DownloadController::class, 'download'])->name('orders.download');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('public.sitemap');

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UploadPaymentProofRequest;
 use App\Models\LandingSetting;
 use App\Models\Order;
+use App\Services\OrderAdminMailService;
+use App\Services\OrderBuyerMailService;
 use App\Services\PaymentSettingService;
 use App\Services\TryoutAccessService;
 use App\Support\OrderAuditLogger;
@@ -57,7 +59,12 @@ class OrderController extends Controller
         ]);
     }
 
-    public function uploadPayment(UploadPaymentProofRequest $request, string $invoice)
+    public function uploadPayment(
+        UploadPaymentProofRequest $request,
+        string $invoice,
+        OrderBuyerMailService $orderBuyerMailService,
+        OrderAdminMailService $orderAdminMailService
+    )
     {
         $order = Order::query()
             ->with('product')
@@ -113,6 +120,9 @@ class OrderController extends Controller
             $fromStatus,
             $order->status
         );
+
+        $orderBuyerMailService->sendPaymentProofUploaded($order->fresh('product'));
+        $orderAdminMailService->sendPaymentProofUploaded($order->fresh('product'));
 
         return redirect()
             ->route('orders.thank-you', $order->invoice_number)

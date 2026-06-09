@@ -7,6 +7,8 @@ use App\Http\Requests\CheckoutRequest;
 use App\Models\LandingSetting;
 use App\Models\Product;
 use App\Services\CheckoutService;
+use App\Services\OrderAdminMailService;
+use App\Services\OrderBuyerMailService;
 use App\Services\PricingService;
 use App\Support\OrderAuditLogger;
 
@@ -30,7 +32,9 @@ class CheckoutController extends Controller
     public function store(
         CheckoutRequest $request,
         Product $product,
-        CheckoutService $checkoutService
+        CheckoutService $checkoutService,
+        OrderBuyerMailService $orderBuyerMailService,
+        OrderAdminMailService $orderAdminMailService
     ) {
         abort_unless($product->isVisibleToPublic(), 404, 'Produk belum tersedia untuk dibeli.');
 
@@ -51,6 +55,9 @@ class CheckoutController extends Controller
             null,
             $order->status
         );
+
+        $orderBuyerMailService->sendOrderCreated($order->fresh('product'));
+        $orderAdminMailService->sendNewOrder($order->fresh('product'));
 
         return redirect()->route('orders.thank-you', $order->invoice_number);
     }

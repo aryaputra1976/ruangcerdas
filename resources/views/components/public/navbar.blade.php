@@ -31,8 +31,8 @@
             <a href="{{ route('home') }}#cara-beli" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 Cara Beli
             </a>
-            <a href="{{ route('public.order-tracking.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Cek Status Order
+            <a href="{{ route('public.orders.lookup') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                Cek Order
             </a>
             <a href="{{ route('public.faq') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
                 FAQ
@@ -83,8 +83,8 @@
             <a href="{{ route('home') }}#cara-beli" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Cara Beli
             </a>
-            <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Cek Status Order
+            <a href="{{ route('public.orders.lookup') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+                Cek Order
             </a>
             <a href="{{ route('public.faq') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 FAQ

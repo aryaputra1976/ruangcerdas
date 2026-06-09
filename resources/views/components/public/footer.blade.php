@@ -20,7 +20,7 @@
                     <li><a href="{{ route('products.index') }}" class="hover:text-blue-600">Produk</a></li>
                     <li><a href="{{ route('lead-magnets.index') }}" class="hover:text-blue-600">Panduan Gratis</a></li>
                     <li><a href="{{ route('articles.index') }}" class="hover:text-blue-600">Artikel</a></li>
-                    <li><a href="{{ route('public.order-tracking.index') }}" class="hover:text-blue-600">Cek Status Order</a></li>
+                    <li><a href="{{ route('public.orders.lookup') }}" class="hover:text-blue-600">Cek Order</a></li>
                     <li><a href="{{ route('public.faq') }}" class="hover:text-blue-600">FAQ</a></li>
                     <li><a href="{{ route('public.terms') }}" class="hover:text-blue-600">Syarat & Ketentuan</a></li>
                     <li><a href="{{ route('public.privacy') }}" class="hover:text-blue-600">Kebijakan Privasi</a></li>
@@ -33,8 +33,8 @@
                     Butuh bantuan pembelian? Hubungi admin Ruang Cerdas melalui WhatsApp.
                 </p>
                 <div class="mt-3 flex flex-wrap gap-2">
-                    <a href="{{ route('public.order-tracking.index') }}" class="inline-block text-sm font-semibold text-blue-600 hover:text-blue-700">
-                        Cek Status Order
+                    <a href="{{ route('public.orders.lookup') }}" class="inline-block text-sm font-semibold text-blue-600 hover:text-blue-700">
+                        Cek Order
                     </a>
                     @if ($footerWaUrl)
                         <a href="{{ $footerWaUrl }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-xl bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700">

@@ -23,7 +23,7 @@
                 <label for="action" class="form-label">Action</label>
                 <select id="action" name="action" class="form-select">
                     <option value="">Semua Action</option>
-                    @foreach ($actions as $action)
+                    @foreach ($actionOptions as $action)
                         <option value="{{ $action }}" @selected($filters['action'] === $action)>{{ $action }}</option>
                     @endforeach
                 </select>

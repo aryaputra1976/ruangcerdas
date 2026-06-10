@@ -39,12 +39,12 @@ class ActivityLogController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        $actions = ActivityLog::query()
+        $actionOptions = ActivityLog::query()
             ->select('action')
             ->distinct()
             ->orderBy('action')
             ->pluck('action');
 
-        return view('admin.activity-logs.index', compact('logs', 'filters', 'actions'));
+        return view('admin.activity-logs.index', compact('logs', 'filters', 'actionOptions'));
     }
 }

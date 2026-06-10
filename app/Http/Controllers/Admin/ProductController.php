@@ -15,9 +15,24 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Validator;
+use Illuminate\Validation\Rules\File;
 
 class ProductController extends Controller
 {
+    private const ALLOWED_DIGITAL_FILE_TYPES = [
+        'zip',
+        'rar',
+        '7z',
+        'pdf',
+        'doc',
+        'docx',
+        'xls',
+        'xlsx',
+        'ppt',
+        'pptx',
+        'txt',
+    ];
+
     public function index(Request $request)
     {
         return $this->renderProductList($request);
@@ -472,9 +487,7 @@ class ProductController extends Controller
             'cover_image' => ['nullable', 'image', 'max:2048'],
             'digital_file' => [
                 'nullable',
-                'file',
-                'mimetypes:application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/zip,application/x-zip-compressed',
-                'max:102400',
+                File::types(self::ALLOWED_DIGITAL_FILE_TYPES)->max(102400),
             ],
         ]);
 

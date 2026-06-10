@@ -12,7 +12,7 @@
     }
     $selectedProductId = old('product_id', $creative->product_id ?? null);
     $selectedTemplate = old('template_key', $creative->template_key ?? 'viral_note');
-    $selectedSizePreset = old('size_preset', ($creative->width ?? 1080) === 1080 && ($creative->height ?? 1920) === 1350 ? 'feed_portrait' : ((($creative->width ?? 1080) === 1080 && ($creative->height ?? 1920) === 1080) ? 'square' : 'story'));
+    $selectedSizePreset = old('size_preset', \App\Models\AdCreative::sizePresetKeyFromDimensions((int) ($creative->width ?? 1080), (int) ($creative->height ?? 1920)) ?? 'story');
     $generateAllSizes = (bool) old('generate_all_sizes', false);
     $titleValue = old('title', $creative->title ?? 'Catatan Viral');
     $headlineValue = old('headline', $creative->headline ?? ($generationMode === 'bulk' ? 'Calon pembeli sering berhenti karena belum tahu isi {product}. Ini versi yang lebih jelas dan ringkas.' : ''));
@@ -20,6 +20,7 @@
     $bulletValue = old('bullets', isset($creative) && ! empty($creative->bullets) ? implode("\n", $creative->bullets) : '');
     $ctaValue = old('cta_text', $creative->cta_text ?? 'Ambil Sekarang');
     $brandValue = old('brand_text', $creative->brand_text ?? 'ruangcerdas.id');
+    $selectedTemplateDefinition = $templateDefinitions[$selectedTemplate] ?? $templateDefinitions['viral_note'];
     $actions = new \Illuminate\Support\HtmlString(
         '<a href="' . route('admin.ad-creatives.index') . '" class="btn btn-light border rounded-pill px-4">Kembali</a>'
     );
@@ -440,7 +441,7 @@
                                             </div>
 
                                             <div class="ad-preview-note">
-                                                <div class="ad-preview-label" id="preview-label">Catatan Penting</div>
+                                                <div class="ad-preview-label" id="preview-label">{{ $selectedTemplateDefinition['preview_label'] }}</div>
                                                 <div class="ad-preview-body" id="preview-body">{{ $bodyValue }}</div>
                                                 <ul class="ad-preview-bullets" id="preview-bullets"></ul>
                                                 <div class="ad-preview-price" id="preview-price">Mulai Rp49.000</div>
@@ -449,7 +450,7 @@
 
                                             <div class="ad-preview-footer">
                                                 <div class="ad-preview-brand" id="preview-brand">{{ $brandValue }}</div>
-                                                <div class="ad-preview-meta" id="preview-meta">{{ $selectedSizePreset }}<br>{{ $selectedTemplate }}</div>
+                                                <div class="ad-preview-meta" id="preview-meta">{{ \App\Models\AdCreative::sizePresetLabel($selectedSizePreset) }}<br>{{ $selectedTemplateDefinition['label'] }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -466,9 +467,7 @@
                                                     <div class="ad-preview-size-thumb" data-size="{{ $sizeKey }}"></div>
                                                     <div class="fw-semibold text-dark">{{ $sizeLabel }}</div>
                                                     <div class="text-muted fs-13">
-                                                        @php
-                                                            $preset = \App\Models\AdCreative::SIZE_PRESETS[$sizeKey];
-                                                        @endphp
+                                                        @php($preset = $sizePresetDefinitions[$sizeKey])
                                                         {{ $preset['width'] }} x {{ $preset['height'] }}
                                                     </div>
                                                 </div>
@@ -485,24 +484,14 @@
                     <div class="border rounded-3 p-3 bg-light-subtle">
                         <div class="fw-semibold text-dark mb-2">Arah Visual Template</div>
                         <div class="row g-2">
-                            <div class="col-md-4">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <div class="fw-semibold text-dark mb-1">Viral Note</div>
-                                    <div class="text-muted fs-13">Gaya catatan edukatif dengan nuansa lembut dan cocok untuk soft selling.</div>
+                            @foreach ($templateDefinitions as $definition)
+                                <div class="col-md-4">
+                                    <div class="border rounded-3 p-3 h-100">
+                                        <div class="fw-semibold text-dark mb-1">{{ str_replace(' 9:16', '', $definition['label']) }}</div>
+                                        <div class="text-muted fs-13">{{ $definition['visual_direction'] }}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <div class="fw-semibold text-dark mb-1">Urgent Offer</div>
-                                    <div class="text-muted fs-13">Warna promo lebih kuat untuk diskon, kuota, atau penawaran terbatas.</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <div class="fw-semibold text-dark mb-1">Social Proof</div>
-                                    <div class="text-muted fs-13">Cocok untuk membangun trust, manfaat praktis, dan gaya konten viral.</div>
-                                </div>
-                            </div>
+                            @endforeach
                         </div>
                     </div>
                 </div>
@@ -542,7 +531,8 @@
         const previewMeta = document.getElementById('preview-meta');
         const sizeCards = document.querySelectorAll('[data-size-card]');
         const prefills = @json($productPrefills);
-        const sizePresets = @json(\App\Models\AdCreative::SIZE_PRESETS);
+        const templateDefinitions = @json($templateDefinitions);
+        const sizePresetDefinitions = @json($sizePresetDefinitions);
         const fields = {
             title: document.getElementById('title'),
             headline: document.getElementById('headline'),
@@ -574,6 +564,8 @@
             const titleText = String(fields.title?.value || '').trim();
             const ctaText = String(fields.cta_text?.value || '').trim();
             const brandText = String(fields.brand_text?.value || '').trim();
+            const selectedTemplateDefinition = templateDefinitions[selectedTemplate] || templateDefinitions.viral_note;
+            const selectedSizeDefinition = sizePresetDefinitions[selectedSize] || sizePresetDefinitions.story;
 
             if (previewFrame) {
                 previewFrame.dataset.template = selectedTemplate;
@@ -612,13 +604,11 @@
             }
 
             if (previewLabel) {
-                previewLabel.textContent = selectedTemplate === 'urgent_offer'
-                    ? 'Jangan Lewatkan'
-                    : (selectedTemplate === 'social_proof' ? 'Kenapa Banyak Yang Suka' : 'Catatan Penting');
+                previewLabel.textContent = selectedTemplateDefinition.preview_label || 'Catatan Penting';
             }
 
             if (previewMeta) {
-                previewMeta.innerHTML = selectedSize.replace('_', ' ') + '<br>' + selectedTemplate.replace('_', ' ');
+                previewMeta.innerHTML = (selectedSizeDefinition.label || 'Story 9:16') + '<br>' + (selectedTemplateDefinition.label || 'Viral Note 9:16');
             }
 
             if (previewPrice) {

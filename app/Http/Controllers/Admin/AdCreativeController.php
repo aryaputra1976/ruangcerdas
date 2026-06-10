@@ -66,7 +66,7 @@ class AdCreativeController extends Controller
             'format' => ['nullable', 'string', 'in:png'],
         ]);
 
-        if (! array_key_exists($validated['template_key'], $this->templateOptions())) {
+        if (! array_key_exists($validated['template_key'], AdCreative::templateOptions())) {
             return back()->withErrors([
                 'template_key' => 'Template iklan tidak dikenali.',
             ])->withInput();
@@ -191,7 +191,7 @@ class AdCreativeController extends Controller
     {
         $validated = $this->validateSingleCreativePayload($request);
 
-        if (! array_key_exists($validated['template_key'], $this->templateOptions())) {
+        if (! array_key_exists($validated['template_key'], AdCreative::templateOptions())) {
             return back()->withErrors([
                 'template_key' => 'Template iklan tidak dikenali.',
             ])->withInput();
@@ -356,11 +356,13 @@ class AdCreativeController extends Controller
         return view('admin.ad-creatives.create', [
             'creative' => $creative,
             'products' => $products,
-            'templates' => $this->templateOptions(),
+            'templates' => AdCreative::templateOptions(),
+            'templateDefinitions' => AdCreative::templateDefinitions(),
             'productPrefills' => $products
                 ->mapWithKeys(fn (Product $product) => [$product->id => $this->buildProductPrefill($product)])
                 ->all(),
             'sizePresets' => AdCreative::sizePresetOptions(),
+            'sizePresetDefinitions' => AdCreative::SIZE_PRESETS,
         ]);
     }
 
@@ -395,15 +397,6 @@ class AdCreativeController extends Controller
         }
 
         return [$validated['size_preset']];
-    }
-
-    private function templateOptions(): array
-    {
-        return [
-            'viral_note' => 'Viral Note 9:16',
-            'urgent_offer' => 'Urgent Offer 9:16',
-            'social_proof' => 'Social Proof 9:16',
-        ];
     }
 
     private function createCreativeRecord(?Product $product, array $payload): AdCreative

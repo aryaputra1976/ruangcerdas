@@ -62,4 +62,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(TryoutSession::class);
     }
+
+    public function adCreatives(): HasMany
+    {
+        return $this->hasMany(AdCreative::class, 'created_by');
+    }
 }

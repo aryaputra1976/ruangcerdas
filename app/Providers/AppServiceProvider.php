@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Support\AdminNotificationSummary;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 
@@ -21,6 +22,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Paginator::defaultView('vendor.pagination.ruangcerdas');
+        Paginator::defaultSimpleView('vendor.pagination.ruangcerdas-simple');
+
         View::composer([
             'components.admin.sidebar',
             'components.admin.header',

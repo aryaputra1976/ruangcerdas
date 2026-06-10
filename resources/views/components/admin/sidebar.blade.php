@@ -126,6 +126,14 @@
                 </li>
 
                 <li>
+                    <a href="{{ route('admin.ad-creatives.index') }}"
+                       class="{{ request()->routeIs('admin.ad-creatives.*') ? 'active' : '' }}">
+                        <i data-feather="image"></i>
+                        <span> Generator Iklan </span>
+                    </a>
+                </li>
+
+                <li>
                     <a href="{{ route('admin.testimonials.index') }}"
                        class="{{ request()->routeIs('admin.testimonials.*') ? 'active' : '' }}">
                         <i data-feather="message-circle"></i>

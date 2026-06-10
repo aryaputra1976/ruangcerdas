@@ -98,6 +98,11 @@ class Product extends Model
         return $this->hasMany(ProductPreviewImage::class);
     }
 
+    public function adCreatives(): HasMany
+    {
+        return $this->hasMany(AdCreative::class);
+    }
+
     public function viewEvents(): HasMany
     {
         return $this->hasMany(ProductViewEvent::class);

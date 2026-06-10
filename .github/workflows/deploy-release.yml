@@ -3,6 +3,7 @@ name: deploy-release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: deploy-release-main
@@ -15,6 +16,7 @@ jobs:
     env:
       APP_ROOT: /home/u232419966/domains/ruangcerdas.id
       RELEASE_ID: ${{ github.run_id }}-${{ github.sha }}
+      RUN_DB_SEED: "false"
 
     steps:
       - name: Checkout code
@@ -41,6 +43,9 @@ jobs:
           test -n "${{ secrets.SSH_USER }}" || { echo "ERROR: SSH_USER secret is empty."; exit 1; }
           test -n "${{ secrets.SSH_PORT }}" || { echo "ERROR: SSH_PORT secret is empty."; exit 1; }
           test -n "${{ secrets.SSH_PRIVATE_KEY }}" || { echo "ERROR: SSH_PRIVATE_KEY secret is empty."; exit 1; }
+
+          echo "Using SSH target ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
+          echo "For this server, GitHub Secrets should typically use the direct server IP/host and custom SSH port."
 
           if printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | grep -q '\\n'; then
             echo "ERROR: SSH_PRIVATE_KEY appears to contain literal \\n sequences."
@@ -182,11 +187,16 @@ jobs:
             composer install --no-dev --optimize-autoloader --no-interaction
 
             php artisan migrate --force
-            php artisan db:seed --force
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+
+            if [ \"$RUN_DB_SEED\" = \"true\" ]; then
+              php artisan db:seed --force
+            else
+              echo 'Skipping db:seed in production deploy (RUN_DB_SEED=false).'
+            fi
           "
 
       - name: Activate release

@@ -22,8 +22,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Paginator::defaultView('vendor.pagination.ruangcerdas');
-        Paginator::defaultSimpleView('vendor.pagination.ruangcerdas-simple');
+        if (View::exists('vendor.pagination.ruangcerdas')) {
+            Paginator::defaultView('vendor.pagination.ruangcerdas');
+        }
+
+        if (View::exists('vendor.pagination.ruangcerdas-simple')) {
+            Paginator::defaultSimpleView('vendor.pagination.ruangcerdas-simple');
+        }
 
         View::composer([
             'components.admin.sidebar',

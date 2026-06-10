@@ -39,6 +39,8 @@
 !.env.example
 vendor/
 node_modules/
+!resources/views/vendor/
+!resources/views/vendor/**
 
 # Build outputs
 public/build/

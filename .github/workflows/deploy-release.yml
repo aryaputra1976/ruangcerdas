@@ -86,12 +86,16 @@ jobs:
           SSH_HOST_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^hostname / { print $2; exit }')"
           SSH_PORT_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^port / { print $2; exit }')"
 
-          echo "Resolving SSH host..."
-          getent hosts "$SSH_HOST_CLEAN" || {
-            echo "ERROR: SSH_HOST tidak bisa di-resolve dari GitHub Actions."
-            echo "Gunakan IP server langsung atau hostname SSH yang memang publik dan aktif."
-            exit 1
-          }
+          if printf '%s' "$SSH_HOST_CLEAN" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "SSH host is a direct IPv4 address: $SSH_HOST_CLEAN"
+          else
+            echo "Resolving SSH host..."
+            getent ahostsv4 "$SSH_HOST_CLEAN" >/dev/null || {
+              echo "ERROR: SSH_HOST tidak bisa di-resolve dari GitHub Actions."
+              echo "Gunakan IP server langsung atau hostname SSH yang memang publik dan aktif."
+              exit 1
+            }
+          fi
 
           echo "Testing TCP connectivity to $SSH_HOST_CLEAN:$SSH_PORT_CLEAN ..."
           timeout 15 bash -c "</dev/tcp/$SSH_HOST_CLEAN/$SSH_PORT_CLEAN" || {

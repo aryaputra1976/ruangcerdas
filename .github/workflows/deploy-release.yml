@@ -77,6 +77,22 @@ jobs:
 
       - name: Test SSH connection
         run: |
+          set -e
+
+          echo "Resolving SSH host..."
+          getent hosts "${{ secrets.SSH_HOST }}" || {
+            echo "ERROR: SSH_HOST tidak bisa di-resolve dari GitHub Actions."
+            echo "Gunakan IP server langsung atau hostname SSH yang memang publik dan aktif."
+            exit 1
+          }
+
+          echo "Testing TCP connectivity to ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} ..."
+          timeout 15 bash -c "</dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}" || {
+            echo "ERROR: Port SSH tidak bisa dijangkau dari GitHub Actions."
+            echo "Periksa SSH_HOST, SSH_PORT, firewall hosting, dan kemungkinan blok koneksi eksternal."
+            exit 1
+          }
+
           ssh \
             -o ConnectTimeout=15 \
             -o BatchMode=yes \

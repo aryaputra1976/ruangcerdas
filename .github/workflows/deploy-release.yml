@@ -39,12 +39,16 @@ jobs:
           set -e
           mkdir -p "$HOME/.ssh"
 
-          test -n "${{ secrets.SSH_HOST }}" || { echo "ERROR: SSH_HOST secret is empty."; exit 1; }
-          test -n "${{ secrets.SSH_USER }}" || { echo "ERROR: SSH_USER secret is empty."; exit 1; }
-          test -n "${{ secrets.SSH_PORT }}" || { echo "ERROR: SSH_PORT secret is empty."; exit 1; }
+          SSH_HOST_CLEAN="$(printf '%s' '${{ secrets.SSH_HOST }}' | tr -d '\r\n\t ' )"
+          SSH_USER_CLEAN="$(printf '%s' '${{ secrets.SSH_USER }}' | tr -d '\r\n\t ' )"
+          SSH_PORT_CLEAN="$(printf '%s' '${{ secrets.SSH_PORT }}' | tr -d '\r\n\t ' )"
+
+          test -n "$SSH_HOST_CLEAN" || { echo "ERROR: SSH_HOST secret is empty."; exit 1; }
+          test -n "$SSH_USER_CLEAN" || { echo "ERROR: SSH_USER secret is empty."; exit 1; }
+          test -n "$SSH_PORT_CLEAN" || { echo "ERROR: SSH_PORT secret is empty."; exit 1; }
           test -n "${{ secrets.SSH_PRIVATE_KEY }}" || { echo "ERROR: SSH_PRIVATE_KEY secret is empty."; exit 1; }
 
-          echo "Using SSH target ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
+          echo "Using SSH target $SSH_USER_CLEAN@$SSH_HOST_CLEAN:$SSH_PORT_CLEAN"
           echo "For this server, GitHub Secrets should typically use the direct server IP/host and custom SSH port."
 
           if printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | grep -q '\\n'; then
@@ -64,30 +68,33 @@ jobs:
 
           cat > "$HOME/.ssh/config" <<EOF
           Host deploy-server
-            HostName ${{ secrets.SSH_HOST }}
-            User ${{ secrets.SSH_USER }}
-            Port ${{ secrets.SSH_PORT }}
+            HostName $SSH_HOST_CLEAN
+            User $SSH_USER_CLEAN
+            Port $SSH_PORT_CLEAN
             IdentityFile $HOME/.ssh/deploy_key
             IdentitiesOnly yes
             StrictHostKeyChecking no
             UserKnownHostsFile /dev/null
           EOF
 
-          echo "SSH configuration prepared for ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }}"
+          echo "SSH configuration prepared for $SSH_USER_CLEAN@$SSH_HOST_CLEAN:$SSH_PORT_CLEAN"
 
       - name: Test SSH connection
         run: |
           set -e
 
+          SSH_HOST_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^hostname / { print $2; exit }')"
+          SSH_PORT_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^port / { print $2; exit }')"
+
           echo "Resolving SSH host..."
-          getent hosts "${{ secrets.SSH_HOST }}" || {
+          getent hosts "$SSH_HOST_CLEAN" || {
             echo "ERROR: SSH_HOST tidak bisa di-resolve dari GitHub Actions."
             echo "Gunakan IP server langsung atau hostname SSH yang memang publik dan aktif."
             exit 1
           }
 
-          echo "Testing TCP connectivity to ${{ secrets.SSH_HOST }}:${{ secrets.SSH_PORT }} ..."
-          timeout 15 bash -c "</dev/tcp/${{ secrets.SSH_HOST }}/${{ secrets.SSH_PORT }}" || {
+          echo "Testing TCP connectivity to $SSH_HOST_CLEAN:$SSH_PORT_CLEAN ..."
+          timeout 15 bash -c "</dev/tcp/$SSH_HOST_CLEAN/$SSH_PORT_CLEAN" || {
             echo "ERROR: Port SSH tidak bisa dijangkau dari GitHub Actions."
             echo "Periksa SSH_HOST, SSH_PORT, firewall hosting, dan kemungkinan blok koneksi eksternal."
             exit 1

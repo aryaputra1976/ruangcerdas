@@ -3,6 +3,7 @@
 @section('title', 'Produk Digital - Ruang Cerdas')
 @section('meta_description', 'Katalog produk digital siap pakai dari Ruang Cerdas.')
 @section('canonical', route('products.index'))
+@section('body_class', 'has-mobile-sticky-cta')
 
 @section('content')
 @php
@@ -23,97 +24,20 @@
     $activeCategoryLabel = request('category')
         ? ($categoryLabelMap[request('category')] ?? $presetCategories[request('category')] ?? request('category'))
         : null;
-    $activeTypeLabel = $activeType ? ($typeOptions[$activeType] ?? $activeType) : null;
 @endphp
 
-<section class="relative overflow-hidden bg-slate-950 py-16 text-white">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.28),_transparent_32%)]"></div>
-
-    <div class="relative mx-auto max-w-7xl px-6">
-        <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-                <p class="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-100">
-                    Produk Digital
-                </p>
-                <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">Produk Digital Praktis Ruang Cerdas</h1>
-                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
-                    Pilih produk digital edukasi praktis untuk persiapan CPNS/PPPK, administrasi kerja, skill digital pemula, dan template siap pakai.
-                </p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="#katalog" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700">
-                        Lihat Produk
-                    </a>
-                    <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
-                        Kembali ke Beranda
-                    </a>
-                </div>
-            </div>
-
-            <div class="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-                <div class="grid gap-4 sm:grid-cols-3">
-                    <div class="rounded-3xl bg-white p-5 text-slate-950">
-                        <div class="text-3xl font-black text-blue-600">01</div>
-                        <p class="mt-4 text-sm font-bold text-slate-500">Produk</p>
-                        <p class="mt-1 text-2xl font-black">{{ number_format($totalProducts, 0, ',', '.') }}</p>
-                    </div>
-                    <div class="rounded-3xl bg-white p-5 text-slate-950">
-                        <div class="text-3xl font-black text-blue-600">02</div>
-                        <p class="mt-4 text-sm font-bold text-slate-500">Download</p>
-                        <p class="mt-1 text-2xl font-black">Aman</p>
-                    </div>
-                    <div class="rounded-3xl bg-white p-5 text-slate-950">
-                        <div class="text-3xl font-black text-blue-600">03</div>
-                        <p class="mt-4 text-sm font-bold text-slate-500">Format</p>
-                        <p class="mt-1 text-2xl font-black">Digital</p>
-                    </div>
-                </div>
-                <div class="mt-4 rounded-3xl bg-white/10 p-5 text-sm leading-7 text-slate-200">
-                    Setelah pembayaran disetujui admin, pembeli mendapatkan link download khusus dengan token aman.
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="katalog" class="bg-slate-50 py-16">
+<section id="katalog" class="bg-slate-50 pt-4 pb-10 md:pt-6 md:pb-12">
     <div class="mx-auto max-w-7xl px-6">
-        <div class="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-            <div>
-                <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Katalog</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Produk Tersedia</h2>
-                <p class="mt-3 max-w-2xl text-slate-600">Gunakan filter untuk menemukan produk yang sesuai kebutuhan.</p>
-            </div>
-            <div class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm">
-                Total: <span class="font-black text-slate-950">{{ number_format($totalProducts, 0, ',', '.') }}</span> produk
-            </div>
-        </div>
+        <h1 class="mb-4 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Produk</h1>
 
-        <div class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
-            <div class="mb-4 flex flex-wrap gap-2">
-                @foreach ($presetCategories as $slug => $label)
-                    <a href="{{ route('products.index', array_filter(['category' => $slug, 'q' => request('q'), 'type' => $activeType])) }}"
-                       class="rounded-full border px-3 py-1 text-xs font-bold transition {{ request('category') === $slug ? 'border-blue-200 bg-blue-50 text-blue-700' : 'border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:text-blue-700' }}">
-                        {{ $label }}
-                    </a>
-                @endforeach
-            </div>
-
-            <div class="mb-4 flex flex-wrap gap-2">
-                @foreach ($typeOptions as $typeKey => $typeLabel)
-                    <a href="{{ route('products.index', array_filter(['type' => $typeKey, 'q' => request('q'), 'category' => request('category')])) }}"
-                       class="rounded-full border px-3 py-1 text-xs font-bold transition {{ $activeType === $typeKey ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:text-emerald-700' }}">
-                        {{ $typeLabel }}
-                    </a>
-                @endforeach
-            </div>
-
-            <form method="GET" action="{{ route('products.index') }}" class="grid gap-4 lg:grid-cols-12">
-                <div class="lg:col-span-5">
-                    <label for="q" class="mb-2 block text-sm font-bold text-slate-700">Cari Produk</label>
+        <div class="mb-6 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm">
+            <form method="GET" action="{{ route('products.index') }}" class="grid gap-3 lg:grid-cols-12">
+                <div class="lg:col-span-6">
+                    <label for="q" class="sr-only">Cari Produk</label>
                     <input id="q" type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama, deskripsi, atau isi produk..." class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
                 </div>
-                <div class="lg:col-span-3">
-                    <label for="category" class="mb-2 block text-sm font-bold text-slate-700">Kategori</label>
+                <div class="lg:col-span-4">
+                    <label for="category" class="sr-only">Kategori</label>
                     <select id="category" name="category" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
                         <option value="">Semua Kategori</option>
                         @foreach ($categoryOptions as $slug => $label)
@@ -121,37 +45,22 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="lg:col-span-2">
-                    <label for="type" class="mb-2 block text-sm font-bold text-slate-700">Jenis Produk</label>
-                    <select id="type" name="type" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700 shadow-sm focus:border-blue-600 focus:ring-blue-600">
-                        <option value="">Semua Jenis</option>
-                        @foreach ($typeOptions as $typeKey => $typeLabel)
-                            <option value="{{ $typeKey }}" @selected($activeType === $typeKey)>{{ $typeLabel }}</option>
-                        @endforeach
-                    </select>
-                </div>
                 <div class="flex items-end gap-3 lg:col-span-2">
-                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
+                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700">
                         Filter
                     </button>
                 </div>
             </form>
 
             @if ($hasFilter)
-                <div class="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-50 px-4 py-3">
-                    <div class="text-sm text-slate-600">
-                        Filter aktif:
+                <div class="mt-4 flex flex-wrap items-center gap-2">
                         @if (request('q'))
-                            <span class="ml-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">Keyword: {{ request('q') }}</span>
+                            <span class="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">{{ request('q') }}</span>
                         @endif
                         @if (request('category'))
-                            <span class="ml-1 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Kategori: {{ $activeCategoryLabel }}</span>
+                            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">{{ $activeCategoryLabel }}</span>
                         @endif
-                        @if ($activeType)
-                            <span class="ml-1 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Jenis: {{ $activeTypeLabel }}</span>
-                        @endif
-                    </div>
-                    <a href="{{ route('products.index') }}" class="text-sm font-bold text-red-600 hover:text-red-700">Reset filter</a>
+                    <a href="{{ route('products.index') }}" class="ml-1 text-xs font-bold uppercase tracking-wide text-red-600 hover:text-red-700">Reset</a>
                 </div>
             @endif
         </div>

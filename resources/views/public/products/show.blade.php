@@ -6,6 +6,7 @@
 @section('og_type', 'product')
 @section('canonical', isset($isPreview) && $isPreview ? route('admin.products.preview', $product) : route('products.show', $product->slug))
 @section('og_url', isset($isPreview) && $isPreview ? route('admin.products.preview', $product) : route('products.show', $product->slug))
+@section('body_class', 'has-mobile-sticky-cta')
 @if (isset($isPreview) && $isPreview)
     @section('robots', 'noindex,nofollow')
 @endif
@@ -28,6 +29,116 @@
 
     $benefits = collect(preg_split('/\r\n|\r|\n/', (string) $product->benefits))->map(fn ($item) => trim($item))->filter()->values();
     $contents = collect(preg_split('/\r\n|\r|\n/', (string) $product->contents))->map(fn ($item) => trim($item))->filter()->values();
+    $productSignals = strtolower(trim(implode(' ', array_filter([
+        $product->name,
+        $product->slug,
+        $product->short_description,
+        $product->description,
+        $product->category?->name,
+        $product->type,
+    ]))));
+    $isCpnsOrPppkProduct = str_contains($productSignals, 'cpns') || str_contains($productSignals, 'pppk');
+    $isAdminTemplateProduct = str_contains($productSignals, 'administrasi') || str_contains($productSignals, 'template');
+    $isSkillProduct = str_contains($productSignals, 'skill') || str_contains($productSignals, 'belajar');
+
+    $packageItems = $contents
+        ->reject(fn ($item) => (bool) preg_match('/bonus|free|gratis|tambahan/i', $item))
+        ->take(4)
+        ->values();
+    $bonusItems = $contents
+        ->filter(fn ($item) => (bool) preg_match('/bonus|free|gratis|tambahan/i', $item))
+        ->values();
+    if ($bonusItems->isEmpty()) {
+        $bonusItems = $benefits
+            ->filter(fn ($item) => (bool) preg_match('/bonus|free|gratis|tambahan/i', $item))
+            ->take(2)
+            ->values();
+    }
+
+    $audienceItems = collect(match (true) {
+        $isCpnsOrPppkProduct => [
+            'Calon peserta CPNS atau PPPK yang ingin mulai lebih terarah',
+            'Pemula yang belum punya roadmap belajar dan file pendukung',
+            'Pembeli yang butuh materi ringkas agar tidak bingung mulai dari nol',
+        ],
+        $isAdminTemplateProduct => [
+            'Staf administrasi atau pekerja yang ingin kerja lebih rapi',
+            'Pengguna yang butuh template siap edit tanpa membuat dari nol',
+            'Pemula yang ingin hasil lebih cepat dengan format yang sudah tertata',
+        ],
+        $isSkillProduct => [
+            'Pemula yang ingin belajar dari langkah yang lebih praktis',
+            'Pengguna yang butuh panduan siap ikuti, bukan teori panjang',
+            'Pembeli yang ingin file latihan atau template pendukung',
+        ],
+        default => [
+            'Pemula yang ingin mulai lebih terarah',
+            'Pengguna yang butuh file digital praktis dan siap pakai',
+            'Pembeli yang ingin menghemat waktu saat belajar atau bekerja',
+        ],
+    })->values();
+
+    $problemItems = collect(match (true) {
+        $isCpnsOrPppkProduct => [
+            'Sering bingung harus mulai belajar CPNS/PPPK dari bagian mana dulu.',
+            'Materi yang ditemukan terpencar sehingga sulit menentukan prioritas.',
+            'Butuh file pendukung yang lebih praktis agar proses persiapan terasa lebih ringan.',
+        ],
+        $isAdminTemplateProduct => [
+            'Pekerjaan berulang masih dibuat dari nol sehingga menyita waktu.',
+            'Format dokumen belum konsisten dan sering perlu revisi kecil berulang.',
+            'Butuh template praktis agar proses kerja lebih cepat dan rapi.',
+        ],
+        $isSkillProduct => [
+            'Belajar terasa berat karena belum punya panduan langkah awal yang jelas.',
+            'Sulit menerjemahkan teori menjadi file atau latihan yang benar-benar dipakai.',
+            'Butuh materi yang ringkas agar progres tetap jalan walau waktu terbatas.',
+        ],
+        default => [
+            'Sulit mulai karena belum punya alur yang rapi.',
+            'Butuh file atau panduan yang langsung bisa dipakai tanpa banyak persiapan.',
+            'Ingin proses belajar atau kerja lebih hemat waktu dan tidak berulang dari nol.',
+        ],
+    })->values();
+
+    $benefitItems = $benefits->take(4);
+    if ($benefitItems->isEmpty()) {
+        $benefitItems = collect(match (true) {
+            $isCpnsOrPppkProduct => [
+                'Membantu Anda fokus ke materi dan file yang paling relevan untuk mulai.',
+                'Lebih mudah menyusun langkah belajar agar tidak lompat-lompat.',
+                'Format digital praktis untuk dipelajari ulang kapan pun dibutuhkan.',
+            ],
+            $isAdminTemplateProduct => [
+                'Mempercepat pekerjaan karena format dasar sudah lebih siap dipakai.',
+                'Membantu hasil kerja terlihat lebih rapi dan konsisten.',
+                'Mengurangi waktu membuat dokumen dari nol untuk kebutuhan berulang.',
+            ],
+            default => [
+                'Membantu proses belajar atau kerja jadi lebih terarah.',
+                'Menghemat waktu karena file sudah disiapkan dalam format digital praktis.',
+                'Lebih nyaman dipakai ulang sesuai kebutuhan Anda.',
+            ],
+        })->values();
+    }
+    $heroBenefits = $benefitItems->take(3)->values();
+
+    $packageSummary = $packageItems->isNotEmpty()
+        ? $packageItems->take(2)->implode(' + ')
+        : 'Materi inti digital yang membantu Anda mulai lebih cepat tanpa menyiapkan semuanya dari nol.';
+    $bonusSummary = $bonusItems->isNotEmpty()
+        ? $bonusItems->take(2)->implode(' + ')
+        : 'Bonus mengikuti isi produk yang sedang aktif, dengan fallback materi pendukung praktis saat tersedia.';
+    $audienceSummary = $audienceItems->first() ?? 'Cocok untuk pembeli yang ingin mulai lebih terarah dengan file digital praktis.';
+    $accessSummary = 'File digital diakses setelah pembayaran tervalidasi, lalu link download dikirim agar akses lebih aman dan rapi.';
+    $problemIntro = $product->short_description ?: 'Produk ini dirancang untuk membantu pembeli bergerak lebih cepat dengan materi dan file digital yang praktis.';
+    $solutionIntro = trim((string) $product->description) !== ''
+        ? trim((string) $product->description)
+        : 'Produk ini membantu Anda mulai lebih terarah dengan isi paket yang lebih praktis, manfaat yang jelas, dan format digital yang siap digunakan.';
+    $purchaseSummaryItems = [
+        'Isi paket: ' . ($packageItems->first() ?? 'Materi inti digital siap pakai'),
+        'Akses file: Link dikirim setelah pembayaran tervalidasi',
+    ];
 
     $supportNumber = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
     if (str_starts_with($supportNumber, '0')) {
@@ -78,7 +189,7 @@
     });
 </script>
 
-<section class="bg-slate-50 py-12 md:py-16">
+<section class="bg-slate-50 py-10 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         @if ($isPreview)
             <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
@@ -87,7 +198,7 @@
             </div>
         @endif
 
-        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
             <a href="{{ route('products.index') }}" class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:border-blue-600 hover:text-blue-600">
                 Kembali ke katalog produk
             </a>
@@ -96,35 +207,47 @@
             @endif
         </div>
 
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(320px,420px)] lg:items-start">
-            <div class="space-y-6">
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 md:p-8">
-                    <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Produk Digital</p>
-                    <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $product->name }}</h1>
-                    <p class="mt-4 text-base leading-7 text-slate-600 md:text-lg md:leading-8">{{ $product->short_description ?: 'Produk digital siap pakai untuk belajar dan kerja lebih terarah.' }}</p>
-                </div>
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
+            <div class="space-y-5">
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+                    <h1 class="text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $product->name }}</h1>
+                    <p class="mt-3 max-w-3xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">{{ $product->short_description ?: 'Produk digital siap pakai untuk belajar dan kerja lebih terarah.' }}</p>
 
-                <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-                    <div class="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-emerald-50">
-                        @if ($coverUrl)
-                            <img src="{{ $coverUrl }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
-                        @else
-                            <div class="text-center">
-                                <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-600 text-3xl font-black text-white">RC</div>
-                                <p class="mt-3 text-sm font-semibold text-slate-500">Ruang Cerdas</p>
+                    @if ($productReviewCount > 0)
+                        <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600">
+                            <div class="inline-flex items-center gap-1 text-amber-500" aria-label="Rating {{ number_format((float) $productReviewAverage, 1, ',', '.') }} dari 5">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4 {{ $i <= (int) round((float) $productReviewAverage) ? 'opacity-100' : 'opacity-20' }}" aria-hidden="true">
+                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.176 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81H7.03a1 1 0 00.951-.69l1.069-3.292z" />
+                                    </svg>
+                                @endfor
                             </div>
-                        @endif
+                            <span>Rating {{ number_format((float) $productReviewAverage, 1, ',', '.') }}/5 dari {{ number_format($productReviewCount, 0, ',', '.') }} review pembeli</span>
+                        </div>
+                    @endif
+
+                    <div class="mt-5 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50 shadow-sm">
+                        <div class="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-emerald-50">
+                            @if ($coverUrl)
+                                <img src="{{ $coverUrl }}" alt="{{ $product->name }}" class="h-full w-full object-cover">
+                            @else
+                                <div class="text-center">
+                                    <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl bg-blue-600 text-3xl font-black text-white">RC</div>
+                                    <p class="mt-3 text-sm font-semibold text-slate-500">Ruang Cerdas</p>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="space-y-6 lg:sticky lg:top-24">
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <p class="text-sm font-bold uppercase tracking-widest text-blue-600">{{ $priceLabel }}</p>
+            <div class="space-y-5 lg:sticky lg:top-24">
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-blue-600">{{ $priceLabel }}</p>
                     @if ($isDiscounted && $normalPrice > $price)
-                        <p class="mt-2 text-base text-slate-400 line-through">{{ \App\Support\Money::rupiah($normalPrice) }}</p>
+                        <p class="mt-1 text-base text-slate-400 line-through">{{ \App\Support\Money::rupiah($normalPrice) }}</p>
                     @else
-                        <p class="mt-2 text-sm font-semibold text-slate-500">Harga Normal</p>
+                        <p class="mt-1 text-sm font-semibold text-slate-500">Harga Normal</p>
                     @endif
                     <p class="mt-1 text-4xl font-black text-slate-950">{{ \App\Support\Money::rupiah($price) }}</p>
 
@@ -133,6 +256,14 @@
                             Harga pembeli pertama aktif. Tersisa {{ $remainingQuota }} slot.
                         </p>
                     @endif
+
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        @foreach ($heroBenefits as $benefitItem)
+                            <span class="inline-flex rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">
+                                {{ $benefitItem }}
+                            </span>
+                        @endforeach
+                    </div>
 
                     @if ($canCheckout)
                         <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-base font-bold text-white hover:bg-blue-700">
@@ -147,15 +278,18 @@
                     <a href="{{ route('public.order-tracking.index') }}" class="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-4 text-base font-bold text-slate-700 hover:border-blue-600 hover:text-blue-600">
                         Cek Status Order
                     </a>
-                </div>
 
-                <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <h2 class="text-xl font-black text-slate-950">Ringkasan Manfaat</h2>
-                    <ul class="mt-4 space-y-3 text-sm leading-7 text-slate-700">
-                        <li>Belajar dan bekerja lebih terarah dengan materi praktis.</li>
-                        <li>Format siap pakai sehingga tidak perlu mulai dari nol.</li>
-                        <li>Akses file aman setelah pembayaran disetujui admin.</li>
-                    </ul>
+                    <div class="mt-5 rounded-3xl bg-slate-50 p-4">
+                        <ul class="space-y-3 text-sm leading-6 text-slate-700">
+                            @foreach ($purchaseSummaryItems as $summaryItem)
+                                <li class="flex gap-3">
+                                    <span class="mt-2 h-2 w-2 rounded-full bg-blue-600"></span>
+                                    <span>{{ $summaryItem }}</span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    <p class="mt-4 text-xs leading-6 text-slate-500">Checkout tetap lewat alur Ruang Cerdas yang sama.</p>
                 </div>
             </div>
         </div>
@@ -193,30 +327,31 @@
 </section>
 @endif
 
-<section class="bg-white py-12 md:py-16">
+<section class="bg-white py-10 md:py-14">
     <div class="mx-auto max-w-7xl px-6 space-y-6">
-        <div class="rounded-3xl border border-slate-200 bg-slate-50 p-6">
-            <h2 class="text-2xl font-black text-slate-950">Masalah yang sering dialami pembeli</h2>
-            <ul class="mt-4 space-y-3 text-sm leading-7 text-slate-700">
-                <li>Sulit memulai karena belum punya format kerja atau belajar yang rapi.</li>
-                <li>Butuh materi praktis, bukan teori yang terlalu panjang.</li>
-                <li>Ingin file siap pakai agar hemat waktu dan langsung digunakan.</li>
-            </ul>
-        </div>
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+            <div class="rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8">
+                <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Tentang Produk</p>
+                <h2 class="mt-3 text-2xl font-black text-slate-950">Singkat, jelas, dan langsung bisa dipakai</h2>
+                <p class="mt-4 text-base leading-8 text-slate-600">{{ $problemIntro }}</p>
+                <div class="mt-5 prose prose-slate max-w-none text-slate-600 leading-8">
+                    {!! nl2br(e($solutionIntro)) !!}
+                </div>
+            </div>
 
-        <div class="rounded-3xl border border-slate-200 bg-white p-6">
-            <h2 class="text-2xl font-black text-slate-950">Solusi dari produk ini</h2>
-            <div class="mt-4 prose prose-slate max-w-none text-slate-600 leading-8">
-                @if ($product->description)
-                    {!! nl2br(e($product->description)) !!}
-                @else
-                    <p>Produk ini dirancang untuk membantu Anda belajar dan bekerja lebih efektif dengan format yang praktis dan siap digunakan.</p>
-                @endif
+            <div class="rounded-[2rem] border border-slate-200 bg-slate-50 p-6 md:p-8">
+                <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Cocok Untuk</p>
+                <h2 class="mt-3 text-2xl font-black text-slate-950">Pembeli yang ingin hasil lebih cepat</h2>
+                <ul class="mt-5 space-y-3 text-sm leading-7 text-slate-700">
+                    @foreach ($audienceItems as $audienceItem)
+                        <li class="rounded-2xl bg-white px-4 py-3">{{ $audienceItem }}</li>
+                    @endforeach
+                </ul>
             </div>
         </div>
 
         <div class="grid gap-6 lg:grid-cols-2">
-            <div class="rounded-3xl border border-slate-200 bg-white p-6">
+            <div class="rounded-[2rem] border border-slate-200 bg-white p-6">
                 <h2 class="text-2xl font-black text-slate-950">Isi Paket</h2>
                 @if ($contents->isNotEmpty())
                     <ul class="mt-4 space-y-3">
@@ -229,7 +364,7 @@
                 @endif
             </div>
 
-            <div class="rounded-3xl border border-slate-200 bg-white p-6">
+            <div class="rounded-[2rem] border border-slate-200 bg-white p-6">
                 <h2 class="text-2xl font-black text-slate-950">Manfaat Produk</h2>
                 @if ($benefits->isNotEmpty())
                     <ul class="mt-4 space-y-3">
@@ -247,18 +382,7 @@
 
 <section class="bg-slate-50 py-12 md:py-16">
     <div class="mx-auto max-w-7xl px-6 grid gap-6 lg:grid-cols-2">
-        <div class="rounded-3xl border border-slate-200 bg-white p-6">
-            <h2 class="text-2xl font-black text-slate-950">Cocok untuk siapa</h2>
-            <ul class="mt-4 space-y-3 text-sm leading-7 text-slate-700">
-                <li>Pemula yang ingin belajar lebih terarah</li>
-                <li>Calon peserta CPNS/PPPK</li>
-                <li>ASN/staf administrasi</li>
-                <li>Pekerja kantor yang butuh template praktis</li>
-                <li>Pengguna yang ingin file siap pakai</li>
-            </ul>
-        </div>
-
-        <div class="rounded-3xl border border-slate-200 bg-white p-6">
+        <div class="rounded-[2rem] border border-slate-200 bg-white p-6">
             <h2 class="text-2xl font-black text-slate-950">Cara mendapatkan file</h2>
             <ol class="mt-4 space-y-3 text-sm leading-7 text-slate-700">
                 @foreach ([
@@ -273,17 +397,14 @@
                 @endforeach
             </ol>
         </div>
-    </div>
-</section>
 
-<section class="bg-white py-12 md:py-16">
-    <div class="mx-auto max-w-7xl px-6">
-        <div class="rounded-3xl border border-blue-200 bg-blue-50 p-6 md:p-8">
-            <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Garansi Akses File</p>
+        <div class="rounded-[2rem] border border-blue-200 bg-blue-50 p-6 md:p-8">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-700">Aman untuk Pembeli</p>
+            <h2 class="mt-3 text-2xl font-black text-slate-950">Ada jalur bantuan kalau akses file bermasalah</h2>
             <p class="mt-3 text-sm leading-7 text-slate-700 md:text-base">
                 Jika file rusak atau link bermasalah, pembeli dapat menghubungi admin untuk dibantu selama data order valid.
             </p>
-            <a href="{{ route('public.faq') }}" class="mt-4 inline-flex items-center rounded-2xl border border-blue-300 bg-white px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-100">
+            <a href="{{ route('public.faq') }}" class="mt-5 inline-flex items-center rounded-2xl border border-blue-300 bg-white px-5 py-3 text-sm font-bold text-blue-700 hover:bg-blue-100">
                 Lihat FAQ Umum
             </a>
         </div>
@@ -398,7 +519,7 @@
 <div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
     <div class="mx-auto flex max-w-7xl gap-2">
         @if ($canCheckout)
-            <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_product_checkout', content_type: 'product', content_ids: [{{ $product->id }}]});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
+            <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {source: 'sticky_product_checkout', content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
                 Beli Sekarang
             </a>
         @endif

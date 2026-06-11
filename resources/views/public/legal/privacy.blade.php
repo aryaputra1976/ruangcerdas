@@ -6,16 +6,14 @@
 @section('canonical', route('public.privacy'))
 
 @section('content')
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 pt-4 pb-8 md:pt-6 md:pb-10">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Legal</p>
-        <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kebijakan Privasi</h1>
-        <p class="mx-auto mt-4 max-w-3xl text-slate-600">Penjelasan penggunaan data pembeli pada proses pembelian dan pengiriman produk digital Ruang Cerdas.</p>
+        <h1 class="text-3xl font-black text-slate-950 md:text-4xl">Kebijakan Privasi</h1>
         <p class="mt-3 text-sm text-slate-500">Terakhir diperbarui: 2026</p>
     </div>
 </section>
 
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-10 md:py-12">
     <div class="mx-auto max-w-5xl px-6">
         <div class="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             @foreach ([
@@ -73,7 +71,7 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-14">
+<section class="bg-slate-50 py-10 md:py-12">
     <div class="mx-auto max-w-5xl px-6">
         <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Akses Cepat</p>

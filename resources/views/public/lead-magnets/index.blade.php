@@ -5,16 +5,15 @@
 @section('canonical', route('lead-magnets.index'))
 
 @section('content')
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 pt-4 pb-10 md:pt-6 md:pb-12">
     <div class="mx-auto max-w-7xl px-6">
         <div class="max-w-3xl">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Panduan Gratis</p>
             <h1 class="mt-3 text-4xl font-black text-slate-950">Download Panduan Gratis</h1>
-            <p class="mt-3 text-slate-600">Isi form singkat untuk mengunduh panduan gratis dari Ruang Cerdas.</p>
         </div>
 
         @if ($leadMagnets->count())
-            <div class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($leadMagnets as $item)
                     <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                         @if ($item->cover_image)
@@ -30,7 +29,7 @@
             </div>
             <div class="mt-6">{{ $leadMagnets->links() }}</div>
         @else
-            <div class="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
+            <div class="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
                 <p class="text-slate-600">Panduan gratis belum tersedia saat ini.</p>
                 <a href="{{ route('products.index') }}" class="mt-4 inline-flex rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">Lihat Produk</a>
             </div>
@@ -38,4 +37,3 @@
     </div>
 </section>
 @endsection
-

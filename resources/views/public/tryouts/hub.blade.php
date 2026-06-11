@@ -5,23 +5,13 @@
 @section('canonical', route('public.tryouts.hub'))
 
 @section('content')
-<section class="relative overflow-hidden bg-slate-950 py-16 text-white">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.22),_transparent_30%)]"></div>
-
+<section class="bg-slate-50 pt-4 pb-6 md:pt-6 md:pb-8">
     <div class="relative mx-auto max-w-7xl px-6">
-        <div class="max-w-3xl">
-            <p class="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-100">
-                Kategori Tryout
-            </p>
-            <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">Pilih Jalur Tryout yang Ingin Dipelajari</h1>
-            <p class="mt-5 text-base leading-8 text-slate-300 md:text-lg">
-                Semua kategori tryout Ruang Cerdas dikumpulkan dalam satu halaman agar lebih mudah dijelajahi dari CPNS sampai PPPK Tendik.
-            </p>
-        </div>
+        <h1 class="text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Tryout</h1>
     </div>
 </section>
 
-<section class="bg-slate-50 py-16">
+<section class="bg-slate-50 pb-10 md:pb-12">
     <div class="mx-auto max-w-7xl px-6">
         <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($cards as $card)

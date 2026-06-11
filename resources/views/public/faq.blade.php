@@ -6,14 +6,10 @@
 @section('canonical', route('public.faq'))
 
 @section('content')
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 pt-4 pb-8 md:pt-6 md:pb-10">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <p class="text-sm font-bold uppercase tracking-widest text-blue-600">FAQ</p>
-        <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Pertanyaan yang Sering Diajukan</h1>
-        <p class="mx-auto mt-4 max-w-3xl text-slate-600">
-            Ringkasan alur pembelian, pembayaran manual, verifikasi admin, sampai akses download produk digital Ruang Cerdas.
-        </p>
-        <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <h1 class="text-3xl font-black text-slate-950 md:text-4xl">FAQ</h1>
+        <div class="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
                 Lihat Produk
             </a>
@@ -24,7 +20,7 @@
     </div>
 </section>
 
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-10 md:py-12">
     <div class="mx-auto max-w-5xl space-y-10 px-6">
         @php
             $faqGroups = [
@@ -79,7 +75,7 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-14">
+<section class="bg-slate-50 py-10 md:py-12">
     <div class="mx-auto max-w-5xl px-6">
         <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Bantuan</p>

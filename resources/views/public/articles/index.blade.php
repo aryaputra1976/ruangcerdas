@@ -10,13 +10,12 @@
 @endphp
 
 @section('content')
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 pt-4 pb-10 md:pt-6 md:pb-12">
     <div class="mx-auto max-w-7xl px-6">
-        <div class="max-w-4xl rounded-[2rem] border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">ARTIKEL CPNS & PANDUAN BELAJAR</p>
-            <h1 class="mt-3 text-4xl font-black tracking-tight text-slate-950 md:text-5xl">Panduan Praktis Persiapan CPNS untuk Pemula</h1>
-            <p class="mt-4 max-w-3xl text-slate-600">Baca artikel edukasi seputar persiapan CPNS, latihan soal, tryout, dan strategi belajar mandiri agar persiapan Anda lebih terarah.</p>
-            <div class="mt-6 flex flex-col gap-3 sm:flex-row">
+        <div class="max-w-4xl rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Artikel</p>
+            <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Panduan Praktis Persiapan CPNS</h1>
+            <div class="mt-5 flex flex-col gap-3 sm:flex-row">
                 <a href="{{ $leadMagnetUrl }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-blue-700">
                     Download Panduan Gratis
                 </a>
@@ -27,7 +26,7 @@
         </div>
 
         @if ($articles->count())
-            <div class="mt-8 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <div class="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($articles as $article)
                     <article class="flex h-full flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                         @if ($article->cover_image)
@@ -51,7 +50,7 @@
             </div>
             <div class="mt-6">{{ $articles->links() }}</div>
 
-            <div class="mt-10 rounded-[2rem] border border-blue-100 bg-gradient-to-r from-blue-600 to-sky-500 p-8 text-white shadow-lg md:p-10">
+            <div class="mt-8 rounded-[2rem] border border-blue-100 bg-gradient-to-r from-blue-600 to-sky-500 p-8 text-white shadow-lg md:p-10">
                 <h2 class="text-2xl font-black md:text-3xl">Masih Bingung Mulai Persiapan CPNS?</h2>
                 <p class="mt-3 max-w-3xl text-sm leading-7 text-blue-50 md:text-base">Gunakan CPNS Starter Kit RuangCerdas untuk membantu Anda belajar lebih rapi dari rumah. Berisi eBook, checklist, jadwal belajar, ringkasan materi, worksheet, dan panduan praktis untuk pemula.</p>
                 <div class="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -64,7 +63,7 @@
                 </div>
             </div>
         @else
-            <div class="mt-8 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
+            <div class="mt-6 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center shadow-sm">
                 <p class="mx-auto max-w-2xl text-slate-600">Artikel belum tersedia saat ini. Sambil menunggu, Anda bisa melihat produk CPNS atau mengunduh panduan gratis.</p>
                 <div class="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
                     <a href="{{ $productsUrl }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">Lihat Produk</a>

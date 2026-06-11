@@ -1,43 +1,36 @@
 <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur" data-mobile-nav>
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3.5">
-        <a href="{{ route('home') }}" class="flex items-center gap-2">
-            <img
-                src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
-                alt="Ruang Cerdas Logo"
-                class="h-10 w-10 rounded-xl object-cover"
-            >
-            <div>
-                <p class="text-base font-bold leading-none">Ruang Cerdas</p>
-                <p class="text-xs text-slate-500">Produk Digital &amp; Belajar Online</p>
-            </div>
-        </a>
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
+        <div class="flex items-center gap-8 lg:gap-10">
+            <a href="{{ route('home') }}" class="flex items-center gap-2">
+                <img
+                    src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
+                    alt="Ruang Cerdas Logo"
+                    class="h-9 w-9 rounded-xl object-cover"
+                >
+                <div>
+                    <p class="text-base font-bold leading-none">Ruang Cerdas</p>
+                    <p class="text-xs text-slate-500">Produk Digital</p>
+                </div>
+            </a>
 
-        <nav class="hidden items-center gap-5 md:flex lg:gap-6">
-            <a href="{{ route('home') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Beranda
-            </a>
-            <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Produk
-            </a>
-            <a href="{{ route('articles.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Artikel
-            </a>
-            <a href="{{ route('public.tryouts.hub') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Tryout
-            </a>
-            <a href="{{ route('lead-magnets.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Panduan Gratis
-            </a>
-            <a href="{{ route('home') }}#cara-beli" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Cara Beli
-            </a>
-            <a href="{{ route('public.orders.lookup') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                Cek Order
-            </a>
-            <a href="{{ route('public.faq') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                FAQ
-            </a>
-        </nav>
+            <nav class="hidden items-center gap-4 md:flex lg:gap-5">
+                <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                    Produk
+                </a>
+                <a href="{{ route('public.tryouts.hub') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                    Tryout
+                </a>
+                <a href="{{ route('lead-magnets.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                    Panduan Gratis
+                </a>
+                <a href="{{ route('public.orders.lookup') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                    Cek Order
+                </a>
+                <a href="{{ route('public.faq') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                    FAQ
+                </a>
+            </nav>
+        </div>
 
         <a href="{{ route('products.index') }}" class="hidden rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 md:inline-flex">
             Lihat Produk
@@ -65,23 +58,14 @@
         data-mobile-nav-menu
     >
         <div class="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-4">
-            <a href="{{ route('home') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Beranda
-            </a>
             <a href="{{ route('products.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Produk
-            </a>
-            <a href="{{ route('articles.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Artikel
             </a>
             <a href="{{ route('public.tryouts.hub') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Tryout
             </a>
             <a href="{{ route('lead-magnets.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Panduan Gratis
-            </a>
-            <a href="{{ route('home') }}#cara-beli" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Cara Beli
             </a>
             <a href="{{ route('public.orders.lookup') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
                 Cek Order

@@ -13,26 +13,26 @@
 @endphp
 
 @section('content')
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white pt-4 pb-10 md:pt-6 md:pb-12">
     <div class="mx-auto max-w-4xl px-6">
         <a href="{{ route('articles.index') }}" class="inline-flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-bold text-slate-700 hover:border-blue-600 hover:text-blue-600">? Kembali ke Artikel</a>
 
-        <h1 class="mt-6 text-4xl font-black tracking-tight text-slate-950">{{ $article->title }}</h1>
+        <h1 class="mt-4 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $article->title }}</h1>
         <p class="mt-2 text-sm text-slate-500">{{ $article->published_at?->format('d M Y H:i') }}</p>
 
         @if ($article->cover_image)
-            <img src="{{ asset('storage/' . $article->cover_image) }}" alt="{{ $article->title }}" class="mt-6 h-auto w-full rounded-3xl border border-slate-200 object-cover">
+            <img src="{{ asset('storage/' . $article->cover_image) }}" alt="{{ $article->title }}" class="mt-5 h-auto w-full rounded-3xl border border-slate-200 object-cover">
         @endif
 
         @if ($article->excerpt)
-            <p class="mt-6 text-lg leading-8 text-slate-600">{{ $article->excerpt }}</p>
+            <p class="mt-5 text-lg leading-8 text-slate-600">{{ $article->excerpt }}</p>
         @endif
 
-        <article class="prose prose-slate mt-8 max-w-none leading-8">
+        <article class="prose prose-slate mt-6 max-w-none leading-8">
             {!! nl2br(e($article->content)) !!}
         </article>
 
-        <div class="mt-10 rounded-[2rem] border border-blue-100 bg-slate-50 p-6 shadow-sm md:p-8">
+        <div class="mt-8 rounded-[2rem] border border-blue-100 bg-slate-50 p-6 shadow-sm md:p-8">
             <h2 class="text-2xl font-black text-slate-950 md:text-3xl">Ingin Persiapan CPNS yang Lebih Rapi?</h2>
             <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">CPNS Starter Kit RuangCerdas membantu pemula belajar lebih terarah melalui panduan belajar, checklist, jadwal belajar, ringkasan materi, template catatan, dan bahan pendukung lainnya.</p>
             <div class="mt-6 flex flex-col gap-3 sm:flex-row">

@@ -12,6 +12,8 @@ use App\Support\ActivityLogger;
 use App\Support\OrderAuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -215,7 +217,7 @@ class OrderController extends Controller
             $successMessage = 'Pembayaran berhasil di-approve. Akses tryout premium sudah aktif untuk email pembeli.';
         }
 
-        $orderBuyerMailService->sendOrderPaid($order->fresh('product'));
+        $paidMailSent = $orderBuyerMailService->sendOrderPaid($order->fresh('product'));
 
         ActivityLogger::log(
             'order.approved',
@@ -239,9 +241,15 @@ class OrderController extends Controller
             );
         }
 
-        return redirect()
+        $redirect = redirect()
             ->route('admin.orders.show', $order)
             ->with('success', $successMessage);
+
+        if (! $paidMailSent) {
+            $redirect->with('warning', 'Order sudah paid, tetapi email pembeli gagal dikirim. Periksa SMTP / inbox log lalu gunakan fitur kirim ulang.');
+        }
+
+        return $redirect;
     }
 
     public function reject(Request $request, Order $order, OrderBuyerMailService $orderBuyerMailService)

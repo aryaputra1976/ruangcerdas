@@ -130,16 +130,11 @@
         ? $bonusItems->take(2)->implode(' + ')
         : 'Bonus mengikuti isi produk yang sedang aktif, dengan fallback materi pendukung praktis saat tersedia.';
     $audienceSummary = $audienceItems->first() ?? 'Cocok untuk pembeli yang ingin mulai lebih terarah dengan file digital praktis.';
-    $accessSummary = 'File digital diakses setelah pembayaran tervalidasi, lalu link download dikirim agar akses lebih aman dan rapi.';
+    $accessSummary = 'File digital dibuka melalui Ruang Akses setelah pembayaran tervalidasi, menggunakan email pembeli dan nomor invoice.';
     $problemIntro = $product->short_description ?: 'Produk ini dirancang untuk membantu pembeli bergerak lebih cepat dengan materi dan file digital yang praktis.';
     $solutionIntro = trim((string) $product->description) !== ''
         ? trim((string) $product->description)
         : 'Produk ini membantu Anda mulai lebih terarah dengan isi paket yang lebih praktis, manfaat yang jelas, dan format digital yang siap digunakan.';
-    $purchaseSummaryItems = [
-        'Isi paket: ' . ($packageItems->first() ?? 'Materi inti digital siap pakai'),
-        'Akses file: Link dikirim setelah pembayaran tervalidasi',
-    ];
-
     $supportNumber = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
     if (str_starts_with($supportNumber, '0')) {
         $supportNumber = '62' . substr($supportNumber, 1);
@@ -189,7 +184,7 @@
     });
 </script>
 
-<section class="bg-slate-50 py-10 md:py-14">
+<section class="bg-slate-50 pt-4 pb-8 md:pt-5 md:pb-8">
     <div class="mx-auto max-w-7xl px-6">
         @if ($isPreview)
             <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
@@ -200,18 +195,18 @@
 
         <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
             <a href="{{ route('products.index') }}" class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:border-blue-600 hover:text-blue-600">
-                Kembali ke katalog produk
+                Kembali ke Produk
             </a>
             @if ($product->category)
                 <span class="inline-flex rounded-full bg-blue-50 px-4 py-2 text-sm font-bold text-blue-700">{{ $product->category->name }}</span>
             @endif
         </div>
 
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-start">
-            <div class="space-y-5">
-                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+            <div class="space-y-4">
+                <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-7">
                     <h1 class="text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $product->name }}</h1>
-                    <p class="mt-3 max-w-3xl text-base leading-7 text-slate-600 md:text-lg md:leading-8">{{ $product->short_description ?: 'Produk digital siap pakai untuk belajar dan kerja lebih terarah.' }}</p>
+                    <p class="mt-3 max-w-3xl text-base leading-7 text-slate-600 md:text-lg">{{ $product->short_description ?: 'Produk digital siap pakai untuk belajar dan kerja lebih terarah.' }}</p>
 
                     @if ($productReviewCount > 0)
                         <div class="mt-4 flex flex-wrap items-center gap-3 text-sm text-slate-600">
@@ -225,6 +220,14 @@
                             <span>Rating {{ number_format((float) $productReviewAverage, 1, ',', '.') }}/5 dari {{ number_format($productReviewCount, 0, ',', '.') }} review pembeli</span>
                         </div>
                     @endif
+
+                    <div class="mt-5 grid gap-3 md:grid-cols-3">
+                        @foreach ($heroBenefits as $benefitItem)
+                            <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+                                {{ $benefitItem }}
+                            </div>
+                        @endforeach
+                    </div>
 
                     <div class="mt-5 overflow-hidden rounded-[1.75rem] border border-slate-200 bg-slate-50 shadow-sm">
                         <div class="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-blue-50 via-white to-emerald-50">
@@ -241,7 +244,7 @@
                 </div>
             </div>
 
-            <div class="space-y-5 lg:sticky lg:top-24">
+            <div class="space-y-5 lg:sticky lg:top-20">
                 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                     <p class="text-[11px] font-bold uppercase tracking-widest text-blue-600">{{ $priceLabel }}</p>
                     @if ($isDiscounted && $normalPrice > $price)
@@ -257,16 +260,8 @@
                         </p>
                     @endif
 
-                    <div class="mt-4 flex flex-wrap gap-2">
-                        @foreach ($heroBenefits as $benefitItem)
-                            <span class="inline-flex rounded-full bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700">
-                                {{ $benefitItem }}
-                            </span>
-                        @endforeach
-                    </div>
-
                     @if ($canCheckout)
-                        <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="mt-5 inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-base font-bold text-white hover:bg-blue-700">
+                        <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="rc-btn-primary mt-5 w-full px-6 py-4 text-base">
                             Beli Sekarang
                         </a>
                     @else
@@ -275,21 +270,30 @@
                         </span>
                     @endif
 
-                    <a href="{{ route('public.order-tracking.index') }}" class="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-4 text-base font-bold text-slate-700 hover:border-blue-600 hover:text-blue-600">
+                    <a href="{{ route('public.order-tracking.index') }}" class="rc-btn-neutral mt-3 w-full px-6 py-4 text-base">
                         Cek Status Order
                     </a>
 
-                    <div class="mt-5 rounded-3xl bg-slate-50 p-4">
-                        <ul class="space-y-3 text-sm leading-6 text-slate-700">
-                            @foreach ($purchaseSummaryItems as $summaryItem)
-                                <li class="flex gap-3">
-                                    <span class="mt-2 h-2 w-2 rounded-full bg-blue-600"></span>
-                                    <span>{{ $summaryItem }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
+                    <div class="mt-5 space-y-3 rounded-3xl bg-slate-50 p-4">
+                        <div>
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Isi paket utama</p>
+                            <p class="mt-1 text-sm leading-6 text-slate-700">{{ $packageSummary }}</p>
+                        </div>
+                        <div class="border-t border-slate-200 pt-3">
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Bonus</p>
+                            <p class="mt-1 text-sm leading-6 text-slate-700">{{ $bonusSummary }}</p>
+                        </div>
+                        <div class="border-t border-slate-200 pt-3">
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Cocok untuk siapa</p>
+                            <p class="mt-1 text-sm leading-6 text-slate-700">{{ $audienceSummary }}</p>
+                        </div>
+                        <div class="border-t border-slate-200 pt-3">
+                            <p class="text-[11px] font-bold uppercase tracking-widest text-slate-500">Akses file digital</p>
+                            <p class="mt-1 text-sm leading-6 text-slate-700">{{ $accessSummary }}</p>
+                        </div>
                     </div>
-                    <p class="mt-4 text-xs leading-6 text-slate-500">Checkout tetap lewat alur Ruang Cerdas yang sama.</p>
+
+                    <p class="mt-4 text-xs leading-6 text-slate-500">Akses produk dibuka lewat Ruang Akses setelah pembayaran tervalidasi admin.</p>
                 </div>
             </div>
         </div>
@@ -327,14 +331,14 @@
 </section>
 @endif
 
-<section class="bg-white py-10 md:py-14">
+<section class="bg-white py-8 md:py-10">
     <div class="mx-auto max-w-7xl px-6 space-y-6">
         <div class="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
             <div class="rounded-[2rem] border border-slate-200 bg-white p-6 md:p-8">
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Tentang Produk</p>
                 <h2 class="mt-3 text-2xl font-black text-slate-950">Singkat, jelas, dan langsung bisa dipakai</h2>
-                <p class="mt-4 text-base leading-8 text-slate-600">{{ $problemIntro }}</p>
-                <div class="mt-5 prose prose-slate max-w-none text-slate-600 leading-8">
+                <p class="mt-4 text-base leading-7 text-slate-600">{{ $problemIntro }}</p>
+                <div class="mt-4 prose prose-slate max-w-none text-slate-600 leading-7">
                     {!! nl2br(e($solutionIntro)) !!}
                 </div>
             </div>
@@ -380,7 +384,7 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-12 md:py-16">
+<section class="bg-slate-50 py-8 md:py-10">
     <div class="mx-auto max-w-7xl px-6 grid gap-6 lg:grid-cols-2">
         <div class="rounded-[2rem] border border-slate-200 bg-white p-6">
             <h2 class="text-2xl font-black text-slate-950">Cara mendapatkan file</h2>
@@ -391,7 +395,7 @@
                     'Bayar manual',
                     'Upload bukti pembayaran',
                     'Admin menyetujui pembayaran',
-                    'Link download dikirim ke email',
+                    'Buka lewat Ruang Akses',
                 ] as $index => $step)
                     <li class="rounded-2xl bg-slate-50 px-4 py-3"><span class="font-bold">{{ $index + 1 }}.</span> {{ $step }}</li>
                 @endforeach
@@ -507,10 +511,10 @@
         <p class="mx-auto mt-3 max-w-2xl text-slate-300">Lanjutkan checkout untuk mengamankan akses produk digital Anda.</p>
         <div class="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
             @if ($canCheckout)
-                <a href="{{ route('checkout.create', $product->slug) }}" class="rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white hover:bg-blue-700">Beli Sekarang</a>
+                <a href="{{ route('checkout.create', $product->slug) }}" class="rc-btn-primary px-7 py-4 text-base">Beli Sekarang</a>
             @endif
             @if ($waUrl)
-                <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="rounded-2xl border border-slate-500 px-7 py-4 text-base font-bold text-white hover:border-green-400">{{ $waCtaText }}</a>
+                <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" class="rc-btn-success px-7 py-4 text-base">{{ $waCtaText }}</a>
             @endif
         </div>
     </div>
@@ -519,12 +523,12 @@
 <div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
     <div class="mx-auto flex max-w-7xl gap-2">
         @if ($canCheckout)
-            <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {source: 'sticky_product_checkout', content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
+            <a href="{{ route('checkout.create', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {source: 'sticky_product_checkout', content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});" class="rc-btn-primary flex-1 rounded-xl px-4 py-3 text-sm">
                 Beli Sekarang
             </a>
         @endif
         @if ($waUrl)
-            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_product_whatsapp'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white">
+            <a href="{{ $waUrl }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_product_whatsapp'});" class="rc-btn-success flex-1 rounded-xl px-4 py-3 text-sm">
                 WhatsApp
             </a>
         @endif

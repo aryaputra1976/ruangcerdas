@@ -17,13 +17,16 @@ class ProductController extends Controller
 {
     public function index(Request $request, PricingService $pricingService)
     {
-        $typeOptions = Product::productTypeLabels();
+        $typeOptions = collect(Product::productTypeLabels())
+            ->except('tryout')
+            ->all();
         $activeType = $request->filled('type') && array_key_exists($request->query('type'), $typeOptions)
             ? $request->query('type')
             : null;
 
         $publicVisibleProducts = Product::query()
             ->with('category')
+            ->excludeTryout()
             ->ofProductType($activeType)
             ->visibleToPublic()
             ->latest('published_at')
@@ -33,6 +36,7 @@ class ProductController extends Controller
 
         $query = Product::query()
             ->with('category')
+            ->excludeTryout()
             ->ofProductType($activeType)
             ->visibleToPublic()
             ->latest('published_at');

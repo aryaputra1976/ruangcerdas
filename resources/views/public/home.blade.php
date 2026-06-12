@@ -64,10 +64,10 @@
             </div>
 
             <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-                <a href="{{ $landing['primary_cta_url'] }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-7 py-4 text-base font-bold text-white shadow-lg shadow-blue-600/20 hover:bg-blue-700">
+                <a href="{{ $landing['primary_cta_url'] }}" class="rc-btn-primary px-7 py-4 text-base">
                     {{ $landing['primary_cta_text'] }}
                 </a>
-                <a href="{{ $landing['secondary_cta_url'] }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-7 py-4 text-base font-bold text-slate-800 hover:border-blue-600 hover:text-blue-600">
+                <a href="{{ $landing['secondary_cta_url'] }}" class="rc-btn-neutral px-7 py-4 text-base">
                     {{ $landing['secondary_cta_text'] }}
                 </a>
             </div>
@@ -174,7 +174,7 @@
     </div>
 </section>
 
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
@@ -205,7 +205,7 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Trust</p>
@@ -215,7 +215,7 @@
             @foreach ([
                 ['title' => 'File digital siap unduh', 'desc' => 'Produk dikirim dalam format digital yang siap diakses setelah order valid.'],
                 ['title' => 'Pembayaran manual aman', 'desc' => 'Pembayaran dicek manual oleh admin untuk memastikan data order sesuai.'],
-                ['title' => 'Link dikirim setelah disetujui', 'desc' => 'Akses download dikirim ke email setelah pembayaran disetujui admin.'],
+                ['title' => 'Akses lewat Ruang Akses', 'desc' => 'Setelah pembayaran disetujui admin, pembeli membuka produk dari Ruang Akses memakai email dan invoice.'],
                 ['title' => 'Bantuan jika file bermasalah', 'desc' => 'Tim support membantu pengecekan bila file tidak bisa dibuka selama data order valid.'],
             ] as $trust)
                 <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -227,7 +227,7 @@
     </div>
 </section>
 
-<section id="kategori-utama" class="scroll-mt-24 bg-slate-50 py-14 md:py-16">
+<section id="kategori-utama" class="scroll-mt-24 bg-slate-50 py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Kategori Utama</p>
@@ -250,7 +250,7 @@
     </div>
 </section>
 
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Kenapa Ruang Cerdas</p>
@@ -273,7 +273,7 @@
     </div>
 </section>
 
-<section id="cara-beli" class="scroll-mt-24 bg-slate-50 py-14 md:py-16">
+<section id="cara-beli" class="scroll-mt-24 bg-slate-50 py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Cara Beli</p>
@@ -285,7 +285,7 @@
                 ['1', 'Pilih produk', 'Buka katalog dan pilih produk yang sesuai kebutuhan Anda.'],
                 ['2', 'Isi checkout', 'Masukkan nama, email aktif, dan nomor WhatsApp.'],
                 ['3', 'Bayar & upload bukti', 'Lakukan transfer manual lalu upload bukti pembayaran.'],
-                ['4', 'Terima link download', 'Setelah order paid, link aman dikirim ke email pembeli.'],
+                ['4', 'Buka Ruang Akses', 'Setelah order paid, pembeli membuka produk dengan email dan invoice yang sama.'],
             ] as $step)
                 <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
                     <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-base font-bold text-white">{{ $step[0] }}</div>
@@ -298,7 +298,7 @@
 </section>
 
 @if (($testimonials ?? collect())->isNotEmpty())
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Testimoni</p>
@@ -330,7 +330,7 @@
 @endif
 
 @if (($latestArticles ?? collect())->isNotEmpty())
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
@@ -357,7 +357,7 @@
 @endif
 
 @if (($leadMagnets ?? collect())->isNotEmpty())
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
@@ -382,7 +382,7 @@
 </section>
 @endif
 
-<section id="faq" class="bg-slate-50 py-14 md:py-16">
+<section id="faq" class="bg-slate-50 py-12 md:py-14">
     <div class="mx-auto max-w-7xl px-6">
         <div class="mx-auto max-w-3xl text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">FAQ Ringkas</p>
@@ -392,7 +392,7 @@
 
         <div class="mx-auto mt-8 grid max-w-5xl gap-4">
             @foreach ([
-                ['q' => 'Bagaimana cara mendapatkan file produk?', 'a' => 'Setelah pembayaran diverifikasi admin dan order berstatus paid, link download dikirim ke email pembeli.'],
+                ['q' => 'Bagaimana cara mendapatkan file produk?', 'a' => 'Setelah pembayaran diverifikasi admin dan order berstatus paid, produk dapat dibuka melalui Ruang Akses menggunakan email pembeli dan nomor invoice.'],
                 ['q' => 'Apakah produk cocok untuk pemula?', 'a' => 'Ya. Banyak produk Ruang Cerdas disusun untuk membantu pemula mulai dengan lebih terarah.'],
                 ['q' => 'Apakah ada produk untuk persiapan CPNS/PPPK?', 'a' => 'Ada. Anda dapat memulai dari kategori CPNS & PPPK untuk memilih materi yang paling sesuai.'],
             ] as $faq)

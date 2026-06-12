@@ -6,16 +6,16 @@
 @section('canonical', route('public.terms'))
 
 @section('content')
-<section class="bg-slate-50 py-14 md:py-16">
+<section class="bg-slate-50 pt-4 pb-8 md:pt-5 md:pb-9">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Legal</p>
+        <p class="text-sm font-bold uppercase tracking-[0.28em] text-blue-600">Legal</p>
         <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Syarat & Ketentuan</h1>
-        <p class="mx-auto mt-4 max-w-3xl text-slate-600">Aturan dasar penggunaan layanan dan pembelian produk digital di Ruang Cerdas.</p>
+        <p class="mx-auto mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">Aturan dasar penggunaan layanan, pembelian, verifikasi pembayaran, dan akses produk digital di Ruang Cerdas.</p>
         <p class="mt-3 text-sm text-slate-500">Terakhir diperbarui: 2026</p>
     </div>
 </section>
 
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white py-10 md:py-12">
     <div class="mx-auto max-w-5xl px-6">
         <div class="space-y-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             @foreach ([
@@ -36,12 +36,12 @@
                     'body' => 'Bukti pembayaran diverifikasi oleh admin sebelum order disetujui. Status order dapat dicek melalui halaman pelacakan order menggunakan invoice dan data kontak pembeli.',
                 ],
                 [
-                    'title' => 'Akses download setelah pembayaran disetujui',
-                    'body' => 'Link download dikirim ke email pembeli setelah pembayaran dinyatakan valid atau order berstatus paid. Akses download menggunakan link aman sesuai masa berlaku dan batas penggunaan sistem.',
+                    'title' => 'Akses produk setelah pembayaran disetujui',
+                    'body' => 'Produk digital dapat dibuka melalui Ruang Akses setelah pembayaran dinyatakan valid atau order berstatus paid. Akses tetap mengikuti masa berlaku dan batas penggunaan sistem.',
                 ],
                 [
                     'title' => 'Data pembeli',
-                    'body' => 'Nama, email, nomor WhatsApp, data order, dan bukti pembayaran digunakan seperlunya untuk memproses pembelian, verifikasi, dukungan pelanggan, dan pengiriman akses download.',
+                    'body' => 'Nama, email, nomor WhatsApp, data order, dan bukti pembayaran digunakan seperlunya untuk memproses pembelian, verifikasi, dukungan pelanggan, dan pembukaan akses produk digital.',
                 ],
                 [
                     'title' => 'Keamanan akses file',
@@ -57,7 +57,7 @@
                 ],
                 [
                     'title' => 'Bantuan',
-                    'body' => 'Jika Anda membutuhkan bantuan terkait order, pembayaran, atau akses download, gunakan halaman cek order atau hubungi admin melalui kanal bantuan yang tersedia.',
+                    'body' => 'Jika Anda membutuhkan bantuan terkait order, pembayaran, atau akses produk digital, gunakan halaman status order atau hubungi admin melalui kanal bantuan yang tersedia.',
                 ],
             ] as $section)
                 <div class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -69,15 +69,15 @@
     </div>
 </section>
 
-<section class="bg-slate-50 py-14">
+<section class="bg-slate-50 py-10 md:py-12">
     <div class="mx-auto max-w-5xl px-6">
         <div class="rounded-3xl border border-slate-200 bg-white p-8 text-center">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Akses Cepat</p>
             <h3 class="mt-3 text-3xl font-black text-slate-900 md:text-4xl">Butuh halaman lain?</h3>
             <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">Lihat Produk</a>
-                <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white hover:bg-slate-700">Cek Status Order</a>
-                <a href="{{ route('public.faq') }}" class="rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">FAQ</a>
+                <a href="{{ route('products.index') }}" class="rc-btn-primary px-6 py-3 text-sm">Lihat Produk</a>
+                <a href="{{ route('public.order-tracking.index') }}" class="rc-btn-secondary px-6 py-3 text-sm">Status Order</a>
+                <a href="{{ route('public.faq') }}" class="rc-btn-neutral px-6 py-3 text-sm">FAQ</a>
             </div>
         </div>
     </div>

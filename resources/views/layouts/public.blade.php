@@ -3,14 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ asset('hando/assets/images/rc/rc_ico.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('hando/assets/images/rc/rc_ico.png') }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('hando/assets/images/rc/rc_mark.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('hando/assets/images/rc/rc_mark.svg') }}">
     @include('public.partials.seo')
     @include('public.partials.tracking-head')
     @yield('schema_jsonld')
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
+        .rc-btn-primary,
+        .rc-btn-secondary,
+        .rc-btn-success,
+        .rc-btn-neutral {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            font-weight: 700;
+            transition: background-color .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
+        }
+
+        .rc-btn-primary {
+            background: rgb(251 191 36);
+            color: rgb(15 23 42);
+            box-shadow: 0 18px 36px -20px rgba(251, 191, 36, .85);
+        }
+
+        .rc-btn-primary:hover {
+            background: rgb(252 211 77);
+        }
+
+        .rc-btn-secondary {
+            background: rgb(37 99 235);
+            color: #fff;
+            box-shadow: 0 18px 36px -20px rgba(37, 99, 235, .55);
+        }
+
+        .rc-btn-secondary:hover {
+            background: rgb(29 78 216);
+        }
+
+        .rc-btn-success {
+            background: rgb(5 150 105);
+            color: #fff;
+            box-shadow: 0 18px 36px -20px rgba(5, 150, 105, .55);
+        }
+
+        .rc-btn-success:hover {
+            background: rgb(4 120 87);
+        }
+
+        .rc-btn-neutral {
+            border: 1px solid rgb(203 213 225);
+            background: #fff;
+            color: rgb(51 65 85);
+            box-shadow: 0 10px 24px -22px rgba(15, 23, 42, .35);
+        }
+
+        .rc-btn-neutral:hover {
+            border-color: rgb(37 99 235);
+            color: rgb(37 99 235);
+        }
+
         @media (max-width: 767px) {
             body.has-mobile-sticky-cta {
                 padding-bottom: 5.75rem;

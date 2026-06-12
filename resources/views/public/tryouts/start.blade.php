@@ -31,11 +31,11 @@
                         </div>
                         <div class="mt-3 flex flex-wrap gap-2">
                             <a href="{{ $recentPackageSession->isFinished() ? route('public.tryout-sessions.result', $recentPackageSession) : route('public.tryout-sessions.exam', $recentPackageSession) }}"
-                               class="inline-flex items-center justify-center rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-white hover:bg-amber-600">
+                               class="rc-btn-secondary px-4 py-2 text-sm">
                                 {{ $recentPackageSession->isFinished() ? 'Lihat Hasil Terakhir' : 'Lanjutkan Sesi' }}
                             </a>
                             <a href="{{ route('public.tryout-sessions.history') }}"
-                               class="inline-flex items-center justify-center rounded-xl border border-amber-300 bg-white px-4 py-2 text-sm font-bold text-amber-700 hover:bg-amber-100">
+                               class="rc-btn-neutral px-4 py-2 text-sm">
                                 Lihat Riwayat
                             </a>
                         </div>
@@ -84,11 +84,11 @@
                     </div>
 
                     <div class="grid gap-3 sm:grid-cols-2">
-                        <button type="submit" class="w-full rounded-2xl bg-blue-600 px-5 py-3.5 font-semibold text-white hover:bg-blue-700">
+                        <button type="submit" class="rc-btn-success w-full px-5 py-3.5 text-sm">
                             Mulai Sekarang
                         </button>
                         @if (! $tryoutPackage->is_free)
-                            <a href="{{ route('public.tryouts.packages.buy', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3.5 text-sm font-semibold text-slate-700 hover:border-blue-300 hover:text-blue-700">
+                            <a href="{{ route('public.tryouts.packages.buy', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="rc-btn-primary w-full px-5 py-3.5 text-sm">
                                 Beli Paket
                             </a>
                         @endif

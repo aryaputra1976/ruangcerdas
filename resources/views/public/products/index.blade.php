@@ -26,11 +26,11 @@
         : null;
 @endphp
 
-<section id="katalog" class="bg-slate-50 pt-4 pb-10 md:pt-6 md:pb-12">
+<section id="katalog" class="bg-slate-50 pt-2 pb-7 md:pt-3 md:pb-9">
     <div class="mx-auto max-w-7xl px-6">
-        <h1 class="mb-4 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Produk</h1>
+        <h1 class="mb-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Produk</h1>
 
-        <div class="mb-6 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm">
+        <div id="product-filters" class="mb-5 rounded-[2rem] border border-slate-200 bg-white p-4 shadow-sm scroll-mt-24">
             <form method="GET" action="{{ route('products.index') }}" class="grid gap-3 lg:grid-cols-12">
                 <div class="lg:col-span-6">
                     <label for="q" class="sr-only">Cari Produk</label>
@@ -46,7 +46,7 @@
                     </select>
                 </div>
                 <div class="flex items-end gap-3 lg:col-span-2">
-                    <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-700">
+                    <button type="submit" class="rc-btn-secondary w-full px-5 py-3 text-sm">
                         Filter
                     </button>
                 </div>
@@ -66,7 +66,7 @@
         </div>
 
         @if ($products->isNotEmpty())
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div class="grid gap-4 md:gap-6 md:grid-cols-2 lg:grid-cols-3">
                 @foreach ($products as $product)
                     @include('components.public.product-card', [
                         'product' => $product,
@@ -76,7 +76,7 @@
                     ])
                 @endforeach
             </div>
-            <div class="mt-10">{{ $products->links() }}</div>
+            <div class="mt-8">{{ $products->links() }}</div>
         @else
             <div class="rounded-[2rem] border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-xl font-black text-slate-700">RC</div>
@@ -96,11 +96,11 @@
                 </p>
                 <div class="mt-6 flex justify-center gap-3">
                     @if ($hasFilter)
-                        <a href="{{ route('products.index') }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-700 hover:border-blue-600 hover:text-blue-600">
+                        <a href="{{ route('products.index') }}" class="rc-btn-neutral px-6 py-3 text-sm">
                             Reset Filter
                         </a>
                     @endif
-                    <a href="{{ route('home') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                    <a href="{{ route('home') }}" class="rc-btn-neutral px-6 py-3 text-sm">
                         Kembali ke Beranda
                     </a>
                 </div>
@@ -111,9 +111,9 @@
 
 <div class="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 p-3 backdrop-blur md:hidden">
     <div class="mx-auto flex max-w-7xl gap-2">
-        <a href="{{ route('products.index') }}" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_products_catalog'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white">
-                        Lihat Produk
-            </a>
+        <a href="#product-filters" onclick="window.rcTrack && window.rcTrack('HeroCtaClick', {source: 'sticky_products_filter'});" class="rc-btn-secondary flex-1 rounded-xl px-4 py-3 text-sm">
+            Filter Produk
+        </a>
         @php
             $stickySupport = preg_replace('/\D+/', '', (string) ($supportWhatsapp ?? ''));
             if (str_starts_with($stickySupport, '0')) {
@@ -121,7 +121,7 @@
             }
         @endphp
         @if ($stickySupport !== '')
-            <a href="https://wa.me/{{ $stickySupport }}?text={{ rawurlencode('Halo Ruang Cerdas, saya butuh rekomendasi produk.') }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_products_whatsapp'});" class="inline-flex flex-1 items-center justify-center rounded-xl bg-green-600 px-4 py-3 text-sm font-bold text-white">
+            <a href="https://wa.me/{{ $stickySupport }}?text={{ rawurlencode('Halo Ruang Cerdas, saya butuh rekomendasi produk.') }}" target="_blank" rel="noopener noreferrer" onclick="window.rcTrack && window.rcTrack('Contact', {source: 'sticky_products_whatsapp'});" class="rc-btn-success flex-1 rounded-xl px-4 py-3 text-sm">
                 WhatsApp
             </a>
         @endif

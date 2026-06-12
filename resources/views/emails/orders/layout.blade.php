@@ -16,6 +16,12 @@
                                 {{ config('app.name', 'Ruang Cerdas') }}
                             </p>
 
+                            @if (!empty($eyebrow))
+                                <div style="display:inline-block;margin:0 0 10px 0;padding:6px 10px;border-radius:999px;background:#eff6ff;border:1px solid #bfdbfe;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#1d4ed8;">
+                                    {{ $eyebrow }}
+                                </div>
+                            @endif
+
                             <h1 style="margin:0 0 16px 0;font-size:24px;line-height:1.3;color:#0f172a;">
                                 {{ $heading }}
                             </h1>

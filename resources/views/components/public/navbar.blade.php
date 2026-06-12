@@ -1,44 +1,72 @@
+@php
+    $isRouteActive = function (array $patterns): bool {
+        foreach ($patterns as $pattern) {
+            if (request()->routeIs($pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    $navLinkClass = function (bool $active, bool $compact = false): string {
+        $base = $compact
+            ? 'rounded-xl px-3 py-2 text-sm font-semibold transition'
+            : 'rounded-xl px-3 py-2 text-sm font-semibold transition';
+
+        return $active
+            ? $base . ' bg-blue-50 text-blue-700'
+            : $base . ' text-slate-700 hover:bg-slate-50 hover:text-blue-600';
+    };
+@endphp
+
 <header class="sticky top-0 z-50 border-b border-slate-200 bg-white/90 backdrop-blur" data-mobile-nav>
-    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3">
-        <div class="flex items-center gap-8 lg:gap-10">
-            <a href="{{ route('home') }}" class="flex items-center gap-2">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2 md:px-6">
+        <div class="flex items-center gap-4 lg:gap-6">
+            <a href="{{ route('home') }}" class="flex items-center gap-2.5">
                 <img
-                    src="{{ asset('hando/assets/images/rc/rc_ico.png') }}"
+                    src="{{ asset('hando/assets/images/rc/rc_mark.svg') }}"
                     alt="Ruang Cerdas Logo"
-                    class="h-9 w-9 rounded-xl object-cover"
+                    class="h-8 w-8 rounded-xl object-cover md:h-9 md:w-9"
+                    width="36"
+                    height="36"
                 >
                 <div>
-                    <p class="text-base font-bold leading-none">Ruang Cerdas</p>
+                    <p class="text-sm font-bold leading-none md:text-base">Ruang Cerdas</p>
                     <p class="text-xs text-slate-500">Produk Digital</p>
                 </div>
             </a>
 
-            <nav class="hidden items-center gap-4 md:flex lg:gap-5">
-                <a href="{{ route('products.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+            <nav class="hidden items-center gap-0.5 md:flex">
+                <a href="{{ route('products.index') }}" class="{{ $navLinkClass($isRouteActive(['products.*'])) }}">
                     Produk
                 </a>
-                <a href="{{ route('public.tryouts.hub') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                <a href="{{ route('public.tryouts.hub') }}" class="{{ $navLinkClass($isRouteActive(['public.tryouts.*'])) }}">
                     Tryout
                 </a>
-                <a href="{{ route('lead-magnets.index') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                <a href="{{ route('lead-magnets.index') }}" class="{{ $navLinkClass($isRouteActive(['lead-magnets.*'])) }}">
                     Panduan Gratis
                 </a>
-                <a href="{{ route('public.orders.lookup') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
-                    Cek Order
+                <span class="mx-1 hidden h-5 w-px bg-slate-200 lg:block" aria-hidden="true"></span>
+                <a href="{{ route('public.orders.lookup') }}" class="{{ $navLinkClass($isRouteActive(['public.orders.*', 'public.order-tracking.*'])) }}">
+                    Status Order
                 </a>
-                <a href="{{ route('public.faq') }}" class="text-sm font-medium text-slate-700 hover:text-blue-600">
+                <a href="{{ route('public.download-room.index') }}" class="{{ $navLinkClass($isRouteActive(['public.download-room.*'])) }}">
+                    Ruang Akses
+                </a>
+                <a href="{{ route('public.faq') }}" class="{{ $navLinkClass($isRouteActive(['public.faq'])) }}">
                     FAQ
                 </a>
             </nav>
         </div>
 
-        <a href="{{ route('products.index') }}" class="hidden rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 md:inline-flex">
+        <a href="{{ route('products.index') }}" class="rc-btn-secondary hidden px-4 py-2.5 text-sm md:inline-flex">
             Lihat Produk
         </a>
 
         <button
             type="button"
-            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white p-3 text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-600 md:hidden"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white p-2.5 text-slate-700 shadow-sm transition hover:border-blue-200 hover:text-blue-600 md:hidden"
             aria-label="Buka menu navigasi"
             aria-expanded="false"
             aria-controls="public-mobile-menu"
@@ -57,23 +85,28 @@
         class="hidden border-t border-slate-200 bg-white md:hidden"
         data-mobile-nav-menu
     >
-        <div class="mx-auto flex max-w-7xl flex-col gap-2 px-6 py-4">
-            <a href="{{ route('products.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+        <div class="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-4">
+            <p class="px-4 pt-1 text-xs font-bold uppercase tracking-widest text-slate-400">Jelajahi</p>
+            <a href="{{ route('products.index') }}" class="{{ $navLinkClass($isRouteActive(['products.*'])) }}">
                 Produk
             </a>
-            <a href="{{ route('public.tryouts.hub') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+            <a href="{{ route('public.tryouts.hub') }}" class="{{ $navLinkClass($isRouteActive(['public.tryouts.*'])) }}">
                 Tryout
             </a>
-            <a href="{{ route('lead-magnets.index') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+            <a href="{{ route('lead-magnets.index') }}" class="{{ $navLinkClass($isRouteActive(['lead-magnets.*'])) }}">
                 Panduan Gratis
             </a>
-            <a href="{{ route('public.orders.lookup') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
-                Cek Order
+            <p class="mt-2 px-4 pt-1 text-xs font-bold uppercase tracking-widest text-slate-400">Setelah Beli</p>
+            <a href="{{ route('public.orders.lookup') }}" class="{{ $navLinkClass($isRouteActive(['public.orders.*', 'public.order-tracking.*'])) }}">
+                Status Order
             </a>
-            <a href="{{ route('public.faq') }}" class="rounded-2xl px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 hover:text-blue-600">
+            <a href="{{ route('public.download-room.index') }}" class="{{ $navLinkClass($isRouteActive(['public.download-room.*'])) }}">
+                Ruang Akses
+            </a>
+            <a href="{{ route('public.faq') }}" class="{{ $navLinkClass($isRouteActive(['public.faq'])) }}">
                 FAQ
             </a>
-            <a href="{{ route('products.index') }}" class="mt-2 inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700">
+            <a href="{{ route('products.index') }}" class="rc-btn-secondary mt-2 px-4 py-3 text-sm">
                 Lihat Produk
             </a>
         </div>

@@ -124,6 +124,25 @@ class OrderController extends Controller
         $orderBuyerMailService->sendPaymentProofUploaded($order->fresh('product'));
         $orderAdminMailService->sendPaymentProofUploaded($order->fresh('product'));
 
+        $supportWhatsapp = LandingSetting::query()->value('support_whatsapp');
+        $whatsAppNotifyUrl = \App\Support\WhatsApp::waMeUrl(
+            $supportWhatsapp,
+            trim(implode("\n", [
+                'Halo Admin Ruang Cerdas, saya sudah upload bukti pembayaran.',
+                'Invoice: ' . $order->invoice_number,
+                'Nama: ' . $order->buyer_name,
+                'Email: ' . $order->buyer_email,
+                'WhatsApp: ' . ($order->buyer_whatsapp ?: '-'),
+                'Produk: ' . ($order->product?->name ?: '-'),
+                'Total: ' . \App\Support\Money::rupiah($order->price),
+                'Mohon dibantu cek verifikasinya. Terima kasih.',
+            ]))
+        );
+
+        if ($whatsAppNotifyUrl) {
+            return redirect()->away($whatsAppNotifyUrl);
+        }
+
         return redirect()
             ->route('orders.thank-you', $order->invoice_number)
             ->with('success', 'Bukti pembayaran berhasil diupload. Admin akan melakukan verifikasi.');

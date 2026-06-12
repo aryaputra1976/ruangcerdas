@@ -33,7 +33,7 @@
     $primaryBadge = $product->category?->name ?? 'Produk Digital';
 @endphp
 
-<div class="group overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+<div class="group flex h-full flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
     <a href="{{ route('products.show', $product->slug) }}" onclick="window.rcTrack && window.rcTrack('ProductCardClick', {source: 'product_cover', content_type: 'product', content_ids: [{{ $product->id }}]});" class="block">
         <div class="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-blue-50 to-emerald-50">
             @if ($coverUrl)
@@ -56,7 +56,7 @@
         </div>
     </a>
 
-    <div class="p-5">
+    <div class="flex flex-1 flex-col p-4 md:p-5">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
                 {{ $primaryBadge }}
@@ -68,13 +68,25 @@
             @endif
         </div>
 
-        <a href="{{ route('products.show', $product->slug) }}" class="block">
-            <h3 class="line-clamp-2 text-lg font-black text-slate-950 transition group-hover:text-blue-600 sm:text-xl">
+        <a href="{{ route('products.show', $product->slug) }}" class="block min-h-[3.5rem] md:min-h-[4rem]">
+            <h3 class="line-clamp-2 text-lg font-black leading-tight text-slate-950 transition group-hover:text-blue-600 sm:text-xl">
                 {{ $product->name }}
             </h3>
         </a>
 
-        <div class="mt-4 flex items-end justify-between gap-3">
+        <div class="mt-3 min-h-[3.75rem] md:mt-4 md:min-h-[4.5rem]">
+            @if ($product->short_description)
+                <p class="line-clamp-2 text-sm leading-6 text-slate-600">
+                    {{ $product->short_description }}
+                </p>
+            @else
+                <p class="line-clamp-2 text-sm leading-6 text-slate-500">
+                    Produk digital praktis untuk bantu belajar dan kerja lebih terarah.
+                </p>
+            @endif
+        </div>
+
+        <div class="mt-3 flex items-end justify-between gap-3 md:mt-4">
             <div>
                 <p class="text-[11px] font-bold uppercase tracking-widest text-blue-600">
                     {{ $priceLabel }}
@@ -101,17 +113,19 @@
             @endif
         </div>
 
-        <div class="mt-5 flex gap-2.5">
+        <div class="mt-auto pt-4 md:pt-5">
+            <div class="flex gap-2 md:gap-2.5">
             <a href="{{ route('checkout.create', $product->slug) }}"
                onclick="window.rcTrack && window.rcTrack('InitiateCheckout', {source: 'product_card_checkout', content_type: 'product', content_ids: [{{ $product->id }}], value: {{ (int) $price }}, currency: 'IDR'});"
-               class="inline-flex flex-1 items-center justify-center rounded-2xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
+               class="rc-btn-primary flex-1 px-4 py-3 text-sm">
                 Beli Sekarang
             </a>
             <a href="{{ route('products.show', $product->slug) }}"
                onclick="window.rcTrack && window.rcTrack('ProductCardClick', {source: 'product_detail_button', content_type: 'product', content_ids: [{{ $product->id }}]});"
-               class="inline-flex items-center justify-center rounded-2xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-600 hover:text-blue-600">
+               class="rc-btn-neutral min-w-[88px] px-4 py-3 text-sm">
                 Detail
             </a>
+            </div>
         </div>
     </div>
 </div>

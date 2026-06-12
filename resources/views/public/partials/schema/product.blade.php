@@ -4,7 +4,7 @@
     $schemaDescription = trim(strip_tags((string) ($product->short_description ?: $product->description ?: 'Produk digital Ruang Cerdas.')));
     $schemaImage = !empty($coverUrl)
         ? $coverUrl
-        : asset('hando/assets/images/rc/rc_ico.png');
+        : asset('hando/assets/images/rc/rc_mark.svg');
 
     $returnPolicy = [
         '@type' => 'MerchantReturnPolicy',

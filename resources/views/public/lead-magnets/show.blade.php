@@ -8,7 +8,7 @@
 @endif
 
 @section('content')
-<section class="bg-white py-14 md:py-16">
+<section class="bg-white pt-4 pb-8 md:pt-5 md:pb-10">
     <div class="mx-auto grid max-w-7xl gap-8 px-6 lg:grid-cols-2 lg:items-start">
         <div>
             @if ($leadMagnet->cover_image)
@@ -17,9 +17,9 @@
         </div>
 
         <div>
-            <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Panduan Gratis</p>
-            <h1 class="mt-3 text-4xl font-black text-slate-950">{{ $leadMagnet->title }}</h1>
-            <p class="mt-4 text-slate-600 leading-8">{{ $leadMagnet->description ?: 'Isi data singkat untuk mengunduh panduan gratis ini.' }}</p>
+            <p class="text-sm font-bold uppercase tracking-[0.28em] text-blue-600">Panduan Gratis</p>
+            <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">{{ $leadMagnet->title }}</h1>
+            <p class="mt-3 text-sm leading-7 text-slate-600 md:text-base">{{ $leadMagnet->description ?: 'Isi data singkat untuk mengunduh panduan gratis ini.' }}</p>
 
             @if (session('error'))
                 <div class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ session('error') }}</div>
@@ -46,7 +46,7 @@
                     <input type="text" name="whatsapp" value="{{ old('whatsapp') }}" class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-700">
                 </div>
 
-                <button type="submit" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-base font-bold text-white hover:bg-blue-700">
+                <button type="submit" class="rc-btn-secondary w-full px-6 py-4 text-base">
                     Download Panduan Gratis
                 </button>
             </form>
@@ -54,4 +54,3 @@
     </div>
 </section>
 @endsection
-

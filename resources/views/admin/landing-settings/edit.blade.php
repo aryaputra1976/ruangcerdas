@@ -51,7 +51,7 @@
                     <div>
                         <h5 class="card-title mb-1">Ringkasan Pengunjung Website</h5>
                         <p class="text-muted mb-0 fs-13">
-                            Data ini berasal dari tracking internal Laravel pada halaman publik berbentuk HTML. Angka bisa berbeda dengan GA4 karena metode pengukuran berbeda.
+                            Data ini berasal dari tracking internal Ruang Cerdas pada halaman publik berbentuk HTML. Angka bisa berbeda dengan GA4 karena metode pengukuran berbeda.
                         </p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap">

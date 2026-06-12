@@ -5,72 +5,35 @@
 @section('canonical', route($pageRouteName))
 
 @section('content')
-<section class="relative overflow-hidden bg-slate-950 py-16 text-white">
-    <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.28),_transparent_32%)]"></div>
-
-    <div class="relative mx-auto max-w-7xl px-6">
-        <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
-            <div>
-                <p class="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-sm font-bold uppercase tracking-widest text-blue-100">
-                    {{ $pageTitle }}
-                </p>
-                <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">{{ $pageHeading }}</h1>
-                <p class="mt-5 max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
-                    {{ $pageDescription }}
-                </p>
-                <div class="mt-8 flex flex-wrap gap-3">
-                    <a href="#paket-tryout" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700">
-                        Lihat Paket
-                    </a>
-                    <a href="{{ $pageHistoryUrl }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
-                        Riwayat Tryout
-                    </a>
-                    <a href="{{ $pageBackUrl }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
-                        Kembali
-                    </a>
-                </div>
-            </div>
-
-            <div class="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl backdrop-blur">
-                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                    @foreach (($packages->first()?->sectionSummaries() ?? []) as $section)
-                        <div class="rounded-3xl bg-white p-5 text-slate-950">
-                            <div class="text-xl font-black text-blue-600">{{ $section['label'] }}</div>
-                            <p class="mt-4 text-sm font-bold text-slate-500">
-                                {{ $section['scoring_mode'] === 'weighted' ? 'Skor bertingkat' : 'Jawaban tunggal' }}
-                            </p>
-                        </div>
-                    @endforeach
-                </div>
-                <div class="mt-4 rounded-3xl bg-white/10 p-5 text-sm leading-7 text-slate-200">
-                    Paket gratis tetap bisa langsung dicoba, sedangkan paket premium memberi soal lebih lengkap, pembahasan, dan percobaan lebih banyak.
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section id="paket-tryout" class="bg-slate-50 py-16">
+<section id="paket-tryout" class="bg-slate-50 pt-3 pb-7 md:pt-4 md:pb-9">
     <div class="mx-auto max-w-7xl px-6">
-        <div class="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div class="mb-5 flex flex-col gap-4 md:mb-6 md:flex-row md:items-start md:justify-between">
             <div>
-                <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Paket Aktif</p>
-                <h2 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">{{ $pageHeading }}</h2>
-                <p class="mt-3 max-w-2xl text-slate-600">Pilih paket gratis untuk pemanasan, atau lanjut ke premium jika ingin simulasi yang lebih lengkap dan terarah.</p>
+                <p class="inline-flex rounded-full bg-blue-50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-blue-700">{{ $pageTitle }}</p>
+                <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:mt-4 md:text-4xl">{{ $pageHeading }}</h1>
+                <p class="mt-2 max-w-2xl text-sm leading-7 text-slate-600 md:mt-3 md:text-base">{{ $pageDescription }}</p>
             </div>
-            <div class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm">
-                Total: <span class="font-black text-slate-950">{{ number_format($packages->count(), 0, ',', '.') }}</span> paket
+            <div class="flex flex-wrap gap-3">
+                <a href="{{ $pageHistoryUrl }}" class="rc-btn-neutral px-5 py-3 text-sm shadow-sm">
+                    Riwayat Tryout
+                </a>
+                <a href="{{ $pageBackUrl }}" class="rc-btn-neutral px-5 py-3 text-sm shadow-sm">
+                    Kembali
+                </a>
+                <div class="inline-flex items-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-600 shadow-sm">
+                    Total: <span class="ml-1 font-black text-slate-950">{{ number_format($packages->count(), 0, ',', '.') }}</span> paket
+                </div>
             </div>
         </div>
 
         @if (session('error'))
-            <div class="mb-8 rounded-[2rem] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
+            <div class="mb-6 rounded-[2rem] border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
                 {{ session('error') }}
             </div>
         @endif
 
         @if ($hasTryoutHistory ?? false)
-            <div class="mb-8 rounded-[2rem] border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
+            <div class="mb-6 rounded-[2rem] border border-blue-100 bg-blue-50 p-5 text-sm text-blue-900">
                 Kamu punya riwayat sesi tryout di browser ini.
                 <a href="{{ route('public.tryout-sessions.history') }}" class="ml-1 font-bold text-blue-700 hover:text-blue-800">
                     Lihat riwayat tryout
@@ -79,80 +42,106 @@
         @endif
 
         @if ($packages->isNotEmpty())
-            <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="grid items-stretch gap-4 md:gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($packages as $package)
                     @php
                         $packageState = $packageStates[$package->id] ?? ['canStart' => $package->is_free, 'hasAccess' => false, 'buyUrl' => '#', 'startUrl' => '#'];
                         $isPremium = ! $package->is_free;
                         $defaultDescription = $package->is_free ? 'Coba simulasi dasar sebelum membeli paket lengkap.' : 'Simulasi yang lebih serius dengan komposisi soal lengkap.';
+                        $sectionCount = collect($package->sectionSummaries())->count();
+                        $cardClass = $package->is_free
+                            ? 'border-slate-200 bg-white'
+                            : 'border-blue-200 bg-gradient-to-br from-white via-white to-blue-50/70 shadow-blue-100/60';
+                        $badgeClass = $package->is_free
+                            ? 'bg-slate-100 text-slate-700'
+                            : 'border border-amber-300 bg-amber-50 text-amber-800';
+                        $priceClass = $package->is_free
+                            ? 'bg-slate-100 text-slate-700'
+                            : 'bg-slate-800 text-white';
+                        $statClass = $package->is_free
+                            ? 'bg-slate-50'
+                            : 'bg-slate-50';
                     @endphp
-                    <article class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-                        <div class="flex items-start justify-between gap-4">
-                            <div>
-                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $package->is_free ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700' }}">
+                    <article class="flex h-full flex-col rounded-[2rem] border p-4 shadow-sm transition hover:-translate-y-1 hover:shadow-xl md:p-5 {{ $cardClass }}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0 flex-1">
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $badgeClass }}">
                                     {{ $package->is_free ? 'Gratis' : 'Premium' }}
                                 </span>
-                                <h3 class="mt-4 text-2xl font-black text-slate-950">{{ $package->title }}</h3>
                             </div>
-                            <div class="rounded-2xl {{ $package->is_free ? 'bg-emerald-600' : 'bg-slate-900' }} px-4 py-2 text-sm font-bold text-white">
-                                {{ $package->is_free ? 'Gratis' : 'Rp ' . number_format($package->price, 0, ',', '.') }}
+                            <div class="flex shrink-0 flex-col items-end gap-2">
+                                @if ($isPremium)
+                                    <span class="rounded-full bg-red-500 px-3 py-1 text-xs font-bold tracking-wide text-white shadow-sm">
+                                        Update 2026
+                                    </span>
+                                @endif
+                                <div class="rounded-[1.1rem] px-4 py-2 text-base font-bold whitespace-nowrap md:px-4 md:py-2.5 {{ $priceClass }}">
+                                    @if ($package->is_free)
+                                        Tanpa Bayar
+                                    @else
+                                        Rp {{ number_format($package->price, 0, ',', '.') }}
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
-                        <p class="mt-4 text-sm leading-7 text-slate-600">{{ $package->description ?: $defaultDescription }}</p>
+                        <div class="mt-4 min-h-[5.5rem] md:min-h-[6.8rem]">
+                            <h3 class="text-[1.45rem] font-black leading-tight tracking-tight text-slate-950 md:text-[1.8rem]">{{ $package->title }}</h3>
+                        </div>
 
-                        <div class="mt-6 grid grid-cols-2 gap-3">
-                            <div class="rounded-2xl bg-slate-50 p-4">
-                                <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Durasi</div>
-                                <div class="mt-2 text-lg font-black text-slate-950">{{ $package->duration_minutes }} menit</div>
+                        <div class="mt-2 min-h-[4rem] md:mt-3 md:min-h-[4.5rem]">
+                            <p class="text-sm leading-6 text-slate-600">{{ $package->description ?: $defaultDescription }}</p>
+                        </div>
+
+                        <div class="mt-3 grid grid-cols-2 gap-3 md:mt-4">
+                            <div class="rounded-2xl p-4 {{ $statClass }}">
+                                <div class="text-xs font-medium capitalize tracking-normal text-slate-600">Durasi</div>
+                                <div class="mt-1.5 text-lg font-black text-slate-950">{{ $package->duration_minutes }} menit</div>
                             </div>
-                            <div class="rounded-2xl bg-slate-50 p-4">
-                                <div class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Soal</div>
-                                <div class="mt-2 text-lg font-black text-slate-950">{{ $package->total_questions }}</div>
+                            <div class="rounded-2xl p-4 {{ $statClass }}">
+                                <div class="text-xs font-medium capitalize tracking-normal text-slate-600">Total soal</div>
+                                <div class="mt-1.5 text-lg font-black text-slate-950">{{ $package->total_questions }}</div>
                             </div>
                         </div>
 
-                        <div class="mt-4 space-y-3">
-                            @foreach ($package->sectionSummaries() as $section)
-                                <div class="flex items-center justify-between rounded-2xl border border-slate-200 px-4 py-3 text-sm">
-                                    <span class="font-semibold text-slate-600">{{ $section['label'] }}</span>
-                                    <span class="font-black text-slate-950">{{ $section['count'] }} soal</span>
-                                </div>
-                            @endforeach
+                        <div class="mt-3 flex min-h-[3rem] flex-wrap content-start gap-2 md:mt-4">
+                            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-900">
+                                {{ $sectionCount }} section
+                            </span>
+                            @if ($package->has_explanation)
+                                <span class="inline-flex rounded-full bg-sky-100 px-3 py-1.5 text-xs font-medium text-sky-800">
+                                    Ada pembahasan
+                                </span>
+                            @endif
+                            @if ($isPremium)
+                                <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-900">
+                                    {{ $package->attempt_limit ?: 1 }}x percobaan
+                                </span>
+                            @endif
                         </div>
 
-                        @if ($isPremium)
-                            <div class="mt-4 space-y-2 rounded-2xl border border-blue-100 bg-blue-50 p-4 text-sm text-blue-900">
-                                <div class="flex items-center justify-between">
-                                    <span>Pembahasan</span>
-                                    <span class="font-bold">{{ $package->has_explanation ? 'Tersedia' : 'Ringkas' }}</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span>Jumlah percobaan</span>
-                                    <span class="font-bold">{{ $package->attempt_limit ?: 1 }}x</span>
-                                </div>
-                                <div class="flex items-center justify-between">
-                                    <span>Masa akses</span>
-                                    <span class="font-bold">{{ $package->access_days ? $package->access_days . ' hari' : 'Tanpa batas' }}</span>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="mt-6">
+                        <div class="mt-auto pt-4">
                             @if ($packageState['canStart'])
-                                <a href="{{ $packageState['startUrl'] }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700">
-                                    Mulai Tryout
+                                <a href="{{ $packageState['startUrl'] }}" class="{{ $package->is_free ? 'rc-btn-secondary' : 'rc-btn-success' }} w-full px-5 py-3 text-sm">
+                                    {{ $package->is_free ? 'Coba Gratis Sekarang' : 'Mulai Tryout' }}
                                 </a>
                             @else
-                                <a href="{{ $packageState['buyUrl'] }}" class="inline-flex w-full items-center justify-center rounded-2xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-slate-900/10 transition hover:bg-blue-700">
+                                <a href="{{ $packageState['buyUrl'] }}" class="rc-btn-primary w-full px-5 py-3 text-sm">
                                     Beli Tryout
                                 </a>
                             @endif
                         </div>
 
-                        @if ($isPremium && ! $packageState['canStart'])
-                            <p class="mt-3 text-xs leading-6 text-slate-500">
-                                Paket premium hanya bisa dimulai setelah Anda memiliki akses aktif.
+                        @if ($isPremium)
+                            <p class="mt-3 min-h-[3rem] text-center text-xs leading-5 text-slate-500">
+                                {{ $package->access_days ? 'Akses ' . $package->access_days . ' hari' : 'Akses tanpa batas hari' }}, {{ $package->attempt_limit ?: 1 }}x percobaan.
+                                @if (! $packageState['canStart'])
+                                    Beli dulu, lalu mulai setelah akses aktif.
+                                @endif
+                            </p>
+                        @else
+                            <p class="mt-3 min-h-[3rem] text-xs leading-5 text-slate-500">
+                                Bisa langsung dicoba tanpa beli.
                             </p>
                         @endif
                     </article>

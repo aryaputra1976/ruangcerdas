@@ -16,10 +16,10 @@
             <h1 class="mt-5 text-4xl font-black tracking-tight md:text-5xl">{{ $heading }}</h1>
             <p class="mt-5 text-base leading-8 text-slate-300 md:text-lg">{{ $description }}</p>
             <div class="mt-8 flex flex-wrap gap-3">
-                <a href="{{ $backUrl }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 transition hover:bg-blue-700">
+                <a href="{{ $backUrl }}" class="rc-btn-secondary px-6 py-3 text-sm">
                     Kembali ke Kategori Tryout
                 </a>
-                <a href="{{ route('products.index', ['type' => 'tryout']) }}" class="inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-6 py-3 text-sm font-bold text-white transition hover:bg-white/15">
+                <a href="{{ route('products.index', ['type' => 'tryout']) }}" class="rc-btn-neutral px-6 py-3 text-sm">
                     Lihat Produk Tryout
                 </a>
             </div>

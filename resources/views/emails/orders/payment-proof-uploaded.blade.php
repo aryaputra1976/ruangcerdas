@@ -15,7 +15,7 @@
     'notice' => 'Tidak perlu mengirim ulang bukti pembayaran kecuali admin meminta Anda untuk melakukannya.',
     'buttons' => [
         [
-            'label' => 'Cek Order',
+            'label' => 'Status Order',
             'url' => $orderLookupUrl,
         ],
     ],

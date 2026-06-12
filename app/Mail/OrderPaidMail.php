@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Order;
+use App\Models\TryoutPackage;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -28,16 +29,37 @@ class OrderPaidMail extends Mailable
 
     public function content(): Content
     {
+        $tryoutPackage = $this->resolveTryoutPackage();
+
         return new Content(
             view: 'emails.orders.paid',
             with: [
                 'order' => $this->order,
-                'downloadUrl' => route('orders.download', [
-                    'invoice' => $this->order->invoice_number,
-                    'token' => $this->order->download_token,
-                ]),
+                'tryoutPackage' => $tryoutPackage,
+                'isTryoutOrder' => (bool) $tryoutPackage,
+                'downloadRoomUrl' => route('public.download-room.index'),
                 'orderLookupUrl' => route('public.orders.lookup'),
+                'tryoutListingUrl' => $tryoutPackage ? route($tryoutPackage->listingRouteName()) : null,
+                'tryoutPackageUrl' => $tryoutPackage
+                    ? route('public.tryouts.packages.start', [
+                        'tryoutType' => $tryoutPackage->routeSegment(),
+                        'tryoutPackage' => $tryoutPackage,
+                    ])
+                    : null,
             ],
         );
+    }
+
+    private function resolveTryoutPackage(): ?TryoutPackage
+    {
+        $product = $this->order->product;
+
+        if (! $product?->slug) {
+            return null;
+        }
+
+        return TryoutPackage::query()
+            ->where('slug', $product->slug)
+            ->first();
     }
 }

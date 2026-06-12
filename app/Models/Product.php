@@ -142,6 +142,14 @@ class Product extends Model
         return $query->where('product_type', $type);
     }
 
+    public function scopeExcludeTryout(Builder $query): Builder
+    {
+        return $query->where(function (Builder $subQuery) {
+            $subQuery->whereNull('product_type')
+                ->orWhere('product_type', '!=', 'tryout');
+        });
+    }
+
     public static function productTypeLabels(): array
     {
         return self::PRODUCT_TYPE_LABELS;

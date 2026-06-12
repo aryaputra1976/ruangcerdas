@@ -4,7 +4,7 @@
         '@type' => 'Organization',
         'name' => 'Ruang Cerdas',
         'url' => route('home'),
-        'logo' => asset('hando/assets/images/rc/rc_ico.png'),
+        'logo' => asset('hando/assets/images/rc/rc_mark.svg'),
     ];
 
     if (!empty($supportNumber ?? null)) {
@@ -18,4 +18,3 @@
     }
 @endphp
 <script type="application/ld+json">@json($organizationSchema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)</script>
-

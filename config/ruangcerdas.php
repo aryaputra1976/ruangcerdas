@@ -19,4 +19,9 @@ return [
         'payment_note' => env('RC_PAYMENT_NOTE', 'Transfer sesuai nominal invoice agar verifikasi lebih cepat.'),
     ],
 
+    'download' => [
+        'max_count' => (int) env('RC_DOWNLOAD_MAX_COUNT', 5),
+        'expire_days' => (int) env('RC_DOWNLOAD_EXPIRE_DAYS', 7),
+    ],
+
 ];

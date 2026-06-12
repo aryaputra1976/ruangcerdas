@@ -1,14 +1,18 @@
 @extends('layouts.public')
 
 @section('title', 'Kebijakan Privasi - Ruang Cerdas')
-@section('meta_description', 'Kebijakan privasi terkait penggunaan data pembeli, email, WhatsApp, pembayaran manual, dan link download di Ruang Cerdas.')
+@section('meta_description', 'Kebijakan privasi terkait penggunaan data pembeli, email, WhatsApp, pembayaran manual, dan akses produk digital di Ruang Cerdas.')
 @section('robots', 'index,follow')
 @section('canonical', route('public.privacy'))
 
 @section('content')
-<section class="bg-slate-50 pt-4 pb-8 md:pt-6 md:pb-10">
+<section class="bg-slate-50 pt-4 pb-8 md:pt-5 md:pb-9">
     <div class="mx-auto max-w-5xl px-6 text-center">
-        <h1 class="text-3xl font-black text-slate-950 md:text-4xl">Kebijakan Privasi</h1>
+        <p class="text-sm font-bold uppercase tracking-[0.28em] text-blue-600">Privasi</p>
+        <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Kebijakan Privasi</h1>
+        <p class="mx-auto mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">
+            Penjelasan ringkas tentang data pembeli yang kami gunakan untuk checkout, verifikasi pembayaran, bantuan pelanggan, dan akses produk digital.
+        </p>
         <p class="mt-3 text-sm text-slate-500">Terakhir diperbarui: 2026</p>
     </div>
 </section>
@@ -19,7 +23,7 @@
             @foreach ([
                 [
                     'title' => 'Pengantar',
-                    'body' => 'Kami menggunakan data pembeli seperlunya untuk menjalankan layanan Ruang Cerdas, terutama untuk proses pembelian, verifikasi pembayaran, dukungan pelanggan, dan pengiriman akses download.',
+                    'body' => 'Kami menggunakan data pembeli seperlunya untuk menjalankan layanan Ruang Cerdas, terutama untuk proses pembelian, verifikasi pembayaran, dukungan pelanggan, dan pembukaan akses produk digital.',
                 ],
                 [
                     'title' => 'Data yang dikumpulkan',
@@ -31,7 +35,7 @@
                 ],
                 [
                     'title' => 'Email',
-                    'body' => 'Email digunakan untuk pengiriman informasi order dan link download setelah pembayaran disetujui admin.',
+                    'body' => 'Email digunakan untuk pengiriman informasi order dan sebagai identitas akses ke Ruang Akses setelah pembayaran disetujui admin.',
                 ],
                 [
                     'title' => 'WhatsApp atau kontak pembeli',
@@ -47,7 +51,7 @@
                 ],
                 [
                     'title' => 'Tujuan penggunaan data',
-                    'body' => 'Data pembeli digunakan untuk memproses checkout, verifikasi pembayaran, mengirim link download, menangani bantuan pelanggan, dan menjaga keamanan operasional layanan.',
+                    'body' => 'Data pembeli digunakan untuk memproses checkout, verifikasi pembayaran, membuka akses produk digital, menangani bantuan pelanggan, dan menjaga keamanan operasional layanan.',
                 ],
                 [
                     'title' => 'Keamanan akses download',
@@ -77,9 +81,9 @@
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Akses Cepat</p>
             <h3 class="mt-3 text-3xl font-black text-slate-900 md:text-4xl">Halaman penting lainnya</h3>
             <div class="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                <a href="{{ route('products.index') }}" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">Lihat Produk</a>
-                <a href="{{ route('public.order-tracking.index') }}" class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-bold text-white hover:bg-slate-700">Cek Status Order</a>
-                <a href="{{ route('public.faq') }}" class="rounded-2xl border border-slate-300 bg-white px-6 py-3 text-sm font-bold text-slate-900 hover:border-blue-600 hover:text-blue-600">FAQ</a>
+                <a href="{{ route('products.index') }}" class="rc-btn-primary px-6 py-3 text-sm">Lihat Produk</a>
+                <a href="{{ route('public.order-tracking.index') }}" class="rc-btn-secondary px-6 py-3 text-sm">Status Order</a>
+                <a href="{{ route('public.faq') }}" class="rc-btn-neutral px-6 py-3 text-sm">FAQ</a>
             </div>
         </div>
     </div>

@@ -13,7 +13,7 @@
                 <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">Sesi Tryout di Browser Ini</h1>
                 <p class="mt-3 max-w-2xl text-slate-600">Riwayat ini tersimpan di browser yang sama, tanpa login. Kamu bisa lanjutkan sesi yang belum selesai atau lihat hasil sesi yang sudah selesai.</p>
             </div>
-            <a href="{{ route('public.tryouts.hub') }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
+            <a href="{{ route('public.tryouts.hub') }}" class="rc-btn-neutral px-5 py-3 text-sm">
                 Kembali ke Kategori
             </a>
         </div>
@@ -59,14 +59,14 @@
 
                             <div class="flex flex-wrap gap-3">
                                 @if ($isFinished)
-                                    <a href="{{ route('public.tryout-sessions.result', $session) }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                                    <a href="{{ route('public.tryout-sessions.result', $session) }}" class="rc-btn-secondary px-5 py-3 text-sm">
                                         Lihat Hasil
                                     </a>
-                                    <a href="{{ route('public.tryout-sessions.review', $session) }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 hover:border-blue-300 hover:text-blue-700">
+                                    <a href="{{ route('public.tryout-sessions.review', $session) }}" class="rc-btn-neutral px-5 py-3 text-sm">
                                         Pembahasan
                                     </a>
                                 @else
-                                    <a href="{{ route('public.tryout-sessions.exam', $session) }}" class="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-white hover:bg-amber-600">
+                                    <a href="{{ route('public.tryout-sessions.exam', $session) }}" class="rc-btn-success px-5 py-3 text-sm">
                                         Lanjutkan Sesi
                                     </a>
                                 @endif
@@ -81,7 +81,7 @@
                 <h2 class="mt-5 text-2xl font-black text-slate-950">Belum ada riwayat tryout</h2>
                 <p class="mx-auto mt-3 max-w-md text-slate-600">Riwayat sesi akan muncul setelah kamu memulai tryout di browser ini.</p>
                 <div class="mt-6">
-                    <a href="{{ route('public.tryouts.hub') }}" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">
+                    <a href="{{ route('public.tryouts.hub') }}" class="rc-btn-secondary px-6 py-3 text-sm">
                         Mulai Tryout
                     </a>
                 </div>

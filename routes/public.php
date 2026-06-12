@@ -10,6 +10,7 @@ use App\Http\Controllers\Public\DownloadController;
 use App\Http\Controllers\Public\SitemapController;
 use App\Http\Controllers\Public\RobotsController;
 use App\Http\Controllers\Public\OrderTrackingController;
+use App\Http\Controllers\Public\DownloadRoomController;
 use App\Http\Controllers\Public\FaqController;
 use App\Http\Controllers\Public\LegalPageController;
 use App\Http\Controllers\Public\ArticleController;
@@ -39,6 +40,12 @@ Route::post('/cek-order', [OrderLookupController::class, 'submit'])
     ->name('public.orders.lookup.submit');
 
 Route::get('/order/{invoice}/download/{token}', [DownloadController::class, 'download'])->name('orders.download');
+Route::get('/ruang-download', [DownloadRoomController::class, 'index'])->name('public.download-room.index');
+Route::post('/ruang-download', [DownloadRoomController::class, 'show'])
+    ->middleware('throttle:15,1')
+    ->name('public.download-room.show');
+Route::get('/ruang-download/{order}/download', [DownloadRoomController::class, 'download'])
+    ->name('public.download-room.download');
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('public.sitemap');
 Route::get('/robots.txt', [RobotsController::class, 'index'])->name('public.robots');
 Route::get('/faq', [FaqController::class, 'index'])->name('public.faq');

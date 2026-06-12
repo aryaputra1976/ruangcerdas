@@ -28,7 +28,7 @@
             'url' => $uploadPaymentUrl,
         ],
         [
-            'label' => 'Cek Order',
+            'label' => 'Status Order',
             'url' => $orderLookupUrl,
             'background' => '#0f172a',
         ],

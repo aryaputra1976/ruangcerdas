@@ -261,7 +261,7 @@
                     </div>
                 @else
                     <div class="alert alert-warning mb-0">
-                        Link download belum aktif karena order belum berstatus paid.
+                        Akses download belum aktif karena order belum berstatus paid.
                     </div>
                 @endif
 
@@ -530,7 +530,7 @@
                             </div>
                         </div>
                         <div class="alert alert-warning mt-3 mb-0 py-2 px-3 fs-13">
-                            Approve akan mengaktifkan akses download dan mengirim email link download ke pembeli.
+                            Approve akan mengaktifkan akses download dan mengirim email panduan Ruang Akses ke pembeli.
                         </div>
                     </div>
 
@@ -541,7 +541,7 @@
                     <div class="d-grid gap-2">
                         <form method="POST"
                               action="{{ route('admin.orders.approve', $order) }}"
-                              onsubmit="return confirm('Approve pembayaran invoice {{ $order->invoice_number }}? Link download akan aktif dan email akan dikirim ke {{ $order->buyer_email }}.');">
+                              onsubmit="return confirm('Approve pembayaran invoice {{ $order->invoice_number }}? Akses download akan aktif dan email panduan Ruang Akses akan dikirim ke {{ $order->buyer_email }}.');">
                             @csrf
                             @method('PATCH')
 
@@ -589,24 +589,24 @@
                     </div>
                 @elseif ($order->status === 'paid')
                     <div class="alert alert-success mb-3">
-                        Order sudah paid. Link download aktif selama belum expired dan belum melewati batas download.
+                        Order sudah paid. Akses download aktif selama belum expired dan belum melewati batas download.
                     </div>
 
                     @if ($order->buyer_email && $order->product && $order->product->privateFileExists())
                         <form method="POST"
                               action="{{ route('admin.orders.resend-download-link', $order) }}"
-                              onsubmit="return confirm('Kirim ulang link download ke email pembeli?');">
+                              onsubmit="return confirm('Kirim ulang email panduan Ruang Akses ke pembeli?');">
                             @csrf
 
                             <button type="submit"
                                     class="btn btn-success w-100 rounded-pill d-inline-flex align-items-center justify-content-center gap-1">
                                 <i data-feather="send" style="width: 15px; height: 15px;"></i>
-                                <span>Kirim Ulang Link Download</span>
+                                <span>Kirim Ulang Email Ruang Akses</span>
                             </button>
                         </form>
                     @else
                         <div class="alert alert-warning mb-0">
-                            Link download belum dapat dikirim ulang karena email pembeli atau file produk belum tersedia.
+                            Email Ruang Akses belum dapat dikirim ulang karena email pembeli atau file produk belum tersedia.
                         </div>
                     @endif
                 @elseif ($order->status === 'rejected')

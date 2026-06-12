@@ -84,7 +84,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $users->links() }}</div>
+            <div class="mt-3">{{ $users->links('vendor.pagination.ruangcerdas') }}</div>
         @else
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">User belum tersedia</h5>
@@ -95,4 +95,3 @@
 </div>
 
 @endsection
-

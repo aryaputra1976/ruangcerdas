@@ -76,7 +76,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $coupons->links() }}</div>
+            <div class="mt-3">{{ $coupons->links('vendor.pagination.ruangcerdas') }}</div>
         @else
             <p class="text-muted mb-0">Belum ada kupon.</p>
         @endif

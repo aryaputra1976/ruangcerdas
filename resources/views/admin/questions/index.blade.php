@@ -121,7 +121,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $questions->links() }}</div>
+            <div class="mt-3">{{ $questions->links('vendor.pagination.ruangcerdas') }}</div>
         @else
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">{{ $hasFilter ? 'Soal tidak ditemukan' : 'Belum ada bank soal' }}</h5>

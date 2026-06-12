@@ -54,7 +54,7 @@
                 @endforeach
             </div>
             <div class="mt-3">
-                {{ $creatives->links() }}
+                {{ $creatives->links('vendor.pagination.ruangcerdas') }}
             </div>
         @else
             <div class="text-center py-5">

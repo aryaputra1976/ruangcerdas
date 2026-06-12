@@ -141,7 +141,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $packages->links() }}</div>
+            <div class="mt-3">{{ $packages->links('vendor.pagination.ruangcerdas') }}</div>
         @else
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">{{ $hasFilter ? 'Paket tidak ditemukan' : 'Belum ada paket tryout' }}</h5>

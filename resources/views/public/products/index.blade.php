@@ -76,7 +76,7 @@
                     ])
                 @endforeach
             </div>
-            <div class="mt-8">{{ $products->links() }}</div>
+            <div class="mt-8">{{ $products->links('vendor.pagination.ruangcerdas') }}</div>
         @else
             <div class="rounded-[2rem] border border-dashed border-slate-300 bg-white p-12 text-center shadow-sm">
                 <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-xl font-black text-slate-700">RC</div>

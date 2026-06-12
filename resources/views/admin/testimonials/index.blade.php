@@ -63,7 +63,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $testimonials->links() }}</div>
+            <div class="mt-3">{{ $testimonials->links('vendor.pagination.ruangcerdas') }}</div>
         @else
             <p class="text-muted mb-0">Belum ada testimonial.</p>
         @endif

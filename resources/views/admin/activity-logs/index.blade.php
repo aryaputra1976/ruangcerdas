@@ -110,7 +110,7 @@
             </div>
 
             <div class="mt-3">
-                {{ $logs->links() }}
+                {{ $logs->links('vendor.pagination.ruangcerdas') }}
             </div>
         @else
             <div class="text-center py-5">

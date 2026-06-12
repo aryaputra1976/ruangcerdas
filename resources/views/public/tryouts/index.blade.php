@@ -41,6 +41,13 @@
             </div>
         @endif
 
+        @if (($packages->first()?->tryout_type ?? null) === \App\Support\TryoutBlueprint::TYPE_CPNS)
+            <div class="mb-6 rounded-[2rem] border border-slate-200 bg-white px-5 py-4 text-sm leading-7 text-slate-600 shadow-sm">
+                Paket CPNS mini memakai <span class="font-bold text-slate-950">ambang paket latihan</span> yang disesuaikan dengan jumlah soal.
+                Paket SKD lengkap memakai <span class="font-bold text-slate-950">ambang simulasi SKD penuh</span>.
+            </div>
+        @endif
+
         @if ($packages->isNotEmpty())
             <div class="grid items-stretch gap-4 md:gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($packages as $package)
@@ -143,6 +150,17 @@
                             <p class="mt-3 min-h-[3rem] text-xs leading-5 text-slate-500">
                                 Bisa langsung dicoba tanpa beli.
                             </p>
+                        @endif
+
+                        @if ($package->tryout_type === \App\Support\TryoutBlueprint::TYPE_CPNS && $package->thresholdSummaryLine())
+                            <div class="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+                                <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+                                    {{ $package->thresholdLabel() }}
+                                </p>
+                                <p class="mt-1 text-xs leading-6 text-slate-700">
+                                    {{ $package->thresholdSummaryLine() }}
+                                </p>
+                            </div>
                         @endif
                     </article>
                 @endforeach

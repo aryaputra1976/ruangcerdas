@@ -101,15 +101,7 @@ class TryoutPackage extends Model
 
     public function sectionSummaries(): array
     {
-        $sections = collect($this->section_composition);
-
-        if ($sections->isEmpty()) {
-            $sections = collect([
-                ['key' => 'twk', 'label' => 'TWK', 'count' => (int) $this->twk_count, 'scoring_mode' => 'single_correct'],
-                ['key' => 'tiu', 'label' => 'TIU', 'count' => (int) $this->tiu_count, 'scoring_mode' => 'single_correct'],
-                ['key' => 'tkp', 'label' => 'TKP', 'count' => (int) $this->tkp_count, 'scoring_mode' => 'weighted'],
-            ]);
-        }
+        $sections = collect($this->rawSectionComposition());
 
         $thresholds = $this->sectionThresholds();
 
@@ -137,7 +129,37 @@ class TryoutPackage extends Model
 
     public function sectionThresholds(): array
     {
-        return $this->section_thresholds ?: TryoutBlueprint::defaultThresholds($this->tryout_type);
+        $baseThresholds = TryoutBlueprint::defaultThresholds($this->tryout_type);
+        $storedThresholds = $this->section_thresholds ?: [];
+        $composition = $this->rawSectionComposition();
+
+        if ($storedThresholds === []) {
+            return TryoutBlueprint::scaledThresholds($this->tryout_type, $composition);
+        }
+
+        if (
+            TryoutBlueprint::normalizeType($this->tryout_type) === TryoutBlueprint::TYPE_CPNS
+            && $storedThresholds == $baseThresholds
+        ) {
+            return TryoutBlueprint::scaledThresholds($this->tryout_type, $composition);
+        }
+
+        return $storedThresholds;
+    }
+
+    private function rawSectionComposition(): array
+    {
+        $sections = collect($this->section_composition);
+
+        if ($sections->isEmpty()) {
+            $sections = collect([
+                ['key' => 'twk', 'label' => 'TWK', 'count' => (int) $this->twk_count, 'scoring_mode' => 'single_correct'],
+                ['key' => 'tiu', 'label' => 'TIU', 'count' => (int) $this->tiu_count, 'scoring_mode' => 'single_correct'],
+                ['key' => 'tkp', 'label' => 'TKP', 'count' => (int) $this->tkp_count, 'scoring_mode' => 'weighted'],
+            ]);
+        }
+
+        return $sections->all();
     }
 
     public function totalThreshold(): ?int
@@ -145,6 +167,50 @@ class TryoutPackage extends Model
         $thresholds = $this->sectionThresholds();
 
         return isset($thresholds['total']) ? (int) $thresholds['total'] : null;
+    }
+
+    public function usesScaledCpnsThresholds(): bool
+    {
+        if (TryoutBlueprint::normalizeType($this->tryout_type) !== TryoutBlueprint::TYPE_CPNS) {
+            return false;
+        }
+
+        $baseThresholds = TryoutBlueprint::defaultThresholds($this->tryout_type);
+        $scaledThresholds = TryoutBlueprint::scaledThresholds($this->tryout_type, $this->rawSectionComposition());
+
+        return $this->sectionThresholds() === $scaledThresholds
+            && $scaledThresholds !== $baseThresholds;
+    }
+
+    public function thresholdLabel(): string
+    {
+        if (TryoutBlueprint::normalizeType($this->tryout_type) !== TryoutBlueprint::TYPE_CPNS) {
+            return 'Ambang paket tryout';
+        }
+
+        return $this->usesScaledCpnsThresholds()
+            ? 'Ambang paket latihan'
+            : 'Ambang simulasi SKD';
+    }
+
+    public function thresholdSummaryLine(): ?string
+    {
+        $items = collect($this->sectionSummaries())
+            ->map(function (array $section) {
+                if ($section['threshold'] === null) {
+                    return null;
+                }
+
+                return trim($section['label'] . ' ' . (int) $section['threshold']);
+            })
+            ->filter()
+            ->values();
+
+        if ($this->totalThreshold() !== null) {
+            $items->push('Total ' . $this->totalThreshold());
+        }
+
+        return $items->isNotEmpty() ? $items->implode(' · ') : null;
     }
 
     public function setTryoutTypeAttribute($value): void

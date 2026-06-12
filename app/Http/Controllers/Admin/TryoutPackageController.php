@@ -321,7 +321,7 @@ class TryoutPackageController extends Controller
         }
 
         $validated['section_composition'] = $composition;
-        $validated['section_thresholds'] = TryoutBlueprint::defaultThresholds($type);
+        $validated['section_thresholds'] = TryoutBlueprint::scaledThresholds($type, $composition);
         $validated['twk_count'] = $type === TryoutBlueprint::TYPE_CPNS ? (int) data_get($validated['section_counts'], $type . '.twk', 0) : 0;
         $validated['tiu_count'] = $type === TryoutBlueprint::TYPE_CPNS ? (int) data_get($validated['section_counts'], $type . '.tiu', 0) : 0;
         $validated['tkp_count'] = $type === TryoutBlueprint::TYPE_CPNS ? (int) data_get($validated['section_counts'], $type . '.tkp', 0) : 0;

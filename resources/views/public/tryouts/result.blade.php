@@ -5,6 +5,10 @@
 @section('robots', 'noindex,nofollow')
 
 @section('content')
+@php
+    $thresholdLabel = $tryoutSession->package?->thresholdLabel() ?? 'Ambang paket';
+    $usesScaledCpnsThresholds = $tryoutSession->package?->usesScaledCpnsThresholds() ?? false;
+@endphp
 <section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-6xl px-6">
         <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
@@ -30,7 +34,7 @@
                         <div class="text-sm font-bold uppercase tracking-widest text-blue-700">{{ $section['label'] }}</div>
                         <div class="mt-3 text-3xl font-black text-slate-950">{{ $section['score'] }}</div>
                         <div class="mt-2 text-sm text-slate-600">
-                            {{ $section['threshold'] !== null ? 'Minimal ' . $section['threshold'] : 'Tanpa nilai minimum' }}
+                            {{ $section['threshold'] !== null ? $thresholdLabel . ' ' . $section['threshold'] : 'Tanpa nilai minimum' }}
                         </div>
                     </div>
                 @endforeach
@@ -38,10 +42,16 @@
                     <div class="text-sm font-bold uppercase tracking-widest text-slate-300">Total</div>
                     <div class="mt-3 text-3xl font-black">{{ $tryoutSession->total_score }}</div>
                     <div class="mt-2 text-sm text-slate-300">
-                        {{ $totalThreshold !== null ? 'Minimal ' . $totalThreshold : 'Tanpa nilai minimum' }}
+                        {{ $totalThreshold !== null ? $thresholdLabel . ' ' . $totalThreshold : 'Tanpa nilai minimum' }}
                     </div>
                 </div>
             </div>
+
+            @if ($usesScaledCpnsThresholds)
+                <div class="mt-5 rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-7 text-amber-900">
+                    Hasil ini memakai <span class="font-bold">ambang paket latihan</span> yang disesuaikan dengan jumlah soal di paket ini, jadi patokannya berbeda dari passing grade SKD CPNS penuh.
+                </div>
+            @endif
 
             <div class="mt-8 grid gap-6 lg:grid-cols-2">
                 <div class="rounded-[2rem] border border-slate-200 p-6">
@@ -67,22 +77,22 @@
                     <div class="mt-5 space-y-3 text-sm text-slate-600">
                         @foreach ($sectionResults as $section)
                             <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                                <span>
-                                    {{ $section['label'] }}
-                                    {{ $section['threshold'] !== null ? '>= ' . $section['threshold'] : '' }}
-                                </span>
+                                <span>{{ $section['label'] }}{{ $section['threshold'] !== null ? ' >= ' . $section['threshold'] : '' }}</span>
                                 <span class="font-bold {{ $section['threshold'] === null ? 'text-slate-600' : ($section['score'] >= $section['threshold'] ? 'text-emerald-600' : 'text-rose-600') }}">
                                     {{ $section['threshold'] === null ? 'Tidak dinilai ambang batas' : ($section['score'] >= $section['threshold'] ? 'Lolos' : 'Belum') }}
                                 </span>
                             </div>
                         @endforeach
                         <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3">
-                            <span>Total {{ $totalThreshold !== null ? '>= ' . $totalThreshold : '' }}</span>
+                            <span>Total{{ $totalThreshold !== null ? ' >= ' . $totalThreshold : '' }}</span>
                             <span class="font-bold {{ $totalThreshold === null ? 'text-slate-600' : ($tryoutSession->total_score >= $totalThreshold ? 'text-emerald-600' : 'text-rose-600') }}">
                                 {{ $totalThreshold === null ? 'Tidak dinilai ambang batas' : ($tryoutSession->total_score >= $totalThreshold ? 'Lolos' : 'Belum') }}
                             </span>
                         </div>
                     </div>
+                    <p class="mt-4 text-sm leading-6 text-slate-500">
+                        Patokan di atas memakai {{ strtolower($thresholdLabel) }} untuk paket yang sedang Anda kerjakan.
+                    </p>
                 </div>
             </div>
 

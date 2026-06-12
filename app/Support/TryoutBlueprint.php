@@ -43,6 +43,14 @@ class TryoutBlueprint
         ],
     ];
 
+    private const CPNS_BASE_SECTION_MAX_SCORES = [
+        'twk' => 150,
+        'tiu' => 175,
+        'tkp' => 225,
+    ];
+
+    private const CPNS_BASE_TOTAL_MAX_SCORE = 550;
+
     public static function typeOptions(): array
     {
         return collect(self::TYPES)
@@ -146,5 +154,60 @@ class TryoutBlueprint
         }
 
         return $thresholds;
+    }
+
+    public static function scaledThresholds(?string $type, array $sectionComposition = []): array
+    {
+        $type = self::normalizeType($type);
+        $thresholds = self::defaultThresholds($type);
+
+        if ($type !== self::TYPE_CPNS) {
+            return $thresholds;
+        }
+
+        $compositionByKey = collect($sectionComposition)
+            ->mapWithKeys(fn (array $section) => [strtolower((string) ($section['key'] ?? '')) => (int) ($section['count'] ?? 0)])
+            ->all();
+
+        $scaled = [];
+        $totalMaxScore = 0;
+
+        foreach (self::sections($type) as $section) {
+            $key = $section['key'];
+            $questionCount = (int) ($compositionByKey[$key] ?? 0);
+
+            if ($questionCount < 1) {
+                continue;
+            }
+
+            $sectionMaxScore = $questionCount * 5;
+            $totalMaxScore += $sectionMaxScore;
+
+            if (! isset($thresholds[$key])) {
+                continue;
+            }
+
+            $baseMaxScore = self::CPNS_BASE_SECTION_MAX_SCORES[$key] ?? 0;
+
+            if ($baseMaxScore < 1) {
+                $scaled[$key] = (int) $thresholds[$key];
+
+                continue;
+            }
+
+            $scaled[$key] = min(
+                $sectionMaxScore,
+                (int) max(0, round(((int) $thresholds[$key] / $baseMaxScore) * $sectionMaxScore))
+            );
+        }
+
+        if (isset($thresholds['total']) && $totalMaxScore > 0) {
+            $scaled['total'] = min(
+                $totalMaxScore,
+                (int) max(0, round(((int) $thresholds['total'] / self::CPNS_BASE_TOTAL_MAX_SCORE) * $totalMaxScore))
+            );
+        }
+
+        return $scaled;
     }
 }

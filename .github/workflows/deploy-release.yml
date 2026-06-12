@@ -19,22 +19,22 @@ jobs:
       RUN_DB_SEED: "false"
 
     steps:
-      - name: Checkout code
+      - name: Ambil kode sumber
         uses: actions/checkout@v5
 
-      - name: Set up Node
+      - name: Siapkan Node
         uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
-      - name: Build frontend assets
+      - name: Build aset frontend
         run: |
           set -e
           npm ci
           npm run build
 
-      - name: Set up SSH
+      - name: Siapkan SSH
         run: |
           set -e
           mkdir -p "$HOME/.ssh"
@@ -42,18 +42,28 @@ jobs:
           SSH_HOST_CLEAN="$(printf '%s' '${{ secrets.SSH_HOST }}' | tr -d '\r\n\t ' )"
           SSH_USER_CLEAN="$(printf '%s' '${{ secrets.SSH_USER }}' | tr -d '\r\n\t ' )"
           SSH_PORT_CLEAN="$(printf '%s' '${{ secrets.SSH_PORT }}' | tr -d '\r\n\t ' )"
+          SSH_HOST_MASKED="$(printf '%s' "$SSH_HOST_CLEAN" | sed -E 's/^(.{0,3}).*(.{2})$/\1***\2/')"
+          SSH_USER_MASKED="$(printf '%s' "$SSH_USER_CLEAN" | sed -E 's/^(.{0,2}).*(.{1})$/\1***\2/')"
 
-          test -n "$SSH_HOST_CLEAN" || { echo "ERROR: SSH_HOST secret is empty."; exit 1; }
-          test -n "$SSH_USER_CLEAN" || { echo "ERROR: SSH_USER secret is empty."; exit 1; }
-          test -n "$SSH_PORT_CLEAN" || { echo "ERROR: SSH_PORT secret is empty."; exit 1; }
-          test -n "${{ secrets.SSH_PRIVATE_KEY }}" || { echo "ERROR: SSH_PRIVATE_KEY secret is empty."; exit 1; }
+          test -n "$SSH_HOST_CLEAN" || { echo "ERROR: Secret SSH_HOST kosong."; exit 1; }
+          test -n "$SSH_USER_CLEAN" || { echo "ERROR: Secret SSH_USER kosong."; exit 1; }
+          test -n "$SSH_PORT_CLEAN" || { echo "ERROR: Secret SSH_PORT kosong."; exit 1; }
+          test -n "${{ secrets.SSH_PRIVATE_KEY }}" || { echo "ERROR: Secret SSH_PRIVATE_KEY kosong."; exit 1; }
+          printf '%s' "$SSH_PORT_CLEAN" | grep -Eq '^[0-9]+$' || {
+            echo "ERROR: SSH_PORT harus berupa angka. Nilai saat ini tidak valid."
+            exit 1
+          }
 
-          echo "Using SSH target $SSH_USER_CLEAN@$SSH_HOST_CLEAN:$SSH_PORT_CLEAN"
-          echo "For this server, GitHub Secrets should typically use the direct server IP/host and custom SSH port."
+          echo "::group::Ringkasan target SSH"
+          echo "Target SSH       : $SSH_USER_MASKED@$SSH_HOST_MASKED:$SSH_PORT_CLEAN"
+          echo "Tipe host        : $(if printf '%s' "$SSH_HOST_CLEAN" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then echo IPv4; else echo Hostname; fi)"
+          echo "Port             : $SSH_PORT_CLEAN"
+          echo "Catatan          : gunakan IP server langsung atau hostname SSH publik yang aktif."
+          echo "::endgroup::"
 
           if printf '%s' "${{ secrets.SSH_PRIVATE_KEY }}" | grep -q '\\n'; then
-            echo "ERROR: SSH_PRIVATE_KEY appears to contain literal \\n sequences."
-            echo "Store the key in GitHub Secrets with real line breaks, not escaped newlines."
+            echo "ERROR: SSH_PRIVATE_KEY terlihat berisi karakter \\n literal."
+            echo "Simpan private key di GitHub Secrets dengan baris baru asli, bukan newline yang di-escape."
             exit 1
           fi
 
@@ -61,10 +71,14 @@ jobs:
           chmod 600 "$HOME/.ssh/deploy_key"
 
           if ! ssh-keygen -y -f "$HOME/.ssh/deploy_key" >/dev/null 2>&1; then
-            echo "ERROR: SSH_PRIVATE_KEY is not a valid OpenSSH private key or still requires a passphrase."
-            echo "Use an unencrypted private key in OpenSSH format and ensure the matching public key is in authorized_keys."
+            echo "ERROR: SSH_PRIVATE_KEY bukan private key OpenSSH yang valid atau masih memakai passphrase."
+            echo "Gunakan private key OpenSSH tanpa passphrase dan pastikan public key pasangannya sudah ada di authorized_keys."
             exit 1
           fi
+
+          echo "::group::Fingerprint key SSH"
+          ssh-keygen -lf "$HOME/.ssh/deploy_key" || true
+          echo "::endgroup::"
 
           cat > "$HOME/.ssh/config" <<EOF
           Host deploy-server
@@ -77,53 +91,96 @@ jobs:
             UserKnownHostsFile /dev/null
           EOF
 
-          echo "SSH configuration prepared for $SSH_USER_CLEAN@$SSH_HOST_CLEAN:$SSH_PORT_CLEAN"
+          echo "Konfigurasi SSH selesai disiapkan untuk target deploy."
 
-      - name: Test SSH connection
+      - name: Uji koneksi SSH
         run: |
           set -e
 
           SSH_HOST_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^hostname / { print $2; exit }')"
           SSH_PORT_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^port / { print $2; exit }')"
+          SSH_USER_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^user / { print $2; exit }')"
+          SSH_HOST_MASKED="$(printf '%s' "$SSH_HOST_CLEAN" | sed -E 's/^(.{0,3}).*(.{2})$/\1***\2/')"
+          SSH_USER_MASKED="$(printf '%s' "$SSH_USER_CLEAN" | sed -E 's/^(.{0,2}).*(.{1})$/\1***\2/')"
+
+          echo "::group::Konfigurasi SSH hasil parsing"
+          echo "Host : $SSH_HOST_MASKED"
+          echo "Port : $SSH_PORT_CLEAN"
+          echo "User : $SSH_USER_MASKED"
+          echo "::endgroup::"
 
           if printf '%s' "$SSH_HOST_CLEAN" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-            echo "SSH host is a direct IPv4 address: $SSH_HOST_CLEAN"
+            echo "SSH_HOST menggunakan alamat IPv4 langsung: $SSH_HOST_MASKED"
           else
-            echo "Resolving SSH host..."
-            getent ahostsv4 "$SSH_HOST_CLEAN" >/dev/null || {
+            echo "Melakukan resolusi SSH_HOST..."
+            RESOLVED_IPV4="$(getent ahostsv4 "$SSH_HOST_CLEAN" | awk '{print $1; exit}')"
+            test -n "$RESOLVED_IPV4" || {
               echo "ERROR: SSH_HOST tidak bisa di-resolve dari GitHub Actions."
               echo "Gunakan IP server langsung atau hostname SSH yang memang publik dan aktif."
               exit 1
             }
+            echo "IPv4 hasil resolusi: $RESOLVED_IPV4"
           fi
 
-          echo "Testing TCP connectivity to $SSH_HOST_CLEAN:$SSH_PORT_CLEAN ..."
-          timeout 15 bash -c "</dev/tcp/$SSH_HOST_CLEAN/$SSH_PORT_CLEAN" || {
+          echo "::group::Uji konektivitas TCP"
+          echo "Menguji konektivitas TCP ke $SSH_HOST_MASKED:$SSH_PORT_CLEAN ..."
+          if timeout 15 bash -c "</dev/tcp/$SSH_HOST_CLEAN/$SSH_PORT_CLEAN"; then
+            echo "Konektivitas TCP OK"
+          else
             echo "ERROR: Port SSH tidak bisa dijangkau dari GitHub Actions."
-            echo "Periksa SSH_HOST, SSH_PORT, firewall hosting, dan kemungkinan blok koneksi eksternal."
+            echo "Periksa:"
+            echo "  - SSH_HOST dan SSH_PORT di GitHub Secrets"
+            echo "  - firewall / allowlist SSH di hosting"
+            echo "  - apakah provider memblok koneksi dari GitHub Actions"
+            echo "  - apakah port custom SSH benar-benar terbuka untuk koneksi publik"
+            echo "Debug manual dari mesin lain:"
+            echo "  ssh -p $SSH_PORT_CLEAN <user>@<host>"
+            echo "  telnet <host> $SSH_PORT_CLEAN"
+            echo "  nc -vz <host> $SSH_PORT_CLEAN"
+            echo "::endgroup::"
             exit 1
-          }
+          fi
+          echo "::endgroup::"
 
-          ssh \
+          echo "::group::Uji autentikasi SSH"
+          if ssh \
             -o ConnectTimeout=15 \
             -o BatchMode=yes \
             -o PreferredAuthentications=publickey \
             -F "$HOME/.ssh/config" \
-            deploy-server "echo SSH OK"
+            deploy-server "echo SSH OK"; then
+            echo "Autentikasi SSH OK"
+          else
+            echo "ERROR: TCP port terbuka, tetapi autentikasi SSH gagal."
+            echo "Periksa apakah public key yang cocok sudah ada di ~/.ssh/authorized_keys server."
+            echo "Periksa juga apakah private key di GitHub Secrets adalah key tanpa passphrase."
+            echo "Menjalankan debug tambahan dengan ssh -vv ..."
+            echo "::group::Debug verbose SSH"
+            ssh \
+              -vv \
+              -o ConnectTimeout=15 \
+              -o BatchMode=yes \
+              -o PreferredAuthentications=publickey \
+              -F "$HOME/.ssh/config" \
+              deploy-server "exit 0" || true
+            echo "::endgroup::"
+            exit 1
+          fi
+          echo "::endgroup::"
 
-      - name: Create release and shared folders
+      - name: Buat folder release dan shared
         run: |
           set -e
 
           ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
-            echo '==> Preparing release directories'
-            echo 'Release path: $APP_ROOT/releases/$RELEASE_ID'
+            echo '==> Menyiapkan folder release'
+            echo 'Path release: $APP_ROOT/releases/$RELEASE_ID'
 
             mkdir -p $APP_ROOT/releases/$RELEASE_ID
 
-            echo '==> Ensuring shared storage directories'
+            echo '==> Memastikan folder shared storage tersedia'
             mkdir -p $APP_ROOT/shared/storage/app/public
             mkdir -p $APP_ROOT/shared/storage/framework
             mkdir -p $APP_ROOT/shared/storage/framework/cache
@@ -134,18 +191,18 @@ jobs:
 
             mkdir -p $APP_ROOT/shared/bootstrap/cache
 
-            echo '==> Fixing shared directory permissions'
+            echo '==> Memperbaiki permission folder shared'
             chmod -R 775 $APP_ROOT/shared/storage
             chmod -R 775 $APP_ROOT/shared/bootstrap/cache
 
-            echo 'Shared directories ready'
+            echo 'Folder shared siap digunakan'
           "
 
-      - name: Upload files to release
+      - name: Upload file ke release
         run: |
           set -e
 
-          echo "Uploading files to $APP_ROOT/releases/$RELEASE_ID"
+          echo "Mengunggah file ke $APP_ROOT/releases/$RELEASE_ID"
 
           rsync -az --delete \
             -e "ssh -F $HOME/.ssh/config" \
@@ -161,14 +218,14 @@ jobs:
             ./ \
             "deploy-server:$APP_ROOT/releases/$RELEASE_ID/"
 
-      - name: Verify uploaded release
+      - name: Verifikasi release yang diunggah
         run: |
           set -e
 
           ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
-            echo '==> Checking Laravel release structure'
+            echo '==> Memeriksa struktur release Laravel'
 
             test -f $APP_ROOT/releases/$RELEASE_ID/artisan
             test -f $APP_ROOT/releases/$RELEASE_ID/composer.json
@@ -177,24 +234,24 @@ jobs:
             test -d $APP_ROOT/releases/$RELEASE_ID/resources
             test -d $APP_ROOT/releases/$RELEASE_ID/public
 
-            echo '==> Checking Vite manifest'
+            echo '==> Memeriksa manifest Vite'
             test -f $APP_ROOT/releases/$RELEASE_ID/public/build/manifest.json
 
-            echo 'Uploaded release OK'
+            echo 'Release hasil upload valid'
           "
 
-      - name: Install dependencies and prepare release
+      - name: Install dependency dan siapkan release
         run: |
           set -e
 
           ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
-            echo '==> Entering release directory'
+            echo '==> Masuk ke folder release'
             cd $APP_ROOT/releases/$RELEASE_ID
             pwd
 
-            echo '==> Ensuring shared directories exist'
+            echo '==> Memastikan folder shared tersedia'
             mkdir -p $APP_ROOT/shared/storage/app/public
             mkdir -p $APP_ROOT/shared/storage/framework
             mkdir -p $APP_ROOT/shared/storage/framework/cache
@@ -204,7 +261,7 @@ jobs:
             mkdir -p $APP_ROOT/shared/storage/logs
             mkdir -p $APP_ROOT/shared/bootstrap/cache
 
-            echo '==> Linking shared directories'
+            echo '==> Menghubungkan folder shared'
             rm -rf storage
             ln -sfn $APP_ROOT/shared/storage storage
 
@@ -214,62 +271,62 @@ jobs:
             rm -rf bootstrap/cache
             ln -sfn $APP_ROOT/shared/bootstrap/cache bootstrap/cache
 
-            echo '==> Fixing permissions'
+            echo '==> Memperbaiki permission'
             chmod -R 775 $APP_ROOT/shared/storage
             chmod -R 775 $APP_ROOT/shared/bootstrap/cache
 
-            echo '==> Linking shared environment file'
+            echo '==> Menghubungkan file environment shared'
             if [ -f $APP_ROOT/shared/.env ]; then
               ln -sfn $APP_ROOT/shared/.env .env
             else
-              echo 'ERROR: shared/.env not found'
+              echo 'ERROR: shared/.env tidak ditemukan'
               exit 1
             fi
 
-            echo '==> Running composer install'
+            echo '==> Menjalankan composer install'
             composer install --no-dev --optimize-autoloader --no-interaction
 
-            echo '==> Running database migration'
+            echo '==> Menjalankan migrasi database'
             php artisan migrate --force
 
-            echo '==> Clearing and rebuilding Laravel caches'
+            echo '==> Membersihkan dan membangun ulang cache Laravel'
             php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
 
             if [ \"$RUN_DB_SEED\" = \"true\" ]; then
-              echo '==> Running database seeder'
+              echo '==> Menjalankan seeder database'
               php artisan db:seed --force
             else
-              echo 'Skipping db:seed in production deploy (RUN_DB_SEED=false).'
+              echo 'db:seed dilewati pada deploy produksi (RUN_DB_SEED=false).'
             fi
 
-            echo 'Release preparation complete'
+            echo 'Persiapan release selesai'
           "
 
-      - name: Activate release
+      - name: Aktifkan release
         run: |
           set -e
 
           ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
-            echo '==> Activating release'
+            echo '==> Mengaktifkan release'
             ln -sfn $APP_ROOT/releases/$RELEASE_ID $APP_ROOT/current
 
-            echo 'Release activated:'
+            echo 'Release aktif:'
             readlink -f $APP_ROOT/current
           "
 
-      - name: Verify active release
+      - name: Verifikasi release aktif
         run: |
           set -e
 
           ssh -F "$HOME/.ssh/config" deploy-server "
             set -e
 
-            echo '==> Checking active release'
+            echo '==> Memeriksa release aktif'
 
             test -f $APP_ROOT/current/artisan
             test -f $APP_ROOT/current/public/index.php
@@ -280,5 +337,5 @@ jobs:
             test -d $APP_ROOT/current/storage/framework/cache/data
             test -d $APP_ROOT/current/storage/logs
 
-            echo 'Active release OK'
+            echo 'Release aktif valid'
           "

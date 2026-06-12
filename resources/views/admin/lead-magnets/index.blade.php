@@ -35,7 +35,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $leadMagnets->links('vendor.pagination.ruangcerdas') }}</div>
+            <div class="mt-3">{{ $leadMagnets->links() }}</div>
         @else
             <p class="text-muted mb-0">Belum ada lead magnet.</p>
         @endif

@@ -315,7 +315,7 @@
 
             @if (method_exists($orders, 'links'))
                 <div class="mt-3">
-                    {{ $orders->links('vendor.pagination.ruangcerdas') }}
+                    {{ $orders->links() }}
                 </div>
             @endif
         @else

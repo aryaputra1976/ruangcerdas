@@ -150,7 +150,7 @@
             </div>
 
             <div class="mt-3">
-                {{ $customers->links('vendor.pagination.ruangcerdas') }}
+                {{ $customers->links() }}
             </div>
         @else
             <div class="text-center py-5">

@@ -28,7 +28,7 @@
                     </article>
                 @endforeach
             </div>
-            <div class="mt-6">{{ $leadMagnets->links('vendor.pagination.ruangcerdas') }}</div>
+            <div class="mt-6">{{ $leadMagnets->links() }}</div>
         @else
             <div class="mt-5 rounded-3xl border border-dashed border-slate-300 bg-white p-10 text-center">
                 <p class="text-slate-600">Panduan gratis belum tersedia saat ini.</p>

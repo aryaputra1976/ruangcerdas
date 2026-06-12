@@ -24,10 +24,14 @@ class AppServiceProvider extends ServiceProvider
     {
         if (View::exists('vendor.pagination.ruangcerdas')) {
             Paginator::defaultView('vendor.pagination.ruangcerdas');
+        } else {
+            Paginator::defaultView('pagination.ruangcerdas-fallback');
         }
 
         if (View::exists('vendor.pagination.ruangcerdas-simple')) {
             Paginator::defaultSimpleView('vendor.pagination.ruangcerdas-simple');
+        } else {
+            Paginator::defaultSimpleView('pagination.ruangcerdas-simple-fallback');
         }
 
         View::composer([

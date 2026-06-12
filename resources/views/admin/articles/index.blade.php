@@ -65,7 +65,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $articles->links('vendor.pagination.ruangcerdas') }}</div>
+            <div class="mt-3">{{ $articles->links() }}</div>
         @else
             <p class="text-muted mb-0">Belum ada artikel.</p>
         @endif

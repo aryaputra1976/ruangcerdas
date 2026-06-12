@@ -96,7 +96,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="mt-3">{{ $categories->links('vendor.pagination.ruangcerdas') }}</div>
+            <div class="mt-3">{{ $categories->links() }}</div>
         @else
             <div class="text-center py-5">
                 <h5 class="text-dark mb-1">{{ $hasFilter ? 'Kategori soal tidak ditemukan' : 'Belum ada kategori soal' }}</h5>

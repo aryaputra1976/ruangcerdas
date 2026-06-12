@@ -49,7 +49,7 @@
                     </article>
                 @endforeach
             </div>
-            <div class="mt-6">{{ $articles->links('vendor.pagination.ruangcerdas') }}</div>
+            <div class="mt-6">{{ $articles->links() }}</div>
 
             <div class="mt-8 rounded-[2rem] border border-blue-100 bg-gradient-to-r from-blue-600 to-sky-500 p-8 text-white shadow-lg md:p-10">
                 <h2 class="text-2xl font-black md:text-3xl">Masih Bingung Mulai Persiapan CPNS?</h2>

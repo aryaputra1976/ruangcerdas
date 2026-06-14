@@ -130,7 +130,10 @@ class Product extends Model
         return $query
             ->active()
             ->published()
-            ->whereNotNull('digital_file_path');
+            ->where(function (Builder $subQuery) {
+                $subQuery->where('product_type', 'tryout')
+                    ->orWhereNotNull('digital_file_path');
+            });
     }
 
     public function scopeOfProductType(Builder $query, ?string $type): Builder
@@ -188,10 +191,15 @@ class Product extends Model
 
     public function isVisibleToPublic(): bool
     {
-        return (bool) $this->is_active
-            && filled($this->published_at)
-            && $this->published_at->lte(now())
-            && $this->privateFileExists();
+        if (! (bool) $this->is_active || blank($this->published_at) || $this->published_at->gt(now())) {
+            return false;
+        }
+
+        if ($this->product_type === 'tryout') {
+            return true;
+        }
+
+        return $this->privateFileExists();
     }
 
     public function getFormattedFileSizeAttribute(): ?string

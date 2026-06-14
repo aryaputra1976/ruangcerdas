@@ -302,13 +302,15 @@ class TryoutPackageController extends Controller
             'tryout_type' => ['required', Rule::in(array_keys(TryoutBlueprint::typeOptions()))],
             'position_target' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
-            'price' => ['required', 'integer', 'min:0'],
+            'price' => ['nullable', 'integer', 'min:0'],
             'duration_minutes' => ['required', 'integer', 'min:1'],
             'section_counts' => ['required', 'array'],
             'is_active' => ['nullable'],
         ])->validate();
 
         $type = $validated['tryout_type'];
+        $validated['price'] = (int) ($validated['price'] ?? 0);
+        $validated['is_free'] = $validated['price'] <= 0;
         $validated['position_target'] = TryoutBlueprint::normalizePositionTarget($type, $validated['position_target'] ?? null);
 
         if (TryoutBlueprint::requiresPositionTarget($type) && $validated['position_target'] === null) {

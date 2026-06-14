@@ -10,6 +10,7 @@
     $initialTotalQuestions = collect($sectionsByType[$selectedType] ?? [])
         ->sum(fn ($section) => (int) old('section_counts.' . $selectedType . '.' . $section['key'], $existingSectionCounts[$section['key']] ?? 0));
     $initialDurationMinutes = (int) old('duration_minutes', $package?->duration_minutes ?? 100);
+    $priceValue = old('price', isset($package) && (int) ($package?->price ?? 0) > 0 ? $package?->price : '');
     $initialMinutesPerQuestion = $initialTotalQuestions > 0
         ? round($initialDurationMinutes / $initialTotalQuestions, 2)
         : 0;
@@ -56,8 +57,9 @@
                 @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">
-                <label class="form-label">Harga <span class="text-danger">*</span></label>
-                <input type="number" name="price" value="{{ old('price', $package?->price ?? 0) }}" class="form-control @error('price') is-invalid @enderror" min="0" required>
+                <label class="form-label">Harga</label>
+                <input type="number" name="price" value="{{ $priceValue }}" class="form-control @error('price') is-invalid @enderror" min="0" placeholder="Kosongkan atau isi 0 untuk paket gratis">
+                <div class="form-text">Kosongkan harga atau isi 0 jika paket ini gratis.</div>
                 @error('price')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-6">

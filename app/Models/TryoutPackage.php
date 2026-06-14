@@ -47,6 +47,11 @@ class TryoutPackage extends Model
         'is_active' => 'boolean',
     ];
 
+    public function getIsFreeAttribute($value): bool
+    {
+        return (bool) $value || (int) ($this->attributes['price'] ?? 0) <= 0;
+    }
+
     public function sessions(): HasMany
     {
         return $this->hasMany(TryoutSession::class);

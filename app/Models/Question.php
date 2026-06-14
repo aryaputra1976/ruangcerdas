@@ -16,6 +16,7 @@ class Question extends Model
     protected $fillable = [
         'question_category_id',
         'tryout_type',
+        'position_target',
         'section',
         'question_text',
         'explanation',
@@ -52,6 +53,11 @@ class Question extends Model
         return TryoutBlueprint::sectionLabel($this->tryout_type, $this->section);
     }
 
+    public function getPositionTargetLabelAttribute(): ?string
+    {
+        return TryoutBlueprint::positionLabel($this->tryout_type, $this->position_target);
+    }
+
     public function usesWeightedScoring(): bool
     {
         return TryoutBlueprint::scoringMode($this->tryout_type, strtolower((string) $this->section)) === 'weighted';
@@ -75,5 +81,13 @@ class Question extends Model
     public function setTryoutTypeAttribute($value): void
     {
         $this->attributes['tryout_type'] = TryoutBlueprint::normalizeType($value);
+    }
+
+    public function setPositionTargetAttribute($value): void
+    {
+        $this->attributes['position_target'] = TryoutBlueprint::normalizePositionTarget(
+            $this->attributes['tryout_type'] ?? $this->tryout_type ?? null,
+            $value
+        );
     }
 }

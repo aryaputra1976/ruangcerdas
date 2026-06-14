@@ -24,6 +24,7 @@ class TryoutPackageController extends Controller
         'title',
         'slug',
         'tryout_type',
+        'position_target',
         'description',
         'price',
         'duration_minutes',
@@ -59,6 +60,10 @@ class TryoutPackageController extends Controller
             $query->where('tryout_type', $request->tryout_type);
         }
 
+        if ($request->filled('position_target')) {
+            $query->where('position_target', $request->position_target);
+        }
+
         $packages = $query->paginate(10)->withQueryString();
         $counts = [
             'all' => TryoutPackage::count(),
@@ -74,6 +79,9 @@ class TryoutPackageController extends Controller
             'packages' => $packages,
             'counts' => $counts,
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
+                ->all(),
             'packageStockStatuses' => $packageStockStatuses,
         ]);
     }
@@ -89,6 +97,9 @@ class TryoutPackageController extends Controller
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
                 ->all(),
         ]);
     }
@@ -209,6 +220,9 @@ class TryoutPackageController extends Controller
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sections($type)])
                 ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
+                ->all(),
             'questionStockByType' => $this->questionStockByType(),
         ]);
     }
@@ -243,6 +257,9 @@ class TryoutPackageController extends Controller
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sections($type)])
+                ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
                 ->all(),
             'questionStockByType' => $this->questionStockByType(),
         ]);
@@ -283,6 +300,7 @@ class TryoutPackageController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('tryout_packages', 'slug')->ignore($tryoutPackage?->id)],
             'tryout_type' => ['required', Rule::in(array_keys(TryoutBlueprint::typeOptions()))],
+            'position_target' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'price' => ['required', 'integer', 'min:0'],
             'duration_minutes' => ['required', 'integer', 'min:1'],
@@ -291,13 +309,21 @@ class TryoutPackageController extends Controller
         ])->validate();
 
         $type = $validated['tryout_type'];
+        $validated['position_target'] = TryoutBlueprint::normalizePositionTarget($type, $validated['position_target'] ?? null);
+
+        if (TryoutBlueprint::requiresPositionTarget($type) && $validated['position_target'] === null) {
+            throw ValidationException::withMessages([
+                'position_target' => 'Target jabatan wajib dipilih untuk paket PPPK Tendik.',
+            ]);
+        }
+
         $sections = TryoutBlueprint::sections($type);
         $composition = [];
         $totalQuestions = 0;
 
         foreach ($sections as $section) {
             $count = (int) data_get($validated['section_counts'], $type . '.' . $section['key'], 0);
-            $available = $this->availableQuestionCount($type, $section['key']);
+            $available = $this->availableQuestionCount($type, $section['key'], $validated['position_target']);
 
             if ($count > $available) {
                 throw ValidationException::withMessages([
@@ -340,6 +366,7 @@ class TryoutPackageController extends Controller
         }
 
         $type = TryoutBlueprint::normalizeType($data['tryout_type']);
+        $positionTarget = TryoutBlueprint::normalizePositionTarget($type, $data['position_target']);
 
         if (! array_key_exists($type, TryoutBlueprint::typeOptions())) {
             throw ValidationException::withMessages([
@@ -365,6 +392,12 @@ class TryoutPackageController extends Controller
             ]);
         }
 
+        if (TryoutBlueprint::requiresPositionTarget($type) && $positionTarget === null) {
+            throw ValidationException::withMessages([
+                'import_file' => "Baris {$rowNumber}: position_target wajib diisi untuk paket PPPK Tendik.",
+            ]);
+        }
+
         $sectionCounts = [$type => []];
 
         foreach (TryoutBlueprint::sections($type) as $section) {
@@ -385,6 +418,7 @@ class TryoutPackageController extends Controller
             'title' => $data['title'],
             'slug' => $data['slug'],
             'tryout_type' => $type,
+            'position_target' => $positionTarget,
             'description' => $data['description'] !== '' ? $data['description'] : null,
             'price' => (int) $data['price'],
             'duration_minutes' => (int) $data['duration_minutes'],
@@ -444,11 +478,22 @@ class TryoutPackageController extends Controller
     {
         $typeSummary = collect($preparedRows)
             ->groupBy(fn (array $row) => $row['package']['tryout_type'])
-            ->map(fn ($rows, $type) => [
+            ->map(function ($rows, $type) {
+                $positions = collect($rows)
+                    ->map(fn (array $row) => $row['package']['position_target']
+                        ? TryoutBlueprint::positionLabel($row['package']['tryout_type'], $row['package']['position_target'])
+                        : 'Umum')
+                    ->unique()
+                    ->values()
+                    ->implode(', ');
+
+                return [
                 'type' => $type,
                 'type_label' => TryoutBlueprint::typeLabel($type),
+                'position_label' => $positions,
                 'count' => count($rows),
-            ])
+                ];
+            })
             ->values()
             ->all();
 
@@ -467,6 +512,9 @@ class TryoutPackageController extends Controller
                         'title' => $package['title'],
                         'slug' => $package['slug'] ?: Str::slug($package['title']),
                         'tryout_type_label' => TryoutBlueprint::typeLabel($package['tryout_type']),
+                        'position_label' => $package['position_target']
+                            ? TryoutBlueprint::positionLabel($package['tryout_type'], $package['position_target'])
+                            : 'Umum',
                         'duration_minutes' => (int) $package['duration_minutes'],
                         'price' => (int) $package['price'],
                         'is_active' => (bool) $package['is_active'],
@@ -528,6 +576,7 @@ class TryoutPackageController extends Controller
                 'Tryout CPNS Paket A',
                 '',
                 'cpns',
+                '',
                 'Paket latihan CPNS lengkap.',
                 '49000',
                 '100',
@@ -543,7 +592,8 @@ class TryoutPackageController extends Controller
             [
                 'Tryout PPPK Teknis Dasar',
                 '',
-                'pppk',
+                'pppk_tendik',
+                'operator_sekolah',
                 'Paket latihan PPPK untuk kompetensi dasar.',
                 '59000',
                 '120',
@@ -930,10 +980,21 @@ XML);
     {
         return collect(TryoutBlueprint::typeOptions())
             ->mapWithKeys(function ($label, $type) {
+                $positions = TryoutBlueprint::positionOptions($type);
+                $positionBuckets = ['__all__' => null];
+
+                foreach (array_keys($positions) as $positionKey) {
+                    $positionBuckets[$positionKey] = $positionKey;
+                }
+
                 return [
-                    $type => collect(TryoutBlueprint::sections($type))
-                        ->mapWithKeys(fn (array $section) => [
-                            $section['key'] => $this->availableQuestionCount($type, $section['key']),
+                    $type => collect($positionBuckets)
+                        ->mapWithKeys(fn ($positionTarget, $bucketKey) => [
+                            $bucketKey => collect(TryoutBlueprint::sections($type))
+                                ->mapWithKeys(fn (array $section) => [
+                                    $section['key'] => $this->availableQuestionCount($type, $section['key'], $positionTarget),
+                                ])
+                                ->all(),
                         ])
                         ->all(),
                 ];
@@ -941,12 +1002,17 @@ XML);
             ->all();
     }
 
-    private function availableQuestionCount(string $tryoutType, string $section): int
+    private function availableQuestionCount(string $tryoutType, string $section, ?string $positionTarget = null): int
     {
         $targetSection = strtolower($section);
+        $normalizedPositionTarget = TryoutBlueprint::normalizePositionTarget($tryoutType, $positionTarget);
 
         return Question::query()
             ->where('tryout_type', TryoutBlueprint::normalizeType($tryoutType))
+            ->when(
+                $normalizedPositionTarget !== null,
+                fn ($query) => $query->where('position_target', $normalizedPositionTarget)
+            )
             ->where('is_active', true)
             ->get()
             ->filter(fn (Question $question) => strtolower((string) $question->section) === $targetSection)
@@ -957,7 +1023,8 @@ XML);
     {
         $sections = collect($package->sectionSummaries())
             ->map(function (array $section) use ($package, $questionStockByType) {
-                $available = (int) ($questionStockByType[$package->tryout_type][$section['key']] ?? 0);
+                $positionBucket = $package->position_target ?: '__all__';
+                $available = (int) ($questionStockByType[$package->tryout_type][$positionBucket][$section['key']] ?? 0);
                 $required = (int) ($section['count'] ?? 0);
 
                 return [

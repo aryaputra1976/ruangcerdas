@@ -25,7 +25,7 @@ class TryoutBlueprint
             'sections' => [
                 ['key' => 'teknis', 'label' => 'Kompetensi Teknis', 'scoring_mode' => 'single_correct', 'threshold' => null],
                 ['key' => 'manajerial', 'label' => 'Manajerial', 'scoring_mode' => 'weighted', 'threshold' => null],
-                ['key' => 'sosiokultural', 'label' => 'Sosiokultural', 'scoring_mode' => 'weighted', 'threshold' => null],
+                ['key' => 'sosiokultural', 'label' => 'Sosial Kultural', 'scoring_mode' => 'weighted', 'threshold' => null],
                 ['key' => 'wawancara', 'label' => 'Wawancara', 'scoring_mode' => 'weighted', 'threshold' => null],
             ],
             'total_threshold' => null,
@@ -36,7 +36,7 @@ class TryoutBlueprint
             'sections' => [
                 ['key' => 'teknis', 'label' => 'Kompetensi Teknis', 'scoring_mode' => 'single_correct', 'threshold' => null],
                 ['key' => 'manajerial', 'label' => 'Manajerial', 'scoring_mode' => 'weighted', 'threshold' => null],
-                ['key' => 'sosiokultural', 'label' => 'Sosiokultural', 'scoring_mode' => 'weighted', 'threshold' => null],
+                ['key' => 'sosiokultural', 'label' => 'Sosial Kultural', 'scoring_mode' => 'weighted', 'threshold' => null],
                 ['key' => 'wawancara', 'label' => 'Wawancara', 'scoring_mode' => 'weighted', 'threshold' => null],
             ],
             'total_threshold' => null,
@@ -50,6 +50,17 @@ class TryoutBlueprint
     ];
 
     private const CPNS_BASE_TOTAL_MAX_SCORE = 550;
+    private const DEFAULT_OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
+    private const FOUR_OPTION_LABELS = ['A', 'B', 'C', 'D'];
+    private const POSITION_OPTIONS = [
+        self::TYPE_PPPK_TENDIK => [
+            'wali_asuh' => 'Wali Asuh',
+            'wali_asrama' => 'Wali Asrama',
+            'operator_sekolah' => 'Operator Sekolah',
+            'pengelola_keuangan' => 'Pengelola Keuangan',
+            'tenaga_administrasi' => 'Tenaga Administrasi',
+        ],
+    ];
 
     public static function typeOptions(): array
     {
@@ -102,6 +113,48 @@ class TryoutBlueprint
             ->all();
     }
 
+    public static function supportsPositionTarget(?string $type): bool
+    {
+        $type = self::normalizeType($type);
+
+        return array_key_exists($type, self::POSITION_OPTIONS);
+    }
+
+    public static function requiresPositionTarget(?string $type): bool
+    {
+        return self::supportsPositionTarget($type);
+    }
+
+    public static function positionOptions(?string $type): array
+    {
+        $type = self::normalizeType($type);
+
+        return self::POSITION_OPTIONS[$type] ?? [];
+    }
+
+    public static function normalizePositionTarget(?string $type, mixed $positionTarget): ?string
+    {
+        $type = self::normalizeType($type);
+        $value = filled($positionTarget) ? strtolower(trim((string) $positionTarget)) : null;
+
+        if (! self::supportsPositionTarget($type) || blank($value)) {
+            return null;
+        }
+
+        return array_key_exists($value, self::positionOptions($type)) ? $value : null;
+    }
+
+    public static function positionLabel(?string $type, mixed $positionTarget): ?string
+    {
+        $normalized = self::normalizePositionTarget($type, $positionTarget);
+
+        if ($normalized === null) {
+            return null;
+        }
+
+        return self::positionOptions($type)[$normalized] ?? null;
+    }
+
     public static function sectionLabel(?string $type, ?string $sectionKey): string
     {
         $sectionKey = strtolower((string) $sectionKey);
@@ -116,6 +169,38 @@ class TryoutBlueprint
         $section = collect(self::sections($type))->firstWhere('key', $sectionKey);
 
         return $section['scoring_mode'] ?? 'single_correct';
+    }
+
+    public static function scoringRuleLabel(?string $type, ?string $sectionKey): string
+    {
+        return self::scoringMode($type, $sectionKey) === 'weighted'
+            ? 'Skor bertingkat ' . implode(',', range(self::maxWeightedScore($type, $sectionKey), 1))
+            : 'Benar 5, salah 0';
+    }
+
+    public static function optionLabels(?string $type, ?string $sectionKey): array
+    {
+        $type = self::normalizeType($type);
+        $sectionKey = strtolower((string) $sectionKey);
+
+        if (
+            $type === self::TYPE_PPPK_TENDIK
+            && in_array($sectionKey, ['manajerial', 'sosiokultural', 'wawancara'], true)
+        ) {
+            return self::FOUR_OPTION_LABELS;
+        }
+
+        return self::DEFAULT_OPTION_LABELS;
+    }
+
+    public static function requiredOptionCount(?string $type, ?string $sectionKey): int
+    {
+        return count(self::optionLabels($type, $sectionKey));
+    }
+
+    public static function maxWeightedScore(?string $type, ?string $sectionKey): int
+    {
+        return self::requiredOptionCount($type, $sectionKey);
     }
 
     public static function isValidSection(?string $type, ?string $sectionKey): bool

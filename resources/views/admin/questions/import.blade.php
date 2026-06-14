@@ -45,8 +45,12 @@
 
                     <div class="alert alert-info">
                         <div class="fw-semibold mb-1">Aturan import</div>
-                        <div class="fs-13">Section objective memakai `correct_option` A-E dan skor akan otomatis 5/0.</div>
-                        <div class="fs-13">Section weighted tidak perlu `correct_option`, tetapi wajib mengisi `score_a` sampai `score_e` dengan angka 1-5.</div>
+                        <div class="fs-13">Gunakan `correct_option` untuk section yang skornya benar 5, salah 0.</div>
+                        <div class="fs-13">Gunakan kolom `score_*` untuk section yang memakai skor bertingkat.</div>
+                        <div class="fs-13">CPNS TWK/TIU dan PPPK Tendik Teknis masuk kelompok `correct_option`.</div>
+                        <div class="fs-13">CPNS TKP: isi `score_a` sampai `score_e` dengan skor 5, 4, 3, 2, 1.</div>
+                        <div class="fs-13">PPPK Tendik Manajerial, Sosial Kultural, dan Wawancara: isi `score_a` sampai `score_d` dengan skor 4, 3, 2, 1. Kolom E boleh dikosongkan.</div>
+                        <div class="fs-13">Untuk PPPK Tendik, isi `position_target` agar soal tersimpan sesuai jabatan target.</div>
                         <div class="fs-13">Jika satu baris salah, seluruh import dibatalkan agar data tetap konsisten.</div>
                         <div class="fs-13">Untuk Excel, sistem membaca sheet pertama pada file `.xlsx`.</div>
                     </div>
@@ -96,6 +100,7 @@
                             <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
                                     <div class="fw-semibold text-dark">{{ $summary['type_label'] }}</div>
+                                    <div class="text-muted fs-13">{{ $summary['position_label'] }}</div>
                                     <div class="text-muted fs-13">{{ $summary['section_label'] }}</div>
                                     <div class="mt-2"><span class="badge bg-success-subtle text-success rounded-pill">{{ $summary['count'] }} soal</span></div>
                                 </div>
@@ -109,6 +114,7 @@
                                 <tr>
                                     <th>Soal</th>
                                     <th>Jenis</th>
+                                    <th>Jabatan</th>
                                     <th>Section</th>
                                     <th>Level</th>
                                     <th>Status</th>
@@ -119,6 +125,7 @@
                                     <tr>
                                         <td style="min-width: 360px;">{{ \Illuminate\Support\Str::limit(strip_tags($row['question_text']), 120) }}</td>
                                         <td>{{ $row['tryout_type_label'] }}</td>
+                                        <td>{{ $row['position_label'] }}</td>
                                         <td>{{ $row['section_label'] }}</td>
                                         <td>{{ $row['difficulty'] }}</td>
                                         <td>
@@ -151,16 +158,29 @@
                     @foreach ($tryoutTypes as $type => $label)
                         <div class="col-md-4">
                             <div class="border rounded-3 p-3 h-100">
-                                <div class="fw-semibold text-dark mb-2">{{ $label }}</div>
-                                <div class="fs-13 text-muted mb-2">Nilai `tryout_type`: <code>{{ $type }}</code></div>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach ($sectionsByType[$type] ?? [] as $sectionKey => $sectionLabel)
-                                        <span class="badge bg-primary-subtle text-primary rounded-pill">{{ $sectionKey }} - {{ $sectionLabel }}</span>
-                                    @endforeach
+                                    <div class="fw-semibold text-dark mb-2">{{ $label }}</div>
+                                    <div class="fs-13 text-muted mb-2">Nilai `tryout_type`: <code>{{ $type }}</code></div>
+                                    <div class="d-grid gap-2">
+                                        @foreach ($sectionsByType[$type] ?? [] as $sectionKey => $sectionLabel)
+                                            <div class="rounded-3 border bg-light px-3 py-2">
+                                                <div class="fw-semibold text-dark">{{ $sectionKey }} - {{ $sectionLabel }}</div>
+                                                <div class="fs-13 text-muted">{{ \App\Support\TryoutBlueprint::scoringRuleLabel($type, $sectionKey) }}</div>
+                                            </div>
+                                        @endforeach
+                                        @if (! empty($positionsByType[$type] ?? []))
+                                            <div class="rounded-3 border bg-light px-3 py-2">
+                                                <div class="fw-semibold text-dark mb-1">Nilai `position_target`</div>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    @foreach ($positionsByType[$type] as $positionKey => $positionLabel)
+                                                        <span class="badge bg-warning-subtle text-warning rounded-pill">{{ $positionKey }} - {{ $positionLabel }}</span>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
+                        @endforeach
                 </div>
             </div>
         </div>

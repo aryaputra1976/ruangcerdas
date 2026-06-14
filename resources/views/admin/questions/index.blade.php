@@ -3,7 +3,7 @@
 @php
     $title = 'Bank Soal';
     $subtitle = 'Kelola bank soal tryout beserta opsi jawabannya.';
-    $hasFilter = request()->filled('q') || request()->filled('section') || request()->filled('difficulty') || request()->filled('status') || request()->filled('question_category_id') || request()->filled('tryout_type');
+    $hasFilter = request()->filled('q') || request()->filled('section') || request()->filled('difficulty') || request()->filled('status') || request()->filled('question_category_id') || request()->filled('tryout_type') || request()->filled('position_target');
 @endphp
 
 @section('content')
@@ -11,7 +11,7 @@
     <div class="card-header d-flex align-items-center justify-content-between gap-3 flex-wrap">
         <div>
             <h5 class="card-title mb-1">Daftar Soal</h5>
-            <p class="text-muted mb-0 fs-13">Pastikan setiap soal memiliki 5 opsi A-E sesuai aturan scoring section.</p>
+            <p class="text-muted mb-0 fs-13">Pastikan jumlah opsi dan aturan skor mengikuti section masing-masing.</p>
         </div>
         <div class="d-flex gap-2 flex-wrap">
             <a href="{{ route('admin.questions.import') }}" class="btn btn-sm bg-info-subtle text-info rounded-pill px-3">Import Soal</a>
@@ -42,6 +42,16 @@
                 </select>
             </div>
             <div class="col-lg-2">
+                <select name="position_target" class="form-select">
+                    <option value="">Semua Jabatan</option>
+                    @foreach ($positionsByType as $type => $positions)
+                        @foreach ($positions as $positionKey => $positionLabel)
+                            <option value="{{ $positionKey }}" @selected(request('position_target') === $positionKey)>{{ $positionLabel }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2">
                 <select name="difficulty" class="form-select">
                     <option value="">Semua Level</option>
                     @foreach (['easy' => 'Easy', 'medium' => 'Medium', 'hard' => 'Hard'] as $value => $label)
@@ -53,7 +63,7 @@
                 <select name="question_category_id" class="form-select">
                     <option value="">Semua Kategori</option>
                     @foreach ($categories as $category)
-                        <option value="{{ $category->id }}" @selected((string) request('question_category_id') === (string) $category->id)>{{ $tryoutTypes[$category->tryout_type] ?? $category->tryout_type }} - {{ $category->section_label }} - {{ $category->name }}</option>
+                        <option value="{{ $category->id }}" @selected((string) request('question_category_id') === (string) $category->id)>{{ $tryoutTypes[$category->tryout_type] ?? $category->tryout_type }} - {{ $category->section_label }} - {{ $category->name }}{{ $category->position_target_label ? ' (' . $category->position_target_label . ')' : '' }}</option>
                     @endforeach
                 </select>
             </div>
@@ -80,6 +90,7 @@
                             <th>Soal</th>
                             <th>Jenis</th>
                             <th>Section</th>
+                            <th>Jabatan</th>
                             <th>Kategori</th>
                             <th>Level</th>
                             <th>Opsi</th>
@@ -98,6 +109,7 @@
                                 </td>
                                 <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $tryoutTypes[$question->tryout_type] ?? $question->tryout_type }}</span></td>
                                 <td><span class="badge bg-info-subtle text-info rounded-pill">{{ $question->section_label }}</span></td>
+                                <td>{{ $question->position_target_label ?? '-' }}</td>
                                 <td>{{ $question->category?->name ?? '-' }}</td>
                                 <td>{{ ucfirst($question->difficulty) }}</td>
                                 <td>{{ $question->options->count() }} opsi</td>

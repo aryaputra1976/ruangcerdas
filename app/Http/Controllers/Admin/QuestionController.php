@@ -24,6 +24,7 @@ class QuestionController extends Controller
     private const PREVIEW_CACHE_PREFIX = 'question_import_preview:';
     private const IMPORT_HEADERS = [
         'tryout_type',
+        'position_target',
         'section',
         'category_slug',
         'difficulty',
@@ -70,6 +71,10 @@ class QuestionController extends Controller
             $query->where('tryout_type', $request->tryout_type);
         }
 
+        if ($request->filled('position_target')) {
+            $query->where('position_target', $request->position_target);
+        }
+
         if ($request->filled('status')) {
             $query->where('is_active', $request->status === 'active');
         }
@@ -94,6 +99,9 @@ class QuestionController extends Controller
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
                 ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
+                ->all(),
         ]);
     }
 
@@ -107,6 +115,9 @@ class QuestionController extends Controller
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
                 ->all(),
         ]);
     }
@@ -122,6 +133,9 @@ class QuestionController extends Controller
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
                 ->all(),
         ]);
     }
@@ -245,6 +259,7 @@ class QuestionController extends Controller
             $question = Question::create([
                 'question_category_id' => $validated['question_category_id'] ?? null,
                 'tryout_type' => $validated['tryout_type'],
+                'position_target' => $validated['position_target'] ?? null,
                 'section' => $validated['section'],
                 'question_text' => $validated['question_text'],
                 'explanation' => $validated['explanation'] ?? null,
@@ -284,6 +299,9 @@ class QuestionController extends Controller
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
                 ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
+                ->all(),
         ]);
     }
 
@@ -296,6 +314,7 @@ class QuestionController extends Controller
             $question->update([
                 'question_category_id' => $validated['question_category_id'] ?? null,
                 'tryout_type' => $validated['tryout_type'],
+                'position_target' => $validated['position_target'] ?? null,
                 'section' => $validated['section'],
                 'question_text' => $validated['question_text'],
                 'explanation' => $validated['explanation'] ?? null,
@@ -334,12 +353,13 @@ class QuestionController extends Controller
         $validator = validator($request->all(), [
             'question_category_id' => ['nullable', 'exists:question_categories,id'],
             'tryout_type' => ['required', Rule::in(array_keys(TryoutBlueprint::typeOptions()))],
+            'position_target' => ['nullable', 'string', 'max:100'],
             'section' => ['required', 'string', 'max:100'],
             'question_text' => ['required', 'string'],
             'explanation' => ['nullable', 'string'],
             'difficulty' => ['required', Rule::in(['easy', 'medium', 'hard'])],
-            'options' => ['required', 'array', 'size:5'],
-            'options.*.option_text' => ['required', 'string'],
+            'options' => ['required', 'array', 'min:4', 'max:5'],
+            'options.*.option_text' => ['nullable', 'string'],
             'options.*.score' => ['nullable', 'integer', 'min:0', 'max:5'],
         ]);
 
@@ -347,14 +367,15 @@ class QuestionController extends Controller
             $options = $request->input('options', []);
             $section = $request->input('section');
             $tryoutType = $request->input('tryout_type');
+            $positionTarget = TryoutBlueprint::normalizePositionTarget($tryoutType, $request->input('position_target'));
             $labels = array_keys($options);
-
-            if (collect(self::OPTION_LABELS)->diff($labels)->isNotEmpty()) {
-                $validator->errors()->add('options', 'Soal harus memiliki 5 opsi lengkap A sampai E.');
-            }
 
             if (! TryoutBlueprint::isValidSection($tryoutType, $section)) {
                 $validator->errors()->add('section', 'Section tidak sesuai dengan jenis tryout yang dipilih.');
+            }
+
+            if (TryoutBlueprint::requiresPositionTarget($tryoutType) && $positionTarget === null) {
+                $validator->errors()->add('position_target', 'Target jabatan wajib dipilih untuk PPPK Tendik.');
             }
 
             if ($request->filled('question_category_id')) {
@@ -362,16 +383,36 @@ class QuestionController extends Controller
 
                 $categorySection = $category ? Str::lower((string) $category->section) : null;
                 $categoryType = $category ? TryoutBlueprint::normalizeType($category->tryout_type) : null;
+                $categoryPosition = $category ? TryoutBlueprint::normalizePositionTarget($category->tryout_type, $category->position_target) : null;
 
-                if ($category && ($categorySection !== Str::lower((string) $section) || $categoryType !== $tryoutType)) {
-                    $validator->errors()->add('question_category_id', 'Kategori harus memiliki jenis tryout dan section yang sama.');
+                if (
+                    $category
+                    && (
+                        $categorySection !== Str::lower((string) $section)
+                        || $categoryType !== $tryoutType
+                        || $categoryPosition !== $positionTarget
+                    )
+                ) {
+                    $validator->errors()->add('question_category_id', 'Kategori harus memiliki jenis tryout, target jabatan, dan section yang sama.');
                 }
             }
 
             $scoringMode = TryoutBlueprint::scoringMode($tryoutType, $section);
+            $requiredOptionLabels = TryoutBlueprint::optionLabels($tryoutType, $section);
+            $requiredOptionLabelText = implode('-', $requiredOptionLabels);
+
+            if (collect($requiredOptionLabels)->diff($labels)->isNotEmpty()) {
+                $validator->errors()->add('options', "Soal harus memiliki opsi lengkap {$requiredOptionLabelText}.");
+            }
+
+            foreach ($requiredOptionLabels as $label) {
+                if (blank(data_get($options, $label . '.option_text'))) {
+                    $validator->errors()->add("options.$label.option_text", "Teks opsi {$label} wajib diisi.");
+                }
+            }
 
             if ($scoringMode === 'single_correct') {
-                $correctCount = collect(self::OPTION_LABELS)
+                $correctCount = collect($requiredOptionLabels)
                     ->filter(fn ($label) => (bool) data_get($options, $label . '.is_correct'))
                     ->count();
 
@@ -381,25 +422,35 @@ class QuestionController extends Controller
             }
 
             if ($scoringMode === 'weighted') {
-                foreach (self::OPTION_LABELS as $label) {
+                $maxWeightedScore = TryoutBlueprint::maxWeightedScore($tryoutType, $section);
+
+                foreach ($requiredOptionLabels as $label) {
                     $score = data_get($options, $label . '.score');
 
-                    if (! is_numeric($score) || (int) $score < 1 || (int) $score > 5) {
-                        $validator->errors()->add("options.$label.score", "Skor opsi {$label} untuk section ini harus 1 sampai 5.");
+                    if (! is_numeric($score) || (int) $score < 1 || (int) $score > $maxWeightedScore) {
+                        $validator->errors()->add("options.$label.score", "Skor opsi {$label} untuk section ini harus 1 sampai {$maxWeightedScore}.");
                     }
                 }
             }
         });
 
-        return $validator->validate();
+        $validated = $validator->validate();
+        $validated['tryout_type'] = TryoutBlueprint::normalizeType($validated['tryout_type']);
+        $validated['position_target'] = TryoutBlueprint::normalizePositionTarget(
+            $validated['tryout_type'],
+            $validated['position_target'] ?? null
+        );
+
+        return $validated;
     }
 
     private function prepareOptions(Request $request, string $tryoutType, string $section): array
     {
         $options = [];
         $scoringMode = TryoutBlueprint::scoringMode($tryoutType, $section);
+        $requiredOptionLabels = TryoutBlueprint::optionLabels($tryoutType, $section);
 
-        foreach (self::OPTION_LABELS as $label) {
+        foreach ($requiredOptionLabels as $label) {
             $optionText = trim((string) data_get($request->input('options', []), $label . '.option_text'));
             $isCorrect = (bool) data_get($request->input('options', []), $label . '.is_correct');
             $score = (int) data_get($request->input('options', []), $label . '.score', 0);
@@ -429,6 +480,7 @@ class QuestionController extends Controller
         }
 
         $tryoutType = TryoutBlueprint::normalizeType($data['tryout_type']);
+        $positionTarget = TryoutBlueprint::normalizePositionTarget($tryoutType, $data['position_target']);
         $section = Str::lower($data['section']);
         $difficulty = Str::lower($data['difficulty']);
 
@@ -441,6 +493,12 @@ class QuestionController extends Controller
         if (! TryoutBlueprint::isValidSection($tryoutType, $section)) {
             throw ValidationException::withMessages([
                 'import_file' => "Baris {$rowNumber}: section tidak sesuai dengan jenis tryout.",
+            ]);
+        }
+
+        if (TryoutBlueprint::requiresPositionTarget($tryoutType) && $positionTarget === null) {
+            throw ValidationException::withMessages([
+                'import_file' => "Baris {$rowNumber}: position_target wajib diisi untuk PPPK Tendik.",
             ]);
         }
 
@@ -466,9 +524,10 @@ class QuestionController extends Controller
             if (
                 TryoutBlueprint::normalizeType($category->tryout_type) !== $tryoutType
                 || Str::lower((string) $category->section) !== $section
+                || TryoutBlueprint::normalizePositionTarget($category->tryout_type, $category->position_target) !== $positionTarget
             ) {
                 throw ValidationException::withMessages([
-                    'import_file' => "Baris {$rowNumber}: category_slug harus punya jenis tryout dan section yang sama.",
+                    'import_file' => "Baris {$rowNumber}: category_slug harus punya jenis tryout, target jabatan, dan section yang sama.",
                 ]);
             }
 
@@ -482,10 +541,12 @@ class QuestionController extends Controller
         }
 
         $scoringMode = TryoutBlueprint::scoringMode($tryoutType, $section);
+        $requiredOptionLabels = TryoutBlueprint::optionLabels($tryoutType, $section);
+        $maxWeightedScore = TryoutBlueprint::maxWeightedScore($tryoutType, $section);
         $correctOption = Str::upper($data['correct_option']);
         $options = [];
 
-        foreach (self::OPTION_LABELS as $label) {
+        foreach ($requiredOptionLabels as $label) {
             $optionText = $data['option_' . Str::lower($label)] ?? '';
 
             if ($optionText === '') {
@@ -502,9 +563,9 @@ class QuestionController extends Controller
             } else {
                 $rawScore = $data['score_' . Str::lower($label)] ?? '';
 
-                if (! is_numeric($rawScore) || (int) $rawScore < 1 || (int) $rawScore > 5) {
+                if (! is_numeric($rawScore) || (int) $rawScore < 1 || (int) $rawScore > $maxWeightedScore) {
                     throw ValidationException::withMessages([
-                        'import_file' => "Baris {$rowNumber}: score_{$label} harus diisi angka 1 sampai 5 untuk section weighted.",
+                        'import_file' => "Baris {$rowNumber}: score_{$label} harus diisi angka 1 sampai {$maxWeightedScore} untuk section weighted.",
                     ]);
                 }
 
@@ -520,9 +581,9 @@ class QuestionController extends Controller
             ];
         }
 
-        if ($scoringMode === 'single_correct' && ! in_array($correctOption, self::OPTION_LABELS, true)) {
+        if ($scoringMode === 'single_correct' && ! in_array($correctOption, $requiredOptionLabels, true)) {
             throw ValidationException::withMessages([
-                'import_file' => "Baris {$rowNumber}: correct_option harus A, B, C, D, atau E.",
+                'import_file' => "Baris {$rowNumber}: correct_option harus salah satu dari " . implode(', ', $requiredOptionLabels) . '.',
             ]);
         }
 
@@ -530,6 +591,7 @@ class QuestionController extends Controller
             'question' => [
                 'question_category_id' => $categoryId,
                 'tryout_type' => $tryoutType,
+                'position_target' => $positionTarget,
                 'section' => $section,
                 'question_text' => $data['question_text'],
                 'explanation' => $data['explanation'] !== '' ? $data['explanation'] : null,
@@ -585,13 +647,18 @@ class QuestionController extends Controller
     private function buildImportPreview(array $preparedRows, string $source, string $previewToken): array
     {
         $sectionSummary = collect($preparedRows)
-            ->groupBy(fn (array $row) => $row['question']['tryout_type'] . ':' . $row['question']['section'])
+            ->groupBy(fn (array $row) => implode(':', [
+                $row['question']['tryout_type'],
+                $row['question']['position_target'] ?: 'umum',
+                $row['question']['section'],
+            ]))
             ->map(function ($rows, $key) {
-                [$type, $section] = explode(':', $key, 2);
+                [$type, $positionTarget, $section] = explode(':', $key, 3);
 
                 return [
                     'type' => $type,
                     'type_label' => TryoutBlueprint::typeLabel($type),
+                    'position_label' => $positionTarget !== 'umum' ? TryoutBlueprint::positionLabel($type, $positionTarget) : 'Umum',
                     'section' => $section,
                     'section_label' => TryoutBlueprint::sectionLabel($type, $section),
                     'count' => count($rows),
@@ -610,6 +677,9 @@ class QuestionController extends Controller
                 ->take(5)
                 ->map(fn (array $row) => [
                     'tryout_type_label' => TryoutBlueprint::typeLabel($row['question']['tryout_type']),
+                    'position_label' => $row['question']['position_target']
+                        ? TryoutBlueprint::positionLabel($row['question']['tryout_type'], $row['question']['position_target'])
+                        : 'Umum',
                     'section_label' => TryoutBlueprint::sectionLabel($row['question']['tryout_type'], $row['question']['section']),
                     'difficulty' => ucfirst($row['question']['difficulty']),
                     'question_text' => $row['question']['question_text'],
@@ -666,6 +736,7 @@ class QuestionController extends Controller
             self::IMPORT_HEADERS,
             [
                 'cpns',
+                '',
                 'twk',
                 '',
                 'medium',
@@ -686,6 +757,7 @@ class QuestionController extends Controller
             ],
             [
                 'cpns',
+                '',
                 'tkp',
                 '',
                 'easy',
@@ -702,6 +774,27 @@ class QuestionController extends Controller
                 '1',
                 '2',
                 '4',
+                '1',
+            ],
+            [
+                'pppk_tendik',
+                'wali_asuh',
+                'manajerial',
+                '',
+                'medium',
+                'Bagaimana respons terbaik ketika peserta didik kesulitan mengikuti aturan asrama?',
+                'Pilih respons yang paling terarah dan tetap suportif.',
+                'Mengajak bicara, menjelaskan aturan, lalu memberi pendampingan.',
+                'Membiarkan karena nanti juga paham sendiri.',
+                'Langsung memarahi di depan teman-temannya.',
+                'Menyerahkan sepenuhnya ke teman sekamar.',
+                '',
+                '',
+                '4',
+                '3',
+                '1',
+                '2',
+                '',
                 '1',
             ],
         ];

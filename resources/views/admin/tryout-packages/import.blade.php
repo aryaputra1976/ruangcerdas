@@ -46,6 +46,7 @@
                     <div class="alert alert-info">
                         <div class="fw-semibold mb-1">Aturan import paket</div>
                         <div class="fs-13">Isi hanya kolom jumlah section yang sesuai dengan `tryout_type` paket.</div>
+                        <div class="fs-13">Untuk PPPK Tendik, isi `position_target` agar paket mengambil soal dari jabatan yang benar.</div>
                         <div class="fs-13">Kolom section lain boleh dibiarkan kosong dan akan dianggap `0`.</div>
                         <div class="fs-13">Sistem akan menolak paket jika stok soal aktif belum cukup atau total soal masih `0`.</div>
                         <div class="fs-13">Preview akan dibuat dulu sebelum data benar-benar disimpan.</div>
@@ -96,6 +97,7 @@
                             <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
                                     <div class="fw-semibold text-dark">{{ $summary['type_label'] }}</div>
+                                    <div class="text-muted fs-13">{{ $summary['position_label'] }}</div>
                                     <div class="mt-2"><span class="badge bg-success-subtle text-success rounded-pill">{{ $summary['count'] }} paket</span></div>
                                 </div>
                             </div>
@@ -108,6 +110,7 @@
                                 <tr>
                                     <th>Paket</th>
                                     <th>Jenis</th>
+                                    <th>Jabatan</th>
                                     <th>Harga</th>
                                     <th>Durasi</th>
                                     <th>Komposisi</th>
@@ -122,6 +125,7 @@
                                             <div class="text-muted fs-13">{{ $row['slug'] }}</div>
                                         </td>
                                         <td>{{ $row['tryout_type_label'] }}</td>
+                                        <td>{{ $row['position_label'] }}</td>
                                         <td>{{ $row['price'] > 0 ? 'Rp ' . number_format($row['price'], 0, ',', '.') : 'Gratis' }}</td>
                                         <td>{{ $row['duration_minutes'] }} menit</td>
                                         <td class="fs-13 text-muted" style="min-width: 240px;">{{ $row['composition'] }}</td>
@@ -162,6 +166,14 @@
                                         <span class="badge bg-primary-subtle text-primary rounded-pill">{{ $sectionKey }}_count - {{ $sectionLabel }}</span>
                                     @endforeach
                                 </div>
+                                @if (! empty($positionsByType[$type] ?? []))
+                                    <div class="fs-13 text-muted mt-3 mb-2">Nilai `position_target`:</div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach ($positionsByType[$type] as $positionKey => $positionLabel)
+                                            <span class="badge bg-warning-subtle text-warning rounded-pill">{{ $positionKey }} - {{ $positionLabel }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach

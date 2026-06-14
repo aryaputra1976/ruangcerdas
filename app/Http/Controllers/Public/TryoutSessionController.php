@@ -391,8 +391,12 @@ class TryoutSessionController extends Controller
             $questions = Question::query()
                 ->active()
                 ->where('tryout_type', $tryoutPackage->tryout_type)
+                ->when(
+                    filled($tryoutPackage->position_target),
+                    fn ($query) => $query->where('position_target', $tryoutPackage->position_target)
+                )
                 ->whereIn('section', [$section, strtoupper($section)])
-                ->has('options', '>=', 5)
+                ->has('options', '>=', TryoutBlueprint::requiredOptionCount($tryoutPackage->tryout_type, $section))
                 ->inRandomOrder()
                 ->limit($count)
                 ->get();

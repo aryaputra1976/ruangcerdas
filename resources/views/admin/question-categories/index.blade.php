@@ -3,7 +3,7 @@
 @php
     $title = 'Kategori Soal';
     $subtitle = 'Kelola kategori soal untuk bank soal tryout.';
-    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('section') || request()->filled('tryout_type');
+    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('section') || request()->filled('tryout_type') || request()->filled('position_target');
 @endphp
 
 @section('content')
@@ -41,6 +41,16 @@
                     @endforeach
                 </select>
             </div>
+            <div class="col-lg-3">
+                <select name="position_target" class="form-select">
+                    <option value="">Semua Jabatan</option>
+                    @foreach ($positionsByType as $type => $positions)
+                        @foreach ($positions as $positionKey => $positionLabel)
+                            <option value="{{ $positionKey }}" @selected(request('position_target') === $positionKey)>{{ $positionLabel }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
+            </div>
             <div class="col-lg-2">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
@@ -59,6 +69,7 @@
                             <th>Kategori</th>
                             <th>Jenis</th>
                             <th>Section</th>
+                            <th>Jabatan</th>
                             <th>Jumlah Soal</th>
                             <th>Status</th>
                             <th class="text-end">Aksi</th>
@@ -73,6 +84,7 @@
                                 </td>
                                 <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $tryoutTypes[$category->tryout_type] ?? $category->tryout_type }}</span></td>
                                 <td><span class="badge bg-info-subtle text-info rounded-pill">{{ $category->section_label }}</span></td>
+                                <td>{{ $category->position_target_label ?? '-' }}</td>
                                 <td>{{ $category->questions_count }}</td>
                                 <td>
                                     <span class="badge {{ $category->is_active ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} rounded-pill">

@@ -3,7 +3,7 @@
 @php
     $title = 'Paket Tryout';
     $subtitle = 'Kelola paket tryout yang tampil di halaman public.';
-    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('tryout_type');
+    $hasFilter = request()->filled('q') || request()->filled('status') || request()->filled('tryout_type') || request()->filled('position_target');
     $statusCards = [
         ['key' => null, 'label' => 'Semua Paket', 'count' => $counts['all'] ?? 0, 'icon' => 'package', 'class' => 'primary'],
         ['key' => 'active', 'label' => 'Aktif', 'count' => $counts['active'] ?? 0, 'icon' => 'check-circle', 'class' => 'success'],
@@ -73,6 +73,16 @@
                 </select>
             </div>
             <div class="col-lg-2">
+                <select name="position_target" class="form-select">
+                    <option value="">Semua Jabatan</option>
+                    @foreach ($positionsByType as $type => $positions)
+                        @foreach ($positions as $positionKey => $positionLabel)
+                            <option value="{{ $positionKey }}" @selected(request('position_target') === $positionKey)>{{ $positionLabel }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
+            </div>
+            <div class="col-lg-2">
                 <select name="status" class="form-select">
                     <option value="">Semua Status</option>
                     <option value="active" @selected(request('status') === 'active')>Aktif</option>
@@ -91,6 +101,7 @@
                         <tr>
                             <th>Paket</th>
                             <th>Jenis</th>
+                            <th>Jabatan</th>
                             <th>Harga</th>
                             <th>Durasi</th>
                             <th>Komposisi</th>
@@ -107,6 +118,7 @@
                                     <div class="text-muted fs-13">{{ $package->slug }}</div>
                                 </td>
                                 <td><span class="badge bg-primary-subtle text-primary rounded-pill">{{ $package->tryout_type_label }}</span></td>
+                                <td>{{ $package->position_target_label ?? '-' }}</td>
                                 <td>{{ $package->price > 0 ? 'Rp ' . number_format($package->price, 0, ',', '.') : 'Gratis' }}</td>
                                 <td>{{ $package->duration_minutes }} menit</td>
                                 <td class="fs-13 text-muted">{{ collect($package->sectionSummaries())->map(fn ($section) => $section['label'] . ' ' . $section['count'])->implode(' · ') }}</td>

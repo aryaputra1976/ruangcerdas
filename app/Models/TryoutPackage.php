@@ -16,6 +16,7 @@ class TryoutPackage extends Model
         'title',
         'slug',
         'tryout_type',
+        'position_target',
         'description',
         'price',
         'is_free',
@@ -83,6 +84,11 @@ class TryoutPackage extends Model
     public function getTryoutTypeLabelAttribute(): string
     {
         return TryoutBlueprint::typeLabel($this->tryout_type);
+    }
+
+    public function getPositionTargetLabelAttribute(): ?string
+    {
+        return TryoutBlueprint::positionLabel($this->tryout_type, $this->position_target);
     }
 
     public function routeSegment(): string
@@ -216,5 +222,13 @@ class TryoutPackage extends Model
     public function setTryoutTypeAttribute($value): void
     {
         $this->attributes['tryout_type'] = TryoutBlueprint::normalizeType($value);
+    }
+
+    public function setPositionTargetAttribute($value): void
+    {
+        $this->attributes['position_target'] = TryoutBlueprint::normalizePositionTarget(
+            $this->attributes['tryout_type'] ?? $this->tryout_type ?? null,
+            $value
+        );
     }
 }

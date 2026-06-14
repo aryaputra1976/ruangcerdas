@@ -10,7 +10,7 @@
     <div class="card-header d-flex align-items-center justify-content-between gap-3 flex-wrap">
         <div>
             <h5 class="card-title mb-1">Form Tambah Soal</h5>
-            <p class="text-muted mb-0 fs-13">Isi section, teks soal, dan 5 opsi jawaban A-E.</p>
+            <p class="text-muted mb-0 fs-13">Isi section, teks soal, dan opsi jawaban sesuai aturan tiap section.</p>
         </div>
         <a href="{{ route('admin.questions.index') }}" class="btn btn-sm bg-secondary-subtle text-secondary rounded-pill px-3">Kembali</a>
     </div>

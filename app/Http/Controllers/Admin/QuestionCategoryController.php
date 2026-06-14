@@ -22,6 +22,7 @@ class QuestionCategoryController extends Controller
         'name',
         'slug',
         'tryout_type',
+        'position_target',
         'section',
         'description',
         'is_active',
@@ -55,6 +56,10 @@ class QuestionCategoryController extends Controller
             $query->where('tryout_type', $request->tryout_type);
         }
 
+        if ($request->filled('position_target')) {
+            $query->where('position_target', $request->position_target);
+        }
+
         $categories = $query->paginate(10)->withQueryString();
         $counts = [
             'all' => QuestionCategory::count(),
@@ -69,6 +74,9 @@ class QuestionCategoryController extends Controller
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
                 ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
+                ->all(),
         ]);
     }
 
@@ -78,6 +86,9 @@ class QuestionCategoryController extends Controller
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
                 ->all(),
         ]);
     }
@@ -93,6 +104,9 @@ class QuestionCategoryController extends Controller
             'tryoutTypes' => TryoutBlueprint::typeOptions(),
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
+                ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
                 ->all(),
         ]);
     }
@@ -235,6 +249,9 @@ class QuestionCategoryController extends Controller
             'sectionsByType' => collect(TryoutBlueprint::typeOptions())
                 ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::sectionOptions($type)])
                 ->all(),
+            'positionsByType' => collect(TryoutBlueprint::typeOptions())
+                ->mapWithKeys(fn ($label, $type) => [$type => TryoutBlueprint::positionOptions($type)])
+                ->all(),
         ]);
     }
 
@@ -276,10 +293,11 @@ class QuestionCategoryController extends Controller
 
     private function validateCategory(Request $request, ?QuestionCategory $questionCategory = null): array
     {
-        return $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'slug' => ['nullable', 'string', 'max:255', Rule::unique('question_categories', 'slug')->ignore($questionCategory?->id)],
             'tryout_type' => ['required', Rule::in(array_keys(TryoutBlueprint::typeOptions()))],
+            'position_target' => ['nullable', 'string', 'max:100'],
             'section' => ['required', 'string', 'max:100', function (string $attribute, mixed $value, \Closure $fail) use ($request) {
                 if (! TryoutBlueprint::isValidSection($request->input('tryout_type'), (string) $value)) {
                     $fail('Section tidak sesuai dengan jenis tryout yang dipilih.');
@@ -287,6 +305,20 @@ class QuestionCategoryController extends Controller
             }],
             'description' => ['nullable', 'string'],
         ]);
+
+        $validated['tryout_type'] = TryoutBlueprint::normalizeType($validated['tryout_type']);
+        $validated['position_target'] = TryoutBlueprint::normalizePositionTarget(
+            $validated['tryout_type'],
+            $validated['position_target'] ?? null
+        );
+
+        if (TryoutBlueprint::requiresPositionTarget($validated['tryout_type']) && $validated['position_target'] === null) {
+            throw ValidationException::withMessages([
+                'position_target' => 'Target jabatan wajib dipilih untuk PPPK Tendik.',
+            ]);
+        }
+
+        return $validated;
     }
 
     private function makeUniqueSlug(string $value, ?int $ignoreId = null): string
@@ -362,6 +394,7 @@ class QuestionCategoryController extends Controller
         }
 
         $tryoutType = TryoutBlueprint::normalizeType($data['tryout_type']);
+        $positionTarget = TryoutBlueprint::normalizePositionTarget($tryoutType, $data['position_target']);
         $section = Str::lower($data['section']);
 
         if (! array_key_exists($tryoutType, TryoutBlueprint::typeOptions())) {
@@ -376,6 +409,12 @@ class QuestionCategoryController extends Controller
             ]);
         }
 
+        if (TryoutBlueprint::requiresPositionTarget($tryoutType) && $positionTarget === null) {
+            throw ValidationException::withMessages([
+                'import_file' => "Baris {$rowNumber}: position_target wajib diisi untuk PPPK Tendik.",
+            ]);
+        }
+
         $slugInput = $data['slug'] !== '' ? $data['slug'] : $data['name'];
         $slug = $this->makeUniqueSlug($slugInput);
 
@@ -384,6 +423,7 @@ class QuestionCategoryController extends Controller
                 'name' => $data['name'],
                 'slug' => $slug,
                 'tryout_type' => $tryoutType,
+                'position_target' => $positionTarget,
                 'section' => $section,
                 'description' => $data['description'] !== '' ? $data['description'] : null,
                 'is_active' => $this->normalizeImportBoolean($data['is_active']),
@@ -395,12 +435,17 @@ class QuestionCategoryController extends Controller
     private function buildImportPreview(array $preparedRows, string $source, string $previewToken): array
     {
         $sectionSummary = collect($preparedRows)
-            ->groupBy(fn (array $row) => $row['category']['tryout_type'] . ':' . $row['category']['section'])
+            ->groupBy(fn (array $row) => implode(':', [
+                $row['category']['tryout_type'],
+                $row['category']['position_target'] ?: 'umum',
+                $row['category']['section'],
+            ]))
             ->map(function ($rows, $key) {
-                [$type, $section] = explode(':', $key, 2);
+                [$type, $positionTarget, $section] = explode(':', $key, 3);
 
                 return [
                     'type_label' => TryoutBlueprint::typeLabel($type),
+                    'position_label' => $positionTarget !== 'umum' ? TryoutBlueprint::positionLabel($type, $positionTarget) : 'Umum',
                     'section_label' => TryoutBlueprint::sectionLabel($type, $section),
                     'count' => count($rows),
                 ];
@@ -418,6 +463,9 @@ class QuestionCategoryController extends Controller
                 'name' => $row['category']['name'],
                 'slug' => $row['category']['slug'],
                 'tryout_type_label' => TryoutBlueprint::typeLabel($row['category']['tryout_type']),
+                'position_label' => $row['category']['position_target']
+                    ? TryoutBlueprint::positionLabel($row['category']['tryout_type'], $row['category']['position_target'])
+                    : 'Umum',
                 'section_label' => TryoutBlueprint::sectionLabel($row['category']['tryout_type'], $row['category']['section']),
                 'is_active' => $row['category']['is_active'],
             ])->all(),
@@ -453,8 +501,8 @@ class QuestionCategoryController extends Controller
     {
         return [
             self::IMPORT_HEADERS,
-            ['TWK Nasional', 'twk-nasional', 'cpns', 'twk', 'Kategori materi wawasan kebangsaan.', '1'],
-            ['Manajerial Dasar', 'manajerial-dasar', 'pppk', 'manajerial', 'Kategori latihan manajerial.', '1'],
+            ['TWK Nasional', 'twk-nasional', 'cpns', '', 'twk', 'Kategori materi wawasan kebangsaan.', '1'],
+            ['Manajerial Wali Asuh', 'manajerial-wali-asuh', 'pppk_tendik', 'wali_asuh', 'manajerial', 'Kategori latihan manajerial untuk Wali Asuh.', '1'],
         ];
     }
 

@@ -1,7 +1,8 @@
-﻿@php
+@php
     $isEdit = isset($questionCategory);
     $isActive = old('is_active', $questionCategory->is_active ?? true);
     $selectedType = old('tryout_type', $questionCategory->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
+    $selectedPosition = old('position_target', $questionCategory->position_target ?? '');
 @endphp
 
 <div class="row">
@@ -17,7 +18,7 @@
                 <input type="text" name="slug" value="{{ old('slug', $questionCategory->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
                 @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Jenis Tryout <span class="text-danger">*</span></label>
                 <select name="tryout_type" class="form-select @error('tryout_type') is-invalid @enderror" required>
                     @foreach ($tryoutTypes as $type => $label)
@@ -26,7 +27,7 @@
                 </select>
                 @error('tryout_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Section <span class="text-danger">*</span></label>
                 <select name="section" class="form-select @error('section') is-invalid @enderror" required>
                     <option value="">Pilih section</option>
@@ -39,6 +40,19 @@
                     @endforeach
                 </select>
                 @error('section')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-4" id="position-target-wrapper">
+                <label class="form-label">Target Jabatan</label>
+                <select name="position_target" class="form-select @error('position_target') is-invalid @enderror">
+                    <option value="">Umum / Tidak dibatasi</option>
+                    @foreach ($positionsByType as $type => $positions)
+                        @foreach ($positions as $positionKey => $positionLabel)
+                            <option value="{{ $positionKey }}" data-tryout-type="{{ $type }}" @selected($selectedPosition === $positionKey)>{{ $positionLabel }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
+                <div class="form-text">Khusus PPPK Tendik, pilih jabatan agar kategori tidak tercampur.</div>
+                @error('position_target')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
             <div class="col-md-12">
                 <label class="form-label">Deskripsi</label>
@@ -68,3 +82,49 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const typeSelect = document.querySelector('select[name="tryout_type"]');
+        const positionWrapper = document.getElementById('position-target-wrapper');
+        const positionSelect = document.querySelector('select[name="position_target"]');
+
+        if (!typeSelect || !positionWrapper || !positionSelect) {
+            return;
+        }
+
+        const updatePositionVisibility = function () {
+            const selectedType = typeSelect.value;
+            const options = Array.from(positionSelect.options);
+            const hasScopedPositions = options.some(function (option) {
+                return option.dataset.tryoutType === selectedType;
+            });
+
+            positionWrapper.classList.toggle('d-none', !hasScopedPositions);
+
+            options.forEach(function (option) {
+                if (!option.dataset.tryoutType) {
+                    option.hidden = hasScopedPositions;
+                    return;
+                }
+
+                option.hidden = option.dataset.tryoutType !== selectedType;
+            });
+
+            if (!hasScopedPositions) {
+                positionSelect.value = '';
+            } else if (positionSelect.selectedOptions[0]?.hidden) {
+                const firstVisible = options.find(function (option) {
+                    return !option.hidden && option.dataset.tryoutType === selectedType;
+                });
+
+                positionSelect.value = firstVisible ? firstVisible.value : '';
+            }
+        };
+
+        typeSelect.addEventListener('change', updatePositionVisibility);
+        updatePositionVisibility();
+    });
+</script>
+@endpush

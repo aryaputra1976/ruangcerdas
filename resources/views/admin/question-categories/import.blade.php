@@ -46,6 +46,7 @@
                     <div class="alert alert-info">
                         <div class="fw-semibold mb-1">Aturan import kategori</div>
                         <div class="fs-13">Isi `name`, `tryout_type`, dan `section` dengan benar agar kategori cocok dengan bank soal.</div>
+                        <div class="fs-13">Untuk PPPK Tendik, isi juga `position_target` seperti `wali_asuh` atau `operator_sekolah`.</div>
                         <div class="fs-13">Kolom `slug` boleh dikosongkan, nanti sistem buatkan otomatis dan tetap unik.</div>
                         <div class="fs-13">Jika satu baris salah, preview tidak akan dibuat agar data tetap rapi.</div>
                     </div>
@@ -95,6 +96,7 @@
                             <div class="col-md-4">
                                 <div class="border rounded-3 p-3 h-100">
                                     <div class="fw-semibold text-dark">{{ $summary['type_label'] }}</div>
+                                    <div class="text-muted fs-13">{{ $summary['position_label'] }}</div>
                                     <div class="text-muted fs-13">{{ $summary['section_label'] }}</div>
                                     <div class="mt-2"><span class="badge bg-success-subtle text-success rounded-pill">{{ $summary['count'] }} kategori</span></div>
                                 </div>
@@ -109,6 +111,7 @@
                                     <th>Nama</th>
                                     <th>Slug</th>
                                     <th>Jenis</th>
+                                    <th>Jabatan</th>
                                     <th>Section</th>
                                     <th>Status</th>
                                 </tr>
@@ -119,6 +122,7 @@
                                         <td>{{ $row['name'] }}</td>
                                         <td>{{ $row['slug'] }}</td>
                                         <td>{{ $row['tryout_type_label'] }}</td>
+                                        <td>{{ $row['position_label'] }}</td>
                                         <td>{{ $row['section_label'] }}</td>
                                         <td>
                                             <span class="badge {{ $row['is_active'] ? 'bg-success-subtle text-success' : 'bg-secondary-subtle text-secondary' }} rounded-pill">
@@ -157,6 +161,14 @@
                                         <span class="badge bg-primary-subtle text-primary rounded-pill">{{ $sectionKey }} - {{ $sectionLabel }}</span>
                                     @endforeach
                                 </div>
+                                @if (! empty($positionsByType[$type] ?? []))
+                                    <div class="fs-13 text-muted mt-3 mb-2">Nilai `position_target`:</div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        @foreach ($positionsByType[$type] as $positionKey => $positionLabel)
+                                            <span class="badge bg-warning-subtle text-warning rounded-pill">{{ $positionKey }} - {{ $positionLabel }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     @endforeach

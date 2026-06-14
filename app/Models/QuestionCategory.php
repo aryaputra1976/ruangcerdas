@@ -16,6 +16,7 @@ class QuestionCategory extends Model
         'name',
         'slug',
         'tryout_type',
+        'position_target',
         'section',
         'description',
         'is_active',
@@ -40,6 +41,11 @@ class QuestionCategory extends Model
         return TryoutBlueprint::sectionLabel($this->tryout_type, $this->section);
     }
 
+    public function getPositionTargetLabelAttribute(): ?string
+    {
+        return TryoutBlueprint::positionLabel($this->tryout_type, $this->position_target);
+    }
+
     public function setSectionAttribute($value): void
     {
         if (! filled($value)) {
@@ -58,5 +64,13 @@ class QuestionCategory extends Model
     public function setTryoutTypeAttribute($value): void
     {
         $this->attributes['tryout_type'] = TryoutBlueprint::normalizeType($value);
+    }
+
+    public function setPositionTargetAttribute($value): void
+    {
+        $this->attributes['position_target'] = TryoutBlueprint::normalizePositionTarget(
+            $this->attributes['tryout_type'] ?? $this->tryout_type ?? null,
+            $value
+        );
     }
 }

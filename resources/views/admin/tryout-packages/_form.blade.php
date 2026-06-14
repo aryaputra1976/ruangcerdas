@@ -1,9 +1,9 @@
-﻿
 @php
     $isEdit = isset($tryoutPackage);
     $package = $tryoutPackage ?? null;
     $isActive = old('is_active', $package?->is_active ?? true);
     $selectedType = old('tryout_type', $package?->tryout_type ?? \App\Support\TryoutBlueprint::TYPE_CPNS);
+    $selectedPosition = old('position_target', $package?->position_target ?? '');
     $existingSectionCounts = collect($package?->sectionSummaries() ?? [])
         ->mapWithKeys(fn ($section) => [$section['key'] => $section['count']])
         ->all();
@@ -23,7 +23,7 @@
                 <input type="text" name="title" value="{{ old('title', $package?->title ?? '') }}" class="form-control @error('title') is-invalid @enderror" placeholder="Contoh: Tryout CPNS Intensif 2026" required autofocus>
                 @error('title')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label">Jenis Tryout <span class="text-danger">*</span></label>
                 <select name="tryout_type" class="form-select @error('tryout_type') is-invalid @enderror" required>
                     @foreach ($tryoutTypes as $type => $label)
@@ -32,7 +32,20 @@
                 </select>
                 @error('tryout_type')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4" id="position-target-wrapper">
+                <label class="form-label">Target Jabatan</label>
+                <select name="position_target" class="form-select @error('position_target') is-invalid @enderror">
+                    <option value="">Umum / Tidak dibatasi</option>
+                    @foreach ($positionsByType as $type => $positions)
+                        @foreach ($positions as $positionKey => $positionLabel)
+                            <option value="{{ $positionKey }}" data-tryout-type="{{ $type }}" @selected($selectedPosition === $positionKey)>{{ $positionLabel }}</option>
+                        @endforeach
+                    @endforeach
+                </select>
+                <div class="form-text">Wajib untuk paket PPPK Tendik agar bank soal sesuai jabatan.</div>
+                @error('position_target')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-4">
                 <label class="form-label">Slug</label>
                 <input type="text" name="slug" value="{{ old('slug', $package?->slug ?? '') }}" class="form-control @error('slug') is-invalid @enderror" placeholder="Kosongkan untuk otomatis">
                 @error('slug')<div class="invalid-feedback">{{ $message }}</div>@enderror
@@ -74,8 +87,8 @@
                                             <label class="form-label">{{ $section['label'] }}</label>
                                             <input type="number" min="0" name="section_counts[{{ $type }}][{{ $section['key'] }}]" value="{{ old('section_counts.' . $type . '.' . $section['key'], $selectedType === $type ? ($existingSectionCounts[$section['key']] ?? 0) : 0) }}" class="form-control" data-section-count-input data-tryout-type="{{ $type }}" data-section-key="{{ $section['key'] }}">
                                             <div class="form-text">
-                                                {{ $section['scoring_mode'] === 'weighted' ? 'Skor bertingkat.' : 'Jawaban tunggal.' }}
-                                                Tersedia {{ $questionStockByType[$type][$section['key']] ?? 0 }} soal aktif.
+                                                Skor: {{ \App\Support\TryoutBlueprint::scoringRuleLabel($type, $section['key']) }}.
+                                                <span data-stock-note data-tryout-type="{{ $type }}" data-section-key="{{ $section['key'] }}">Stok mengikuti target jabatan yang dipilih.</span>
                                             </div>
                                         </div>
                                     @endforeach
@@ -138,17 +151,69 @@
         const fillButton = document.getElementById('fill-stock-counts');
         const resetButton = document.getElementById('reset-section-counts');
         const typeSelect = document.querySelector('select[name="tryout_type"]');
+        const positionSelect = document.querySelector('select[name="position_target"]');
+        const positionWrapper = document.getElementById('position-target-wrapper');
         const durationInput = document.querySelector('input[name="duration_minutes"]');
         const inputs = Array.from(document.querySelectorAll('[data-section-count-input]'));
+        const stockNotes = Array.from(document.querySelectorAll('[data-stock-note]'));
         const totalQuestionsEl = document.getElementById('package-total-questions');
         const minutesPerQuestionEl = document.getElementById('package-minutes-per-question');
         const summaryNoteEl = document.getElementById('package-summary-note');
 
-        if (!fillButton || !resetButton || !typeSelect || !durationInput || inputs.length === 0 || !totalQuestionsEl || !minutesPerQuestionEl || !summaryNoteEl) {
+        if (!fillButton || !resetButton || !typeSelect || !positionSelect || !positionWrapper || !durationInput || inputs.length === 0 || !totalQuestionsEl || !minutesPerQuestionEl || !summaryNoteEl) {
             return;
         }
 
         const stockByType = JSON.parse(fillButton.dataset.stock || '{}');
+
+        const activePositionBucket = function () {
+            return positionSelect.value || '__all__';
+        };
+
+        const updatePositionVisibility = function () {
+            const selectedType = typeSelect.value;
+            const options = Array.from(positionSelect.options);
+            const hasScopedPositions = options.some(function (option) {
+                return option.dataset.tryoutType === selectedType;
+            });
+
+            positionWrapper.classList.toggle('d-none', !hasScopedPositions);
+
+            options.forEach(function (option) {
+                if (!option.dataset.tryoutType) {
+                    option.hidden = hasScopedPositions;
+                    return;
+                }
+
+                option.hidden = option.dataset.tryoutType !== selectedType;
+            });
+
+            if (!hasScopedPositions) {
+                positionSelect.value = '';
+            } else if (positionSelect.selectedOptions[0]?.hidden) {
+                const firstVisible = options.find(function (option) {
+                    return !option.hidden && option.dataset.tryoutType === selectedType;
+                });
+
+                positionSelect.value = firstVisible ? firstVisible.value : '';
+            }
+        };
+
+        const updateStockNotes = function () {
+            const selectedType = typeSelect.value;
+            const bucket = activePositionBucket();
+
+            stockNotes.forEach(function (note) {
+                if (note.dataset.tryoutType !== selectedType) {
+                    return;
+                }
+
+                const sectionKey = note.dataset.sectionKey;
+                const available = stockByType?.[selectedType]?.[bucket]?.[sectionKey] ?? 0;
+                note.textContent = 'Tersedia ' + available + ' soal aktif.';
+            });
+        };
+
         const updatePackageSummary = function () {
             const selectedType = typeSelect.value;
             const totalQuestions = inputs.reduce(function (sum, input) {
@@ -184,6 +249,7 @@
 
         fillButton.addEventListener('click', function () {
             const selectedType = typeSelect.value;
+            const bucket = activePositionBucket();
 
             inputs.forEach(function (input) {
                 const type = input.dataset.tryoutType;
@@ -194,7 +260,7 @@
                     return;
                 }
 
-                input.value = stockByType[type]?.[sectionKey] ?? 0;
+                input.value = stockByType?.[type]?.[bucket]?.[sectionKey] ?? 0;
             });
 
             updatePackageSummary();
@@ -208,12 +274,22 @@
             updatePackageSummary();
         });
 
-        typeSelect.addEventListener('change', updatePackageSummary);
+        typeSelect.addEventListener('change', function () {
+            updatePositionVisibility();
+            updateStockNotes();
+            updatePackageSummary();
+        });
+        positionSelect.addEventListener('change', function () {
+            updateStockNotes();
+            updatePackageSummary();
+        });
         durationInput.addEventListener('input', updatePackageSummary);
         inputs.forEach(function (input) {
             input.addEventListener('input', updatePackageSummary);
         });
 
+        updatePositionVisibility();
+        updateStockNotes();
         updatePackageSummary();
     });
 </script>

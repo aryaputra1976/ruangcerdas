@@ -23,7 +23,7 @@
                     </span>
                     @if ($isPppkStyleExam)
                         <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                            Skor Bertingkat
+                            Penilaian Bertingkat
                         </span>
                     @endif
                 </div>
@@ -41,7 +41,7 @@
                 </p>
                 @if ($isPppkStyleExam)
                     <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
-                        Untuk soal bertingkat, setiap opsi memiliki bobot nilai berbeda. Pilih jawaban yang paling tepat karena skor akhir dihitung dari akumulasi bobot semua jawaban.
+                        Untuk soal bertingkat, pilih jawaban yang paling tepat sesuai situasi. Rincian skor ditampilkan setelah tryout selesai pada halaman pembahasan.
                     </div>
                 @endif
             </div>
@@ -128,7 +128,7 @@
                                 </h2>
                                 @if ($isWeightedQuestion)
                                     <p class="mt-2 text-xs leading-6 text-slate-500">
-                                        Soal ini memakai skor bertingkat. Setiap opsi memiliki bobot nilai yang berbeda.
+                                        Soal ini memakai penilaian bertingkat. Pilih jawaban yang paling tepat.
                                     </p>
                                 @endif
                             </div>
@@ -165,13 +165,6 @@
                                             <div>
                                                 {!! nl2br(e($option->option_text)) !!}
                                             </div>
-                                            @if ($isWeightedQuestion)
-                                                <div class="mt-2">
-                                                    <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
-                                                        Skor {{ $option->score }}
-                                                    </span>
-                                                </div>
-                                            @endif
                                         </div>
                                     </div>
                                 </label>

@@ -23,7 +23,7 @@
                 </span>
                 @if ($isPppkStyleReview)
                     <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                        Skor Bertingkat
+                        Penilaian Bertingkat
                     </span>
                 @endif
             </div>
@@ -33,7 +33,7 @@
             <p class="mt-1 text-slate-600" title="{{ $tryoutSession->package?->title ?? 'Tryout' }}">{{ $displayTitle }}</p>
             @if ($isPppkStyleReview)
                 <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
-                    Untuk paket PPPK, setiap opsi bisa memiliki bobot skor yang berbeda. Gunakan halaman ini untuk melihat jawaban yang dipilih, bobot tiap opsi, dan pembahasan setiap soal.
+                    Untuk paket PPPK, setiap opsi bisa memiliki bobot nilai yang berbeda. Gunakan halaman ini untuk melihat jawaban yang dipilih, rincian nilai tiap opsi, dan pembahasan setiap soal.
                 </div>
             @endif
             <div class="mt-5">
@@ -59,7 +59,7 @@
                             <h2 class="mt-4 text-lg font-bold leading-8 text-slate-950">{!! nl2br(e($question?->question_text)) !!}</h2>
                         </div>
                         <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700">
-                            Skor: {{ $answer->score }}
+                            Nilai jawaban: {{ $answer->score }}
                         </div>
                     </div>
 
@@ -83,7 +83,7 @@
                                             <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">Jawaban Benar</span>
                                         @endif
                                         @if ($isWeighted)
-                                            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Skor {{ $option->score }}</span>
+                                            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">Nilai {{ $option->score }}</span>
                                         @endif
                                     </div>
                                 </div>

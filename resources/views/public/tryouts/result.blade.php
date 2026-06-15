@@ -98,7 +98,7 @@
                                         @endphp
                                         {{ $section['question_count'] }} soal · total skor {{ $section['score'] }} dari maksimum {{ $sectionMaxScore }}
                                     @elseif ($section['correct_count'] === null)
-                                        {{ $section['question_count'] }} soal · skor bertingkat
+                                        {{ $section['question_count'] }} soal · penilaian bertingkat
                                     @else
                                         {{ $section['correct_count'] }} benar / {{ $section['incorrect_count'] }} salah
                                     @endif

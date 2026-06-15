@@ -126,7 +126,7 @@
                         @if (! $isFreePackage)
                             <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                                 <span class="text-slate-600">Percobaan</span>
-                                <span class="font-black text-slate-950">{{ $tryoutPackage->attempt_limit ?: 1 }}x</span>
+                                <span class="font-black text-slate-950">{{ $tryoutPackage->effectiveAttemptLimit() }}x</span>
                             </div>
                             <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                                 <span class="text-slate-600">Masa akses</span>

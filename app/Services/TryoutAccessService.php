@@ -95,7 +95,7 @@ class TryoutAccessService
             [
                 'starts_at' => $startsAt,
                 'expires_at' => $expiresAt,
-                'remaining_attempts' => max(1, (int) ($tryoutPackage->attempt_limit ?? 1)),
+                'remaining_attempts' => $tryoutPackage->effectiveAttemptLimit(),
                 'is_active' => true,
             ]
         );
@@ -146,7 +146,7 @@ class TryoutAccessService
         $remainingAttempts = $existingAccess?->remaining_attempts;
 
         if ($remainingAttempts === null) {
-            $remainingAttempts = max(1, (int) ($tryoutPackage->attempt_limit ?? 1));
+            $remainingAttempts = $tryoutPackage->effectiveAttemptLimit();
         }
 
         return TryoutAccess::query()->updateOrCreate(

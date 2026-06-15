@@ -133,7 +133,7 @@
                             @endif
                             @if ($isPremium)
                                 <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-900">
-                                    {{ $package->attempt_limit ?: 1 }}x percobaan
+                                    {{ $package->effectiveAttemptLimit() }}x percobaan
                                 </span>
                             @endif
                         </div>
@@ -152,7 +152,7 @@
 
                         @if ($isPremium)
                             <p class="mt-3 min-h-[2.5rem] text-center text-xs leading-5 text-slate-500">
-                                {{ $package->access_days ? 'Akses ' . $package->access_days . ' hari' : 'Akses tanpa batas hari' }}, {{ $package->attempt_limit ?: 1 }}x percobaan.
+                                {{ $package->access_days ? 'Akses ' . $package->access_days . ' hari' : 'Akses tanpa batas hari' }}, {{ $package->effectiveAttemptLimit() }}x percobaan.
                                 @if (! $packageState['canStart'])
                                     Beli dulu, lalu mulai setelah akses aktif.
                                 @endif

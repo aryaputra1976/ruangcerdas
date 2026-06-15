@@ -67,6 +67,18 @@
                 <input type="number" name="duration_minutes" value="{{ old('duration_minutes', $package?->duration_minutes ?? 100) }}" class="form-control @error('duration_minutes') is-invalid @enderror" min="1" required>
                 @error('duration_minutes')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+            <div class="col-md-6">
+                <label class="form-label">Masa Akses (hari)</label>
+                <input type="number" name="access_days" value="{{ old('access_days', $package?->access_days ?? '') }}" class="form-control @error('access_days') is-invalid @enderror" min="1" placeholder="Kosongkan untuk default otomatis">
+                <div class="form-text">Default otomatis: paket premium 7 hari, paket gratis tanpa batas hari.</div>
+                @error('access_days')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Batas Percobaan</label>
+                <input type="number" name="attempt_limit" value="{{ old('attempt_limit', $package?->attempt_limit ?? '') }}" class="form-control @error('attempt_limit') is-invalid @enderror" min="1" placeholder="Kosongkan untuk default otomatis">
+                <div class="form-text">Default otomatis: paket premium 3x, paket gratis 1x.</div>
+                @error('attempt_limit')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
             <div class="col-md-12">
                 <label class="form-label">Komposisi Soal <span class="text-danger">*</span></label>
                 @error('section_counts')<div class="text-danger small mb-2">{{ $message }}</div>@enderror

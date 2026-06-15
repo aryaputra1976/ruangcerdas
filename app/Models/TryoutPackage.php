@@ -58,6 +58,17 @@ class TryoutPackage extends Model
             || (int) ($this->attributes['price'] ?? $this->price ?? 0) <= 0;
     }
 
+    public function effectiveAttemptLimit(): int
+    {
+        $attemptLimit = (int) ($this->attributes['attempt_limit'] ?? $this->attempt_limit ?? 0);
+
+        if ($attemptLimit > 0) {
+            return $attemptLimit;
+        }
+
+        return $this->isFreePackage() ? 1 : 3;
+    }
+
     public function sessions(): HasMany
     {
         return $this->hasMany(TryoutSession::class);

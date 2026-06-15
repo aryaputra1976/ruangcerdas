@@ -244,8 +244,8 @@ class TryoutPackageController extends Controller
         ]);
 
         return redirect()
-            ->route('admin.tryout-packages.index')
-            ->with('success', 'Paket tryout berhasil ditambahkan.');
+            ->route('admin.tryout-packages.edit', $package)
+            ->with('success', 'Paket tryout berhasil ditambahkan. Lanjutkan cek detail akses dan komposisi paket.');
     }
 
     public function show(TryoutPackage $tryoutPackage)
@@ -312,6 +312,8 @@ class TryoutPackageController extends Controller
             'description' => ['nullable', 'string'],
             'price' => ['nullable', 'integer', 'min:0'],
             'duration_minutes' => ['required', 'integer', 'min:1'],
+            'access_days' => ['nullable', 'integer', 'min:1'],
+            'attempt_limit' => ['nullable', 'integer', 'min:1'],
             'section_counts' => ['required', 'array'],
             'is_active' => ['nullable'],
         ])->validate();
@@ -320,6 +322,12 @@ class TryoutPackageController extends Controller
         $validated['price'] = (int) ($validated['price'] ?? 0);
         $validated['is_free'] = $validated['price'] <= 0;
         $validated['position_target'] = TryoutBlueprint::normalizePositionTarget($type, $validated['position_target'] ?? null);
+        $validated['access_days'] = blank($input['access_days'] ?? null)
+            ? ($validated['is_free'] ? null : 7)
+            : (int) $validated['access_days'];
+        $validated['attempt_limit'] = blank($input['attempt_limit'] ?? null)
+            ? ($validated['is_free'] ? 1 : 3)
+            : (int) $validated['attempt_limit'];
 
         if (TryoutBlueprint::requiresPositionTarget($type) && $validated['position_target'] === null) {
             throw ValidationException::withMessages([

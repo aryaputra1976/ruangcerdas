@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Support\TryoutBlueprint;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -67,6 +69,15 @@ class Product extends Model
 
             if ($this->getAttributeFromArray('category_id')) {
                 return $this->getRelationValue('category') ?? $this->getAttributeFromArray('category');
+            }
+
+            $rawCategory = $this->getAttributeFromArray('category');
+
+            if (is_string($rawCategory) && $rawCategory !== '') {
+                return (object) [
+                    'name' => TryoutBlueprint::typeOptions()[$rawCategory]
+                        ?? Str::of($rawCategory)->replace('_', ' ')->headline()->value(),
+                ];
             }
         }
 

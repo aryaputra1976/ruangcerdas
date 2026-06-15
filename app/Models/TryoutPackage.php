@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class TryoutPackage extends Model
 {
@@ -95,14 +96,17 @@ class TryoutPackage extends Model
             return null;
         }
 
+        $description = trim((string) ($this->description ?: 'Produk akses untuk membuka paket tryout Ruang Cerdas.'));
+        $shortDescription = $this->checkoutShortDescription();
+
         return Product::withTrashed()->updateOrCreate(
             ['slug' => $this->slug],
             [
                 'product_type' => 'tryout',
                 'category' => $this->tryout_type,
                 'name' => $this->title,
-                'short_description' => $this->description ?: 'Akses pembelian untuk paket tryout Ruang Cerdas.',
-                'description' => $this->description ?: 'Produk akses untuk membuka paket tryout Ruang Cerdas.',
+                'short_description' => $shortDescription,
+                'description' => $description,
                 'normal_price' => max(0, (int) $this->price),
                 'sale_price' => max(0, (int) $this->price),
                 'is_active' => (bool) $this->is_active,
@@ -110,6 +114,28 @@ class TryoutPackage extends Model
                 'deleted_at' => null,
             ]
         );
+    }
+
+    public function checkoutShortDescription(): string
+    {
+        $typeLabel = TryoutBlueprint::typeLabel($this->tryout_type);
+        $sectionLabel = collect($this->sectionSummaries())->pluck('label')->filter()->implode(', ');
+        $positionLabel = $this->position_target_label;
+        $totalQuestions = $this->total_questions;
+        $durationMinutes = (int) $this->duration_minutes;
+        $accessLabel = $this->access_days ? $this->access_days . ' hari' : 'tanpa batas hari';
+        $attemptLabel = $this->effectiveAttemptLimit() . 'x percobaan';
+
+        $parts = collect([
+            $sectionLabel !== '' ? 'Akses ' . $typeLabel . ' untuk ' . $sectionLabel : 'Akses ' . $typeLabel,
+            $positionLabel ? 'target ' . $positionLabel : null,
+            $totalQuestions > 0 ? $totalQuestions . ' soal' : null,
+            $durationMinutes > 0 ? $durationMinutes . ' menit' : null,
+            'akses ' . $accessLabel,
+            $attemptLabel,
+        ])->filter()->values();
+
+        return Str::limit($parts->implode(' · '), 250, '...');
     }
 
     public function getTotalQuestionsAttribute(): int

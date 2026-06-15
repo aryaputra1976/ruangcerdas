@@ -14,7 +14,7 @@ class TryoutAccessService
 
     public function hasSessionAccess(Request $request, TryoutPackage $tryoutPackage): bool
     {
-        if ($tryoutPackage->is_free) {
+        if ($tryoutPackage->isFreePackage()) {
             return true;
         }
 
@@ -46,7 +46,7 @@ class TryoutAccessService
 
     public function findActiveAccessForPackage(TryoutPackage $tryoutPackage, ?string $email): ?TryoutAccess
     {
-        if ($tryoutPackage->is_free || blank($email)) {
+        if ($tryoutPackage->isFreePackage() || blank($email)) {
             return null;
         }
 
@@ -113,7 +113,7 @@ class TryoutAccessService
 
         return TryoutPackage::query()
             ->where('slug', $productSlug)
-            ->where('is_free', false)
+            ->where('price', '>', 0)
             ->first();
     }
 

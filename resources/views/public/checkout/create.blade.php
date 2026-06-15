@@ -29,6 +29,9 @@
                 </p>
             </div>
             <h1 class="mt-3 text-3xl font-black tracking-tight text-slate-950 md:text-4xl">Lengkapi Data Pembelian</h1>
+            <p class="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                Isi data aktif agar invoice, verifikasi pembayaran, dan akses Ruang Akses bisa digunakan dengan lancar.
+            </p>
         </div>
 
         @if ($errors->any())
@@ -92,9 +95,10 @@
                             Lanjutkan Checkout
                         </button>
 
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
-                            <p>Produk digital dibuka melalui Ruang Akses setelah pembayaran disetujui admin.</p>
-                            <p>Pastikan email benar dan simpan invoice untuk upload bukti bayar.</p>
+                        <div class="space-y-1.5 text-sm leading-6 text-slate-500">
+                            <p>- Produk digital dibuka melalui Ruang Akses setelah pembayaran disetujui admin.</p>
+                            <p>- Pastikan email benar agar akses tidak tertukar.</p>
+                            <p>- Simpan invoice untuk upload bukti bayar dan cek status order.</p>
                         </div>
 
                         <p class="text-center text-xs leading-5 text-slate-500">
@@ -183,23 +187,6 @@
                             </div>
                         </div>
                     </div>
-
-                    <div class="rounded-[2rem] border border-blue-100 bg-blue-50 p-5 shadow-sm">
-                        <h3 class="font-black text-blue-950">Alur setelah checkout</h3>
-                        <div class="mt-3 grid gap-2.5 text-sm leading-6 text-blue-900">
-                            @foreach ([
-                                'Invoice dibuat otomatis setelah form dikirim.',
-                                'Lakukan pembayaran manual sesuai instruksi.',
-                                'Upload bukti pembayaran, lalu buka produk melalui Ruang Akses setelah status paid.',
-                            ] as $index => $checkoutStep)
-                                <div class="flex items-start gap-3 rounded-2xl bg-white px-4 py-3">
-                                    <span class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white">{{ $index + 1 }}</span>
-                                    <span>{{ $checkoutStep }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
                     @if ($supportWaUrl)
                         <div class="rounded-[2rem] border border-green-200 bg-green-50 p-6 shadow-sm">
                             <h3 class="text-lg font-black text-green-900">Butuh Bantuan?</h3>

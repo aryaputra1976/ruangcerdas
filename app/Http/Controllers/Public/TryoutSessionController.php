@@ -28,7 +28,7 @@ class TryoutSessionController extends Controller
 
         $validated = $request->validate([
             'participant_name' => ['required', 'string', 'max:255'],
-            'participant_email' => $tryoutPackage->is_free
+            'participant_email' => $tryoutPackage->isFreePackage()
                 ? ['nullable', 'email', 'max:255']
                 : ['required', 'email', 'max:255'],
         ]);
@@ -53,7 +53,7 @@ class TryoutSessionController extends Controller
 
         $tryoutAccess = null;
 
-        if (! $tryoutPackage->is_free) {
+        if (! $tryoutPackage->isFreePackage()) {
             $tryoutAccess = $tryoutAccessService->findActiveAccessForPackage(
                 $tryoutPackage,
                 $validated['participant_email'] ?? null
@@ -61,10 +61,10 @@ class TryoutSessionController extends Controller
 
             if (! $tryoutAccess) {
                 $redirectRoute = $tryoutPackage->routeSegment() === 'cpns'
-                    ? route('public.tryouts.buy', $tryoutPackage)
+                    ? route('public.tryouts.buy', $tryoutPackage->slug)
                     : route('public.tryouts.packages.buy', [
                         'tryoutType' => $tryoutPackage->routeSegment(),
-                        'tryoutPackage' => $tryoutPackage,
+                        'tryoutPackage' => $tryoutPackage->slug,
                     ]);
 
                 return redirect($redirectRoute)
@@ -121,7 +121,7 @@ class TryoutSessionController extends Controller
 
         $this->rememberSessionId($request, $session->id);
 
-        if (! $tryoutPackage->is_free && ! empty($validated['participant_email'])) {
+        if (! $tryoutPackage->isFreePackage() && ! empty($validated['participant_email'])) {
             $tryoutAccessService->rememberAccess($request, $tryoutPackage, $validated['participant_email']);
         }
 
@@ -467,7 +467,7 @@ class TryoutSessionController extends Controller
     {
         $tryoutSession->loadMissing('package');
 
-        if (! $tryoutSession->package || $tryoutSession->package->is_free) {
+        if (! $tryoutSession->package || $tryoutSession->package->isFreePackage()) {
             return null;
         }
 

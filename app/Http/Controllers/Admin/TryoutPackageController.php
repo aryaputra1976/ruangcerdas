@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use App\Models\Question;
 use App\Models\TryoutPackage;
 use App\Support\TryoutBlueprint;
@@ -36,6 +37,9 @@ class TryoutPackageController extends Controller
         'manajerial_count',
         'sosiokultural_count',
         'wawancara_count',
+    ];
+    private const OPTIONAL_IMPORT_HEADERS = [
+        'position_target',
     ];
 
     public function index(Request $request)
@@ -233,6 +237,7 @@ class TryoutPackageController extends Controller
         $validated['slug'] = $this->makeUniqueSlug($validated['slug'] ?: $validated['title']);
 
         $package = TryoutPackage::create($validated);
+        $this->syncCheckoutProduct($package);
 
         ActivityLogger::log('tryout_package.created', $package, 'Admin menambahkan paket tryout.', [
             'title' => $package->title,
@@ -271,6 +276,8 @@ class TryoutPackageController extends Controller
         $validated['slug'] = $this->makeUniqueSlug($validated['slug'] ?: $validated['title'], $tryoutPackage->id);
 
         $tryoutPackage->update($validated);
+        $tryoutPackage->refresh();
+        $this->syncCheckoutProduct($tryoutPackage);
 
         ActivityLogger::log('tryout_package.updated', $tryoutPackage, 'Admin memperbarui paket tryout.', [
             'title' => $tryoutPackage->title,
@@ -283,6 +290,7 @@ class TryoutPackageController extends Controller
 
     public function destroy(TryoutPackage $tryoutPackage)
     {
+        $this->retireCheckoutProduct($tryoutPackage);
         $tryoutPackage->delete();
 
         ActivityLogger::log('tryout_package.deleted', $tryoutPackage, 'Admin menghapus paket tryout.', [
@@ -356,6 +364,28 @@ class TryoutPackageController extends Controller
         $validated['is_active'] = $this->normalizeImportBoolean((string) data_get($input, 'is_active', '1'));
 
         return $validated;
+    }
+
+    private function syncCheckoutProduct(TryoutPackage $package): void
+    {
+        if ($package->isFreePackage() || ! $package->is_active) {
+            $this->retireCheckoutProduct($package);
+
+            return;
+        }
+
+        $package->checkoutProduct();
+    }
+
+    private function retireCheckoutProduct(TryoutPackage $package): void
+    {
+        Product::query()
+            ->where('slug', $package->slug)
+            ->where('product_type', 'tryout')
+            ->update([
+                'is_active' => false,
+                'deleted_at' => now(),
+            ]);
     }
 
     private function prepareImportRow(array $row, array $headerMap, int $rowNumber, string $source): array
@@ -828,6 +858,7 @@ class TryoutPackageController extends Controller
     private function ensureImportHeaders(array $normalizedHeader): void
     {
         $missingHeaders = collect(self::IMPORT_HEADERS)
+            ->reject(fn (string $header) => in_array($header, self::OPTIONAL_IMPORT_HEADERS, true))
             ->diff($normalizedHeader)
             ->values()
             ->all();

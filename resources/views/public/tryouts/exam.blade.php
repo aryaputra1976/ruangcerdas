@@ -5,13 +5,33 @@
 @section('robots', 'noindex,nofollow')
 
 @section('content')
+@php
+    $tryoutType = $tryoutSession->package?->tryout_type;
+    $isPppkStyleExam = in_array($tryoutType, [\App\Support\TryoutBlueprint::TYPE_PPPK, \App\Support\TryoutBlueprint::TYPE_PPPK_TENDIK], true);
+    $isFreePackage = $tryoutSession->package?->isFreePackage() ?? false;
+    $displayTitle = $tryoutSession->package?->cardDisplayTitle() ?? ($tryoutSession->package?->title ?? 'Tryout');
+    $displaySubtitle = $tryoutSession->package?->cardDisplaySubtitle();
+@endphp
 <section class="bg-slate-100 py-8 md:py-10">
     <div class="mx-auto max-w-7xl px-4 md:px-6">
         <div class="mb-6 rounded-[1.5rem] border border-slate-200 bg-white p-5 shadow-sm">
             <div class="flex flex-col gap-3">
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Sesi Ujian</p>
-                <h1 class="text-2xl font-black text-slate-950 md:text-3xl">
-                    {{ $tryoutSession->package?->title ?? 'Tryout CPNS' }}
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $isFreePackage ? 'bg-slate-100 text-slate-700' : 'border border-amber-300 bg-amber-50 text-amber-800' }}">
+                        {{ $isFreePackage ? 'Paket Gratis' : 'Paket Premium' }}
+                    </span>
+                    @if ($isPppkStyleExam)
+                        <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
+                            Skor Bertingkat
+                        </span>
+                    @endif
+                </div>
+                @if ($displaySubtitle && $displaySubtitle !== $displayTitle)
+                    <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ $displaySubtitle }}</p>
+                @endif
+                <h1 class="text-2xl font-black text-slate-950 md:text-3xl" title="{{ $tryoutSession->package?->title ?? 'Tryout CPNS' }}">
+                    {{ $displayTitle }}
                 </h1>
                 <p class="text-sm text-slate-600">
                     Peserta:
@@ -19,6 +39,11 @@
                         {{ $tryoutSession->participant_name }}
                     </span>
                 </p>
+                @if ($isPppkStyleExam)
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600">
+                        Untuk soal bertingkat, setiap opsi memiliki bobot nilai berbeda. Pilih jawaban yang paling tepat karena skor akhir dihitung dari akumulasi bobot semua jawaban.
+                    </div>
+                @endif
             </div>
         </div>
 
@@ -84,6 +109,7 @@
                 @foreach ($answers as $index => $answer)
                     @php
                         $question = $answer->question;
+                        $isWeightedQuestion = $question?->usesWeightedScoring() ?? false;
                     @endphp
 
                     <article id="question-{{ $index + 1 }}"
@@ -100,6 +126,11 @@
                                 <h2 class="mt-3 text-lg font-bold leading-7 text-slate-950">
                                     {!! nl2br(e($question?->question_text)) !!}
                                 </h2>
+                                @if ($isWeightedQuestion)
+                                    <p class="mt-2 text-xs leading-6 text-slate-500">
+                                        Soal ini memakai skor bertingkat. Setiap opsi memiliki bobot nilai yang berbeda.
+                                    </p>
+                                @endif
                             </div>
 
                             <label class="inline-flex shrink-0 items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-2 text-sm font-semibold text-amber-700">
@@ -130,9 +161,18 @@
                                         <span class="min-w-6 font-bold text-slate-950">
                                             {{ $option->option_label }}.
                                         </span>
-                                        <span>
-                                            {!! nl2br(e($option->option_text)) !!}
-                                        </span>
+                                        <div class="min-w-0 flex-1">
+                                            <div>
+                                                {!! nl2br(e($option->option_text)) !!}
+                                            </div>
+                                            @if ($isWeightedQuestion)
+                                                <div class="mt-2">
+                                                    <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                                                        Skor {{ $option->score }}
+                                                    </span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </label>
                             @endforeach

@@ -76,7 +76,7 @@
     };
     $printLogoUrl = asset('hando/assets/images/rc/rc_mark.svg');
     $printReference = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', (string) $order->invoice_number), -8));
-    $tryoutPrimaryLabel = $isTryoutOrder ? 'Mulai Tryout Sekarang' : 'Buka Halaman Tryout';
+    $tryoutPrimaryLabel = 'Mulai Tryout Sekarang';
 @endphp
 
 <style>
@@ -478,11 +478,11 @@
                             <p>Paket aktif: <span class="font-bold">{{ $tryoutPackage->title }}</span></p>
                         </div>
                         <div class="mt-4 flex flex-col gap-3">
-                            <a href="{{ route($tryoutPackage->listingRouteName()) }}" class="rc-btn-secondary px-5 py-3 text-sm">
+                            <a href="{{ route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage->slug]) }}" class="rc-btn-success px-5 py-3 text-sm">
                                 {{ $tryoutPrimaryLabel }}
                             </a>
-                            <a href="{{ route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="rc-btn-neutral px-5 py-3 text-sm">
-                                Lihat Halaman Paket
+                            <a href="{{ route($tryoutPackage->listingRouteName()) }}" class="rc-btn-neutral px-5 py-3 text-sm">
+                                Lihat Semua Paket
                             </a>
                         </div>
                     </div>
@@ -518,7 +518,7 @@
                     Ruang Akses
                 </a>
             @elseif ($order->status === \App\Models\Order::STATUS_PAID && $isTryoutOrder)
-                <a href="{{ route($tryoutPackage->listingRouteName()) }}" class="rc-btn-success flex-1 px-6 py-4 text-center">
+                <a href="{{ route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage->slug]) }}" class="rc-btn-success flex-1 px-6 py-4 text-center">
                     {{ $tryoutPrimaryLabel }}
                 </a>
             @endif

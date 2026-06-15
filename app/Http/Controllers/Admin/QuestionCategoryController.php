@@ -27,6 +27,9 @@ class QuestionCategoryController extends Controller
         'description',
         'is_active',
     ];
+    private const OPTIONAL_IMPORT_HEADERS = [
+        'position_target',
+    ];
 
     public function index(Request $request)
     {
@@ -735,7 +738,11 @@ class QuestionCategoryController extends Controller
 
     private function ensureImportHeaders(array $normalizedHeader): void
     {
-        $missingHeaders = collect(self::IMPORT_HEADERS)->diff($normalizedHeader)->values()->all();
+        $missingHeaders = collect(self::IMPORT_HEADERS)
+            ->reject(fn (string $header) => in_array($header, self::OPTIONAL_IMPORT_HEADERS, true))
+            ->diff($normalizedHeader)
+            ->values()
+            ->all();
 
         if ($missingHeaders === []) {
             return;

@@ -85,22 +85,22 @@ class TryoutController extends Controller
         $this->ensurePackageTypeMatchesRoute($tryoutPackage, $tryoutType);
         abort_unless($tryoutPackage->is_active, 404);
 
-        if ($tryoutPackage->is_free) {
+        if ($tryoutPackage->isFreePackage()) {
             return redirect()->route('public.tryouts.packages.start', [
                 'tryoutType' => $tryoutPackage->routeSegment(),
-                'tryoutPackage' => $tryoutPackage,
+                'tryoutPackage' => $tryoutPackage->slug,
             ]);
         }
 
         $product = $tryoutPackage->checkoutProduct();
 
-        if ($product && $product->isVisibleToPublic()) {
-            return redirect()->route('checkout.create', $product);
+        if ($product) {
+            return redirect()->route('checkout.create', $product->slug);
         }
 
         return redirect()
-            ->route('products.index')
-            ->with('error', 'Silakan beli paket tryout untuk membuka akses.');
+            ->route($tryoutPackage->listingRouteName())
+            ->with('error', 'Paket tryout ini belum siap dibuka ke checkout. Coba lagi sebentar lagi.');
     }
 
     private function packageListing(Request $request, TryoutAccessService $tryoutAccessService, string $type)
@@ -108,7 +108,7 @@ class TryoutController extends Controller
         $packages = TryoutPackage::query()
             ->active()
             ->ofTryoutType($type)
-            ->orderByDesc('is_free')
+            ->orderByRaw('CASE WHEN COALESCE(price, 0) <= 0 OR is_free = 1 THEN 1 ELSE 0 END DESC')
             ->orderBy('price')
             ->latest()
             ->get()
@@ -118,18 +118,19 @@ class TryoutController extends Controller
         $hasTryoutHistory = ! empty($request->session()->get('public_tryout_session_ids', []));
         $packageStates = $packages->mapWithKeys(function (TryoutPackage $package) use ($request, $tryoutAccessService) {
             $hasAccess = $tryoutAccessService->hasSessionAccess($request, $package);
+            $isFreePackage = $package->isFreePackage();
 
             return [
                 $package->id => [
                     'hasAccess' => $hasAccess,
-                    'canStart' => $package->is_free || $hasAccess,
+                    'canStart' => $isFreePackage || $hasAccess,
                     'buyUrl' => route('public.tryouts.packages.buy', [
                         'tryoutType' => $package->routeSegment(),
-                        'tryoutPackage' => $package,
+                        'tryoutPackage' => $package->slug,
                     ]),
                     'startUrl' => route('public.tryouts.packages.start', [
                         'tryoutType' => $package->routeSegment(),
-                        'tryoutPackage' => $package,
+                        'tryoutPackage' => $package->slug,
                     ]),
                 ],
             ];

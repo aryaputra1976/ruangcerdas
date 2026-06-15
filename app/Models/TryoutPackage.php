@@ -49,7 +49,13 @@ class TryoutPackage extends Model
 
     public function getIsFreeAttribute($value): bool
     {
-        return (bool) $value || (int) ($this->attributes['price'] ?? 0) <= 0;
+        return $this->isFreePackage($value);
+    }
+
+    public function isFreePackage(mixed $value = null): bool
+    {
+        return (bool) ($value ?? $this->attributes['is_free'] ?? false)
+            || (int) ($this->attributes['price'] ?? $this->price ?? 0) <= 0;
     }
 
     public function sessions(): HasMany
@@ -74,11 +80,25 @@ class TryoutPackage extends Model
 
     public function checkoutProduct()
     {
-        if ($this->is_free) {
+        if ($this->isFreePackage()) {
             return null;
         }
 
-        return Product::query()->where('slug', $this->slug)->first();
+        return Product::withTrashed()->updateOrCreate(
+            ['slug' => $this->slug],
+            [
+                'product_type' => 'tryout',
+                'category' => $this->tryout_type,
+                'name' => $this->title,
+                'short_description' => $this->description ?: 'Akses pembelian untuk paket tryout Ruang Cerdas.',
+                'description' => $this->description ?: 'Produk akses untuk membuka paket tryout Ruang Cerdas.',
+                'normal_price' => max(0, (int) $this->price),
+                'sale_price' => max(0, (int) $this->price),
+                'is_active' => (bool) $this->is_active,
+                'published_at' => now(),
+                'deleted_at' => null,
+            ]
+        );
     }
 
     public function getTotalQuestionsAttribute(): int
@@ -108,6 +128,33 @@ class TryoutPackage extends Model
             TryoutBlueprint::TYPE_PPPK_TENDIK => 'public.tryouts.pppk-tendik',
             default => 'public.tryouts.index',
         };
+    }
+
+    public function cardDisplayTitle(): string
+    {
+        $title = trim(preg_replace('/\s+/u', ' ', (string) $this->title));
+
+        if (TryoutBlueprint::normalizeType($this->tryout_type) !== TryoutBlueprint::TYPE_PPPK_TENDIK) {
+            return $title;
+        }
+
+        $title = preg_replace('/\s*-\s*.+$/u', '', $title);
+        $title = preg_replace('/\bPPPK\s+Tendik\b/iu', '', (string) $title);
+        $title = preg_replace('/\b20\d{2}\b/u', '', (string) $title);
+        $title = trim(preg_replace('/\s+/u', ' ', (string) $title), " -");
+
+        return $title !== '' ? $title : trim((string) $this->title);
+    }
+
+    public function cardDisplaySubtitle(): ?string
+    {
+        $title = trim((string) $this->title);
+
+        if (preg_match('/-\s*(.+)$/u', $title, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return $this->position_target_label;
     }
 
     public function sectionSummaries(): array

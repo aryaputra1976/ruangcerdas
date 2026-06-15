@@ -52,20 +52,28 @@
             <div class="grid items-stretch gap-4 md:gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($packages as $package)
                     @php
-                        $packageState = $packageStates[$package->id] ?? ['canStart' => $package->is_free, 'hasAccess' => false, 'buyUrl' => '#', 'startUrl' => '#'];
-                        $isPremium = ! $package->is_free;
-                        $defaultDescription = $package->is_free ? 'Coba simulasi dasar sebelum membeli paket lengkap.' : 'Simulasi yang lebih serius dengan komposisi soal lengkap.';
-                        $sectionCount = collect($package->sectionSummaries())->count();
-                        $cardClass = $package->is_free
+                        $isFreePackage = $package->isFreePackage();
+                        $packageState = $packageStates[$package->id] ?? ['canStart' => $isFreePackage, 'hasAccess' => false, 'buyUrl' => '#', 'startUrl' => '#'];
+                        $isPremium = ! $isFreePackage;
+                        $defaultDescription = $isFreePackage ? 'Coba simulasi dasar sebelum membeli paket lengkap.' : 'Simulasi yang lebih serius dengan komposisi soal lengkap.';
+                        $displayDescription = \Illuminate\Support\Str::limit($package->description ?: $defaultDescription, 170);
+                        $sectionSummaries = collect($package->sectionSummaries());
+                        $sectionCount = $sectionSummaries->count();
+                        $displayTitle = $package->cardDisplayTitle();
+                        $displaySubtitle = $package->cardDisplaySubtitle();
+                        $sectionChipLabel = $sectionCount === 1
+                            ? ($sectionSummaries->first()['label'] ?? '1 section')
+                            : $sectionCount . ' section';
+                        $cardClass = $isFreePackage
                             ? 'border-slate-200 bg-white'
                             : 'border-blue-200 bg-gradient-to-br from-white via-white to-blue-50/70 shadow-blue-100/60';
-                        $badgeClass = $package->is_free
+                        $badgeClass = $isFreePackage
                             ? 'bg-slate-100 text-slate-700'
                             : 'border border-amber-300 bg-amber-50 text-amber-800';
-                        $priceClass = $package->is_free
-                            ? 'bg-slate-100 text-slate-700'
+                        $priceClass = $isFreePackage
+                            ? 'border border-slate-200 bg-slate-50 text-slate-700'
                             : 'bg-slate-800 text-white';
-                        $statClass = $package->is_free
+                        $statClass = $isFreePackage
                             ? 'bg-slate-50'
                             : 'bg-slate-50';
                     @endphp
@@ -73,7 +81,7 @@
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0 flex-1">
                                 <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $badgeClass }}">
-                                    {{ $package->is_free ? 'Gratis' : 'Premium' }}
+                                    {{ $isFreePackage ? 'Gratis' : 'Premium' }}
                                 </span>
                             </div>
                             <div class="flex shrink-0 flex-col items-end gap-2">
@@ -82,9 +90,9 @@
                                         Update 2026
                                     </span>
                                 @endif
-                                <div class="rounded-[1.1rem] px-4 py-2 text-base font-bold whitespace-nowrap md:px-4 md:py-2.5 {{ $priceClass }}">
-                                    @if ($package->is_free)
-                                        Tanpa Bayar
+                                    <div class="rounded-[1.1rem] px-4 py-2 text-base font-bold whitespace-nowrap md:px-4 md:py-2.5 {{ $priceClass }}">
+                                    @if ($isFreePackage)
+                                        Gratis
                                     @else
                                         Rp {{ number_format($package->price, 0, ',', '.') }}
                                     @endif
@@ -92,12 +100,15 @@
                             </div>
                         </div>
 
-                        <div class="mt-4 min-h-[5.5rem] md:min-h-[6.8rem]">
-                            <h3 class="text-[1.45rem] font-black leading-tight tracking-tight text-slate-950 md:text-[1.8rem]">{{ $package->title }}</h3>
+                        <div class="mt-4 min-h-[4.2rem] md:min-h-[5.2rem]">
+                            @if ($displaySubtitle && $displaySubtitle !== $displayTitle)
+                                <p class="mb-1 line-clamp-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">{{ $displaySubtitle }}</p>
+                            @endif
+                            <h3 class="line-clamp-3 text-[1.28rem] font-black leading-tight tracking-tight text-slate-950 md:text-[1.55rem]" title="{{ $package->title }}">{{ $displayTitle }}</h3>
                         </div>
 
-                        <div class="mt-2 min-h-[4rem] md:mt-3 md:min-h-[4.5rem]">
-                            <p class="text-sm leading-6 text-slate-600">{{ $package->description ?: $defaultDescription }}</p>
+                        <div class="mt-2 min-h-[3.9rem] md:mt-3 md:min-h-[4.4rem]">
+                            <p class="line-clamp-3 text-sm leading-6 text-slate-600">{{ $displayDescription }}</p>
                         </div>
 
                         <div class="mt-3 grid grid-cols-2 gap-3 md:mt-4">
@@ -111,9 +122,9 @@
                             </div>
                         </div>
 
-                        <div class="mt-3 flex min-h-[3rem] flex-wrap content-start gap-2 md:mt-4">
+                        <div class="mt-3 flex min-h-[2.6rem] flex-wrap content-start gap-2 md:mt-4">
                             <span class="inline-flex rounded-full bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-900">
-                                {{ $sectionCount }} section
+                                {{ $sectionChipLabel }}
                             </span>
                             @if ($package->has_explanation)
                                 <span class="inline-flex rounded-full bg-sky-100 px-3 py-1.5 text-xs font-medium text-sky-800">
@@ -129,8 +140,8 @@
 
                         <div class="mt-auto pt-4">
                             @if ($packageState['canStart'])
-                                <a href="{{ $packageState['startUrl'] }}" class="{{ $package->is_free ? 'rc-btn-secondary' : 'rc-btn-success' }} w-full px-5 py-3 text-sm">
-                                    {{ $package->is_free ? 'Coba Gratis Sekarang' : 'Mulai Tryout' }}
+                                <a href="{{ $packageState['startUrl'] }}" class="{{ $isFreePackage ? 'rc-btn-secondary' : 'rc-btn-success' }} w-full px-5 py-3 text-sm">
+                                    {{ $isFreePackage ? 'Coba Gratis Sekarang' : 'Mulai Tryout' }}
                                 </a>
                             @else
                                 <a href="{{ $packageState['buyUrl'] }}" class="rc-btn-primary w-full px-5 py-3 text-sm">
@@ -140,14 +151,14 @@
                         </div>
 
                         @if ($isPremium)
-                            <p class="mt-3 min-h-[3rem] text-center text-xs leading-5 text-slate-500">
+                            <p class="mt-3 min-h-[2.5rem] text-center text-xs leading-5 text-slate-500">
                                 {{ $package->access_days ? 'Akses ' . $package->access_days . ' hari' : 'Akses tanpa batas hari' }}, {{ $package->attempt_limit ?: 1 }}x percobaan.
                                 @if (! $packageState['canStart'])
                                     Beli dulu, lalu mulai setelah akses aktif.
                                 @endif
                             </p>
                         @else
-                            <p class="mt-3 min-h-[3rem] text-xs leading-5 text-slate-500">
+                            <p class="mt-3 min-h-[2.5rem] text-xs leading-5 text-slate-500">
                                 Bisa langsung dicoba tanpa beli.
                             </p>
                         @endif

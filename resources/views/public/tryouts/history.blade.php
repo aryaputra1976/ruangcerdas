@@ -23,18 +23,23 @@
                 @foreach ($sessions as $session)
                     @php
                         $isFinished = $session->isFinished();
+                        $displayTitle = $session->package?->cardDisplayTitle() ?? ($session->package?->title ?? 'Tryout');
+                        $displaySubtitle = $session->package?->cardDisplaySubtitle();
                     @endphp
                     <article class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
-                                        {{ $session->package?->title ?? 'Tryout' }}
-                                    </span>
+                                    @if ($displaySubtitle && $displaySubtitle !== $displayTitle)
+                                        <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
+                                            {{ $displaySubtitle }}
+                                        </span>
+                                    @endif
                                     <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {{ $isFinished ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700' }}">
                                         {{ $isFinished ? 'Selesai' : 'Belum Selesai' }}
                                     </span>
                                 </div>
+                                <p class="mt-3 text-sm font-semibold text-slate-500" title="{{ $session->package?->title ?? 'Tryout' }}">{{ $displayTitle }}</p>
                                 <h2 class="mt-4 text-2xl font-black text-slate-950">{{ $session->participant_name }}</h2>
                                 <p class="mt-2 text-sm text-slate-600">{{ $session->participant_email ?: 'Email tidak diisi' }}</p>
                                 <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

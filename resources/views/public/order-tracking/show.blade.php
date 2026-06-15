@@ -158,11 +158,11 @@
                         <div class="mt-5 flex flex-col gap-3">
                             @if ($order->status === \App\Models\Order::STATUS_PAID)
                                 @if ($isTryoutOrder)
-                                    <a href="{{ route($tryoutPackage->listingRouteName()) }}" class="rc-btn-success px-5 py-3 text-sm">
+                                    <a href="{{ route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage->slug]) }}" class="rc-btn-success px-5 py-3 text-sm">
                                         Mulai Tryout Sekarang
                                     </a>
-                                    <a href="{{ route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="rc-btn-neutral px-5 py-3 text-sm">
-                                        Lihat Halaman Paket
+                                    <a href="{{ route($tryoutPackage->listingRouteName()) }}" class="rc-btn-neutral px-5 py-3 text-sm">
+                                        Lihat Semua Paket
                                     </a>
                                 @else
                                     <a href="{{ route('public.download-room.index') }}" class="rc-btn-success px-5 py-3 text-sm">

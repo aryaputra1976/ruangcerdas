@@ -5,12 +5,37 @@
 @section('robots', 'noindex,nofollow')
 
 @section('content')
+@php
+    $tryoutType = $tryoutSession->package?->tryout_type;
+    $isPppkStyleReview = in_array($tryoutType, [\App\Support\TryoutBlueprint::TYPE_PPPK, \App\Support\TryoutBlueprint::TYPE_PPPK_TENDIK], true);
+    $isFreePackage = $tryoutSession->package?->isFreePackage() ?? false;
+    $displayTitle = $tryoutSession->package?->cardDisplayTitle() ?? ($tryoutSession->package?->title ?? 'Tryout');
+    $displaySubtitle = $tryoutSession->package?->cardDisplaySubtitle();
+@endphp
 <section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-6xl px-6">
         <div class="mb-8 rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Pembahasan</p>
             <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">{{ $tryoutSession->participant_name }}</h1>
-            <p class="mt-2 text-slate-600">{{ $tryoutSession->package?->title ?? 'Tryout' }}</p>
+            <div class="mt-3 flex flex-wrap items-center gap-2">
+                <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider {{ $isFreePackage ? 'bg-slate-100 text-slate-700' : 'border border-amber-300 bg-amber-50 text-amber-800' }}">
+                    {{ $isFreePackage ? 'Paket Gratis' : 'Paket Premium' }}
+                </span>
+                @if ($isPppkStyleReview)
+                    <span class="inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
+                        Skor Bertingkat
+                    </span>
+                @endif
+            </div>
+            @if ($displaySubtitle && $displaySubtitle !== $displayTitle)
+                <p class="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ $displaySubtitle }}</p>
+            @endif
+            <p class="mt-1 text-slate-600" title="{{ $tryoutSession->package?->title ?? 'Tryout' }}">{{ $displayTitle }}</p>
+            @if ($isPppkStyleReview)
+                <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-7 text-slate-600">
+                    Untuk paket PPPK, setiap opsi bisa memiliki bobot skor yang berbeda. Gunakan halaman ini untuk melihat jawaban yang dipilih, bobot tiap opsi, dan pembahasan setiap soal.
+                </div>
+            @endif
             <div class="mt-5">
                 <a href="{{ route('public.tryout-sessions.result', $tryoutSession) }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:border-blue-300 hover:text-blue-700">
                     Kembali ke Hasil

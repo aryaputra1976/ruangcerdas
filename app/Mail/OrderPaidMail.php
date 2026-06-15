@@ -43,7 +43,7 @@ class OrderPaidMail extends Mailable
                 'tryoutPackageUrl' => $tryoutPackage
                     ? route('public.tryouts.packages.start', [
                         'tryoutType' => $tryoutPackage->routeSegment(),
-                        'tryoutPackage' => $tryoutPackage,
+                        'tryoutPackage' => $tryoutPackage->slug,
                     ])
                     : null,
             ],

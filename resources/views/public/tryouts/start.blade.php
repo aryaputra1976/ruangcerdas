@@ -5,14 +5,22 @@
 @section('robots', 'noindex,nofollow')
 
 @section('content')
+@php
+    $isFreePackage = $tryoutPackage->isFreePackage();
+    $displayTitle = $tryoutPackage->cardDisplayTitle();
+    $displaySubtitle = $tryoutPackage->cardDisplaySubtitle();
+@endphp
 <section class="bg-slate-50 py-14 md:py-16">
     <div class="mx-auto max-w-5xl px-6">
         <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
             <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm md:p-8">
                 <p class="text-sm font-bold uppercase tracking-widest text-blue-600">Mulai Tryout</p>
-                <h1 class="mt-3 text-3xl font-black text-slate-950 md:text-4xl">{{ $tryoutPackage->title }}</h1>
+                @if ($displaySubtitle && $displaySubtitle !== $displayTitle)
+                    <p class="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{{ $displaySubtitle }}</p>
+                @endif
+                <h1 class="mt-2 text-3xl font-black text-slate-950 md:text-4xl" title="{{ $tryoutPackage->title }}">{{ $displayTitle }}</h1>
                 <p class="mt-3 text-slate-600">
-                    @if ($tryoutPackage->is_free)
+                    @if ($isFreePackage)
                         Isi nama peserta terlebih dahulu. Email opsional agar sesi lebih mudah dikenali.
                     @else
                         Isi data peserta dan gunakan email pembelian agar akses tryout premium dapat diverifikasi.
@@ -42,13 +50,7 @@
                     </div>
                 @endif
 
-                @if (! $tryoutPackage->is_free)
-                    <div class="mt-6 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-900">
-                        Paket ini termasuk tryout premium. Akses hanya terbuka untuk email yang sudah membeli paket.
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ route('public.tryouts.packages.begin', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="mt-8 space-y-5">
+                <form method="POST" action="{{ route('public.tryouts.packages.begin', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage->slug]) }}" class="mt-8 space-y-5">
                     @csrf
                     <div>
                         <label for="participant_name" class="mb-2 block text-sm font-semibold text-slate-700">Nama Peserta</label>
@@ -63,9 +65,9 @@
                     <div>
                         <label for="participant_email" class="mb-2 block text-sm font-semibold text-slate-700">
                             Email Peserta
-                            <span class="text-slate-400">{{ $tryoutPackage->is_free ? '(Opsional)' : '(Wajib untuk verifikasi akses)' }}</span>
+                            <span class="text-slate-400">{{ $isFreePackage ? '(Opsional)' : '(Wajib untuk verifikasi akses)' }}</span>
                         </label>
-                        <input id="participant_email" name="participant_email" type="email" value="{{ old('participant_email', $rememberedAccessEmail ?? '') }}" {{ $tryoutPackage->is_free ? '' : 'required' }}
+                        <input id="participant_email" name="participant_email" type="email" value="{{ old('participant_email', $rememberedAccessEmail ?? '') }}" {{ $isFreePackage ? '' : 'required' }}
                                class="w-full rounded-2xl border border-slate-300 px-4 py-3 text-slate-900 outline-none ring-blue-200 focus:ring @error('participant_email') border-red-400 @enderror"
                                placeholder="nama@email.com">
                         @error('participant_email')
@@ -79,16 +81,20 @@
                         </div>
                     @endif
 
-                    <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-900">
-                        Setelah menekan tombol mulai, sesi tryout langsung dibuat dan timer akan berjalan.
+                    <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm leading-6 text-slate-600">
+                        <p>Sesi tryout langsung dibuat setelah tombol ditekan.</p>
+                        <p>Timer akan langsung berjalan, jadi pastikan kamu siap sebelum mulai.</p>
+                        @unless ($isFreePackage)
+                            <p>Email harus sama dengan email pembelian paket premium.</p>
+                        @endunless
                     </div>
 
-                    <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="grid gap-3 {{ $isFreePackage ? '' : 'sm:grid-cols-2' }}">
                         <button type="submit" class="rc-btn-success w-full px-5 py-3.5 text-sm">
-                            Mulai Sekarang
+                            {{ $isFreePackage ? 'Mulai Tryout Gratis' : 'Mulai Sekarang' }}
                         </button>
-                        @if (! $tryoutPackage->is_free)
-                            <a href="{{ route('public.tryouts.packages.buy', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage]) }}" class="rc-btn-primary w-full px-5 py-3.5 text-sm">
+                        @if (! $isFreePackage)
+                            <a href="{{ route('public.tryouts.packages.buy', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage->slug]) }}" class="rc-btn-primary w-full px-5 py-3.5 text-sm">
                                 Beli Paket
                             </a>
                         @endif
@@ -99,10 +105,13 @@
             <div class="space-y-6">
                 <div class="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
                     <h2 class="text-xl font-black text-slate-950">Ringkasan Paket</h2>
+                    @if ($displaySubtitle && $displaySubtitle !== $displayTitle)
+                        <p class="mt-2 text-sm text-slate-500">{{ $displaySubtitle }}</p>
+                    @endif
                     <div class="mt-5 space-y-3">
                         <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                             <span class="text-slate-600">Harga</span>
-                            <span class="font-black text-slate-950">{{ $tryoutPackage->is_free ? 'Gratis' : 'Rp ' . number_format($tryoutPackage->price, 0, ',', '.') }}</span>
+                            <span class="font-black text-slate-950">{{ $isFreePackage ? 'Gratis' : 'Rp ' . number_format($tryoutPackage->price, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                             <span class="text-slate-600">Durasi</span>
@@ -114,7 +123,7 @@
                                 <span class="font-black text-slate-950">{{ $section['count'] }} soal</span>
                             </div>
                         @endforeach
-                        @if (! $tryoutPackage->is_free)
+                        @if (! $isFreePackage)
                             <div class="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-sm">
                                 <span class="text-slate-600">Percobaan</span>
                                 <span class="font-black text-slate-950">{{ $tryoutPackage->attempt_limit ?: 1 }}x</span>
@@ -134,7 +143,7 @@
                         <li>- Soal diambil acak dari bank soal aktif sesuai section paket.</li>
                         <li>- Saat waktu habis, jawaban akan otomatis disubmit.</li>
                         <li>- Jika sesi sebelumnya belum selesai di browser ini, sistem akan mencoba melanjutkan sesi yang sama.</li>
-                        @if (! $tryoutPackage->is_free)
+                        @if (! $isFreePackage)
                             <li>- Percobaan paket premium akan berkurang saat sesi baru berhasil dibuat.</li>
                         @endif
                     </ul>

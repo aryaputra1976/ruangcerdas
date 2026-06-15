@@ -5,6 +5,11 @@
 @section('robots', 'noindex,nofollow')
 
 @php
+    $tryoutPackage = $order->product?->slug
+        ? \App\Models\TryoutPackage::query()->where('slug', $order->product->slug)->first()
+        : null;
+    $isTryoutOrder = (bool) $tryoutPackage;
+
     $statusLabel = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Menunggu Pembayaran',
         \App\Models\Order::STATUS_PAYMENT_UPLOADED => 'Menunggu Verifikasi Admin',
@@ -26,7 +31,9 @@
     $statusMessage = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Order masih menunggu pembayaran. Silakan selesaikan pembayaran lalu upload bukti pembayaran.',
         \App\Models\Order::STATUS_PAYMENT_UPLOADED => 'Bukti pembayaran sudah diterima dan saat ini menunggu verifikasi admin.',
-        \App\Models\Order::STATUS_PAID => 'Pembayaran sudah disetujui. Akses produk dilanjutkan dari Ruang Akses.',
+        \App\Models\Order::STATUS_PAID => $isTryoutOrder
+            ? 'Pembayaran sudah disetujui. Akses tryout aktif dan bisa langsung dimulai dengan email pembelian yang sama.'
+            : 'Pembayaran sudah disetujui. Akses produk dilanjutkan dari Ruang Akses.',
         \App\Models\Order::STATUS_REJECTED => 'Pembayaran ditolak. Periksa alasan penolakan dan upload ulang bukti bila diperlukan.',
         \App\Models\Order::STATUS_EXPIRED => 'Order ini sudah kedaluwarsa dan tidak dapat diproses lebih lanjut.',
         default => 'Status order sedang diproses.',
@@ -35,14 +42,16 @@
     $primaryActionLabel = match ($order->status) {
         \App\Models\Order::STATUS_PENDING => 'Upload Bukti Pembayaran',
         \App\Models\Order::STATUS_REJECTED => 'Upload Ulang Bukti Pembayaran',
-        \App\Models\Order::STATUS_PAID => 'Buka Ruang Akses',
+        \App\Models\Order::STATUS_PAID => $isTryoutOrder ? 'Mulai Tryout Sekarang' : 'Buka Ruang Akses',
         \App\Models\Order::STATUS_EXPIRED => 'Checkout Ulang',
         default => null,
     };
 
     $primaryActionUrl = match ($order->status) {
         \App\Models\Order::STATUS_PENDING, \App\Models\Order::STATUS_REJECTED => route('orders.payment.form', $order->invoice_number),
-        \App\Models\Order::STATUS_PAID => route('public.download-room.index'),
+        \App\Models\Order::STATUS_PAID => $isTryoutOrder
+            ? route('public.tryouts.packages.start', ['tryoutType' => $tryoutPackage->routeSegment(), 'tryoutPackage' => $tryoutPackage->slug])
+            : route('public.download-room.index'),
         \App\Models\Order::STATUS_EXPIRED => route('products.index'),
         default => null,
     };
@@ -148,7 +157,13 @@
                             </div>
                         @elseif ($order->status === \App\Models\Order::STATUS_PAID)
                             <div class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
-                                <div class="rounded-2xl bg-slate-50 px-4 py-3">Pembayaran sudah disetujui. Lanjutkan ke Ruang Akses untuk membuka produk digital Anda.</div>
+                                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                                    @if ($isTryoutOrder)
+                                        Pembayaran sudah disetujui. Lanjutkan langsung ke halaman mulai tryout dengan email pembelian yang sama.
+                                    @else
+                                        Pembayaran sudah disetujui. Lanjutkan ke Ruang Akses untuk membuka produk digital Anda.
+                                    @endif
+                                </div>
                             </div>
                         @elseif ($order->status === \App\Models\Order::STATUS_REJECTED)
                             <div class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
@@ -183,11 +198,23 @@
                             <div class="rounded-2xl bg-slate-50 px-4 py-3">Invoice: <span class="font-bold">{{ $order->invoice_number }}</span></div>
                             <div class="rounded-2xl bg-slate-50 px-4 py-3">Email akses: <span class="font-bold break-all">{{ $order->buyer_email }}</span></div>
                             @if ($order->status === \App\Models\Order::STATUS_PAID)
-                                <div class="rounded-2xl bg-slate-50 px-4 py-3">Gunakan data yang sama saat masuk ke Ruang Akses.</div>
+                                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                                    @if ($isTryoutOrder)
+                                        Gunakan email pembelian yang sama saat mulai tryout.
+                                    @else
+                                        Gunakan data yang sama saat masuk ke Ruang Akses.
+                                    @endif
+                                </div>
                             @elseif ($order->status === \App\Models\Order::STATUS_PAYMENT_UPLOADED)
                                 <div class="rounded-2xl bg-slate-50 px-4 py-3">Admin akan memeriksa bukti pembayaran sebelum akses produk dibuka.</div>
                             @elseif ($order->status === \App\Models\Order::STATUS_PENDING || $order->status === \App\Models\Order::STATUS_REJECTED)
-                                <div class="rounded-2xl bg-slate-50 px-4 py-3">Setelah pembayaran disetujui, produk dibuka dari Ruang Akses.</div>
+                                <div class="rounded-2xl bg-slate-50 px-4 py-3">
+                                    @if ($isTryoutOrder)
+                                        Setelah pembayaran disetujui, tryout langsung bisa dimulai dari halaman paket.
+                                    @else
+                                        Setelah pembayaran disetujui, produk dibuka dari Ruang Akses.
+                                    @endif
+                                </div>
                             @endif
                         </div>
                     </div>

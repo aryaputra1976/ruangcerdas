@@ -156,7 +156,7 @@ class DownloadRoomController extends Controller
                 $actionLabel = 'Mulai Tryout';
                 $actionUrl = route('public.tryouts.packages.start', [
                     'tryoutType' => $tryoutPackage->routeSegment(),
-                    'tryoutPackage' => $tryoutPackage,
+                    'tryoutPackage' => $tryoutPackage->slug,
                 ]);
                 $actionClass = 'rc-btn-success';
                 $actionNote = 'Gunakan email pembelian yang sama saat mulai.';

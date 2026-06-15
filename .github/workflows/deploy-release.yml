@@ -97,6 +97,27 @@ jobs:
         run: |
           set -e
 
+          retry_command() {
+            local max_attempts="$1"
+            local wait_seconds="$2"
+            shift 2
+
+            local attempt=1
+            while true; do
+              if "$@"; then
+                return 0
+              fi
+
+              if [ "$attempt" -ge "$max_attempts" ]; then
+                return 1
+              fi
+
+              echo "Percobaan $attempt gagal. Ulangi dalam ${wait_seconds} detik..."
+              sleep "$wait_seconds"
+              attempt=$((attempt + 1))
+            done
+          }
+
           SSH_HOST_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^hostname / { print $2; exit }')"
           SSH_PORT_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^port / { print $2; exit }')"
           SSH_USER_CLEAN="$(ssh -G -F "$HOME/.ssh/config" deploy-server | awk '/^user / { print $2; exit }')"
@@ -124,7 +145,7 @@ jobs:
 
           echo "::group::Uji konektivitas TCP"
           echo "Menguji konektivitas TCP ke $SSH_HOST_MASKED:$SSH_PORT_CLEAN ..."
-          if timeout 15 bash -c "</dev/tcp/$SSH_HOST_CLEAN/$SSH_PORT_CLEAN"; then
+          if retry_command 3 5 timeout 15 bash -c "</dev/tcp/$SSH_HOST_CLEAN/$SSH_PORT_CLEAN"; then
             echo "Konektivitas TCP OK"
           else
             echo "ERROR: Port SSH tidak bisa dijangkau dari GitHub Actions."
@@ -143,7 +164,7 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Uji autentikasi SSH"
-          if ssh \
+          if retry_command 3 5 ssh \
             -o ConnectTimeout=15 \
             -o BatchMode=yes \
             -o PreferredAuthentications=publickey \
